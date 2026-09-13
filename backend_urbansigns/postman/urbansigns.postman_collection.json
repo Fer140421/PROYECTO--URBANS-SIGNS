@@ -1,0 +1,180 @@
+{
+  "info": {
+    "_postman_id": "b6e930e8-e2ef-4bae-b3bb-5b797c04f7ea",
+    "name": "urbansigns",
+    "description": "Pruebas del inicio de sesion y bloqueo temporal de Urban Signs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "userAcces",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "passwordAcces",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Login - Credenciales configuradas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Respuesta exitosa', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "});",
+              "",
+              "pm.test('El cuerpo indica exito', function () {",
+              "    pm.expect(pm.response.json().success).to.equal(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userAcces\": \"{{userAcces}}\",\n  \"passwordAcces\": \"{{passwordAcces}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/user/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "user",
+            "login"
+          ]
+        },
+        "description": "Inicia sesion. Configura userAcces y passwordAcces en el environment."
+      },
+      "response": []
+    },
+    {
+      "name": "Login - Credenciales incorrectas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Devuelve credenciales invalidas', function () {",
+              "    pm.expect(pm.response.code).to.equal(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userAcces\": \"{{userAcces}}\",\n  \"passwordAcces\": \"contrasena-incorrecta\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/user/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "user",
+            "login"
+          ]
+        },
+        "description": "Ejecuta esta solicitud cinco veces para activar el bloqueo."
+      },
+      "response": []
+    },
+    {
+      "name": "Login - Cuenta bloqueada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Devuelve 423 Locked', function () {",
+              "    pm.expect(pm.response.code).to.equal(423);",
+              "});",
+              "",
+              "pm.test('Incluye los datos de bloqueo', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.code).to.equal('ACCOUNT_TEMPORARILY_LOCKED');",
+              "    pm.expect(body.retryAfterSeconds).to.be.above(0);",
+              "    pm.expect(body.lockedUntil).to.be.a('string');",
+              "    pm.expect(pm.response.headers.get('Retry-After')).to.not.be.null;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userAcces\": \"{{userAcces}}\",\n  \"passwordAcces\": \"{{passwordAcces}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/v1/user/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "user",
+            "login"
+          ]
+        },
+        "description": "Usa esta solicitud despues de alcanzar cinco errores para validar el contrato 423."
+      },
+      "response": []
+    }
+  ]
+}

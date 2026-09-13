@@ -1,0 +1,574 @@
+// Esquema vigente reconstruido desde las entidades JPA del backend.
+// Fuente principal: src/main/java/com/example/urban_signs/Model
+// Formato: DBML para importar directamente en https://dbdiagram.io
+// Actualizado: 2026-08-25
+
+Project urban_signs {
+  database_type: "PostgreSQL"
+  Note: 'Incluye las tablas actualmente mapeadas por el backend y las tablas históricas entradas y movimiento_herramientas para conservarlas en el diseño. No incluye consultas ni vistas.'
+}
+
+Enum estado_compra {
+  PENDIENTE
+  COMPLETADA
+  CANCELADA
+}
+
+Enum estado_cotizacion {
+  PENDIENTE
+  APROBADA
+  CADUCADA
+}
+
+Enum estado_herramienta {
+  DISPONIBLE
+  EN_USO
+  EN_MANTENIMIENTO
+  DADO_DE_BAJA
+}
+
+Enum estado_orden_impresion {
+  PENDIENTE
+  RECEPCIONADO
+}
+
+Enum estado_pago {
+  SIN_PAGAR
+  ANTICIPO_PAGADO
+  PAGADO_COMPLETO
+}
+
+Enum estado_pedido {
+  PENDIENTE
+  EN_PROCESO
+  EN_TALLER
+  FINALIZADO
+  ENTREGADO
+  CANCELADO
+}
+
+Enum estado_residuo {
+  DISPONIBLE
+  USADO
+  DESCARTADO
+}
+
+Enum estado_sesion {
+  ACTIVO
+  CERRADO
+}
+
+Enum estado_trabajo_programado {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADO
+  REPROGRAMADO
+}
+
+Enum estado_solicitud_cotizacion {
+  PENDIENTE
+  REVISION
+  COTIZADA
+  CANCELADA
+}
+
+Enum tipo_control {
+  ROLLO
+  PLANCHA
+  PESO
+  LINEAL
+  UNIDAD
+}
+
+Enum tipo_movimiento_stock {
+  COMPRA
+  SALIDA
+  SOBRANTE
+  DESECHO
+}
+
+Enum tipo_movimiento_herramienta {
+  ASIGNACION
+  DEVOLUCION
+  BAJA
+  MANTENIMIENTO
+}
+
+Enum tipo_prestamo {
+  DIARIO
+  PROYECTO
+  INDEFINIDO
+}
+
+Table people {
+  id_people serial [pk, not null]
+  ci varchar(255)
+  name_people varchar(255)
+  ap varchar(255)
+  am varchar(255)
+  phone_number varchar(255)
+  addres varchar(255)
+}
+
+Table roles {
+  id_role serial [pk, not null]
+  name_role varchar(255)
+  state boolean [not null]
+}
+
+Table permisos {
+  id_permiso serial [pk, not null]
+  codigo varchar(80) [unique, not null]
+  nombre varchar(100) [not null]
+  modulo varchar(50) [not null]
+  accion varchar(50) [not null]
+  estado boolean [not null, default: true]
+}
+
+Table users {
+  id_user serial [pk, not null]
+  id_people integer
+  user_acces varchar(255)
+  password_acces varchar(255)
+  failed_login_attempts integer [not null, default: 0]
+  locked_until timestamptz
+  state_user boolean [not null, default: true]
+}
+
+Table users_roles {
+  id_user integer [not null]
+  id_role integer [not null]
+
+  Indexes {
+    (id_user, id_role) [pk]
+  }
+}
+
+Table roles_permisos {
+  id_role integer [not null]
+  id_permiso integer [not null]
+  fecha_asignacion timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    (id_role, id_permiso) [pk]
+  }
+}
+
+Table employees {
+  id_employee serial [pk, not null]
+  id_people integer [not null]
+  hire_date date [default: `CURRENT_DATE`]
+  foto varchar(255)
+  status boolean
+}
+
+Table suppliers {
+  id_supplier serial [pk, not null]
+  id_people integer [not null]
+  city varchar(255)
+  status boolean
+}
+
+Table sesion {
+  id_sesion serial [pk, not null]
+  id_usuario integer [not null]
+  login_inicio timestamp [not null]
+  login_fin timestamp
+  ip_direccion varchar(255)
+  dispositivo varchar(255)
+  estado estado_sesion [not null, default: 'ACTIVO']
+}
+
+Table sesion_accion {
+  id_accion serial [pk, not null]
+  id_sesion integer [not null]
+  descripcion text
+  modulo varchar(100)
+  fecha_accion timestamp [not null]
+}
+
+Table refresh_token {
+  id_refresh_token bigserial [pk, not null]
+  id_sesion integer [not null]
+  token_hash varchar(64) [unique, not null]
+  creado_en timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  expira_en timestamp [not null]
+  usado_en timestamp
+  revocado_en timestamp
+  reemplazado_por bigint
+}
+
+Table categorias {
+  id_categoria serial [pk, not null]
+  nombre varchar(50) [unique, not null]
+  descripcion varchar(50)
+  estado boolean [not null, default: true]
+}
+
+Table unidades_medida {
+  id_unidad serial [pk, not null]
+  nombre varchar(50) [unique, not null]
+  abreviatura varchar(10) [unique, not null]
+  estado boolean [not null, default: true]
+}
+
+Table material_produccion {
+  id_material serial [pk, not null]
+  id_categoria integer [not null]
+  id_unidad integer [not null]
+  nombre varchar(100) [not null]
+  caracteristica varchar(50)
+  color varchar(50)
+  fecha_creacion date [not null, default: `CURRENT_DATE`]
+  foto varchar(255)
+  estado boolean [not null, default: true]
+  tipo_control tipo_control [not null]
+  ancho_rollo numeric(10,3)
+  largo_rollo_nuevo numeric(10,2)
+  ancho_plancha numeric(10,3)
+  alto_plancha numeric(10,3)
+  m2_por_plancha numeric(10,4)
+  stock_minimo numeric(10,3) [not null, default: 0]
+  porcentaje_desperdicio numeric(5,2) [default: 10.00]
+}
+
+Table compras {
+  id_compra serial [pk, not null]
+  id_proveedor integer [not null]
+  fecha timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  estado estado_compra [default: 'PENDIENTE']
+  total numeric(38,2) [not null]
+  observaciones text
+}
+
+Table detalle_compras {
+  id_detalle_compra serial [pk, not null]
+  id_compra integer [not null]
+  id_material integer [not null]
+  cantidad numeric(10,3) [not null]
+  precio_unitario numeric(10,2) [not null]
+  subtotal numeric(10,2) [not null]
+}
+
+Table lotes_material {
+  id_lote serial [pk, not null]
+  id_material integer [not null]
+  codigo_lote varchar(50) [unique, not null]
+  id_compra integer
+  fecha_ingreso timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  cantidad_inicial numeric(10,3) [not null]
+  cantidad_actual numeric(10,3) [not null]
+  ancho_rollo numeric(10,3)
+  metros_lineales_actuales numeric(10,2)
+  ubicacion varchar(50)
+  activo boolean [not null, default: true]
+}
+
+Table residuos_material {
+  id_residuo serial [pk, not null]
+  id_material integer [not null]
+  id_lote_origen integer
+  cantidad numeric(10,3) [not null]
+  unidad varchar(20) [not null]
+  ubicacion varchar(100)
+  estado estado_residuo [default: 'DISPONIBLE']
+  fecha_registro timestamp [default: `CURRENT_TIMESTAMP`]
+  observaciones text
+}
+
+Table entradas {
+  id_entrada serial [pk, not null]
+  id_material integer [not null]
+  id_lote integer
+  responsable integer [not null]
+  cantidad numeric(10,3) [not null]
+  fecha timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  observaciones text
+
+  Note: 'Tabla histórica incluida para tenerla en cuenta. No existe actualmente después del reinicio de la BD y no tiene entidad JPA activa.'
+}
+
+Table movimiento_stock {
+  id_movimiento_stock serial [pk, not null]
+  id_material integer [not null]
+  id_lote integer
+  id_compra integer
+  id_entrada integer [note: 'Relación histórica; el modelo JPA actual no contiene este campo']
+  id_usuario integer [not null]
+  cantidad numeric(10,3) [not null]
+  tipo_movimiento tipo_movimiento_stock [not null]
+  fecha timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  id_trabajo bigint [note: 'Identificador informativo; el modelo no declara una relación JPA']
+  cliente varchar(100)
+  descripcion text
+}
+
+Table herramientas {
+  id_herramienta serial [pk, not null]
+  codigo varchar(100) [unique, not null]
+  nombre varchar(100) [not null]
+  marca varchar(100)
+  modelo varchar(100)
+  foto varchar(255)
+  estado_actual estado_herramienta [default: 'DISPONIBLE']
+  ubicacion varchar(100)
+  fecha_ingreso date [default: `CURRENT_DATE`]
+  observaciones text
+  activo boolean [not null, default: true]
+}
+
+Table movimiento_herramientas {
+  id_movimiento serial [pk, not null]
+  id_herramienta integer [not null]
+  tipo_movimiento tipo_movimiento_herramienta [not null]
+  responsable integer
+  descripcion text
+  fecha timestamp [default: `CURRENT_TIMESTAMP`]
+
+  Note: 'La tabla existe actualmente pero está vacía. La clase Java existe sin @Entity y no hay repositorio, servicio ni controlador activos.'
+}
+
+Table prestamos_material_trabajo {
+  id_prestamo bigserial [pk, not null]
+  id_empleado bigint [not null]
+  fecha_prestamo timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  fecha_devolucion timestamp
+  tipo_prestamo tipo_prestamo
+  observacion varchar(255)
+  estado varchar(10) [not null]
+}
+
+Table detalle_prestamo {
+  id_detalle_prestamo bigserial [pk, not null]
+  id_prestamo bigint [not null]
+  id_herramienta bigint [not null]
+}
+
+Table empresas {
+  id_empresa serial [pk, not null]
+  razon_social varchar(150) [not null]
+  nit varchar(20) [unique, not null]
+  direccion text
+  telefono varchar(20)
+}
+
+Table clientes {
+  id_cliente serial [pk, not null]
+  id_persona integer
+  id_empresa integer
+  tipo_cliente_persona_empresa varchar(10) [not null]
+  tipo_cliente varchar(15) [not null]
+  estado boolean
+  fecha_registro date
+  correo varchar(255)
+}
+
+Table trabajos {
+  id_trabajo serial [pk, not null]
+  foto varchar(255) [not null]
+  nombre varchar(100) [not null]
+  descripcion varchar(255) [not null]
+  estado boolean
+}
+
+Table solicitud_cotizacion {
+  id_solicitud serial [pk, not null]
+  cod_solicitud varchar(50) [unique, not null]
+  id_cliente integer [not null]
+  fecha_solicitud date
+  estado estado_solicitud_cotizacion [not null, default: 'PENDIENTE']
+  observaciones varchar(255)
+}
+
+Table solicitud_trabajo {
+  id_solicitud_trabajo serial [pk, not null]
+  id_solicitud integer [not null]
+  id_trabajo integer [not null]
+  cantidad integer
+  base numeric(10,2)
+  altura numeric(10,2)
+  area_total numeric(10,2)
+  descripcion varchar(255)
+}
+
+Table cotizaciones {
+  id_cotizacion serial [pk, not null]
+  cod_cotizacion varchar(20) [unique, not null]
+  id_solicitud integer [not null]
+  fecha_emision date [not null]
+  fecha_caducado date [not null]
+  costo_total numeric(12,2) [not null, default: 0]
+  estado estado_cotizacion [not null, default: 'PENDIENTE']
+}
+
+Table cotizacion_trabajo {
+  id_cotizacion_trabajo serial [pk, not null]
+  id_cotizacion integer [not null]
+  id_solicitud_trabajo integer [not null]
+  cantidad integer
+  costo_unitario numeric(12,2)
+  base numeric(10,2)
+  altura numeric(10,2)
+  area_total numeric(10,2)
+  subtotal numeric(12,2)
+}
+
+Table detalle_cotizacion {
+  id_detalle_cotizacion serial [pk, not null]
+  id_cotizacion_trabajo integer [not null]
+  id_material integer [not null]
+}
+
+Table pedidos {
+  id_pedido serial [pk, not null]
+  id_cotizacion integer [not null]
+  id_cliente integer [not null]
+  fecha_pedido date [default: `CURRENT_DATE`]
+  estado_pedido estado_pedido [not null, default: 'PENDIENTE']
+  estado_pago estado_pago [not null, default: 'SIN_PAGAR']
+  anticipo numeric(12,2) [default: 0]
+  saldo_pendiente numeric(12,2) [default: 0]
+  total numeric(12,2) [default: 0]
+  facturado boolean [not null, default: false]
+}
+
+Table pagos_pedido {
+  id_pago serial [pk, not null]
+  id_pedido integer [not null]
+  fecha_pago date [default: `CURRENT_DATE`]
+  monto numeric(12,2) [not null]
+  metodo_pago varchar(30)
+  observacion text
+}
+
+Table orden_impresion {
+  id_orden serial [pk, not null]
+  nro_orden varchar(255) [unique, not null]
+  id_pedido integer [unique, not null]
+  fecha_emision timestamp [default: `CURRENT_TIMESTAMP`]
+  responsable integer [not null]
+  observaciones varchar(255)
+  archivo_adjunto varchar(255)
+  estado estado_orden_impresion [not null, default: 'PENDIENTE']
+}
+
+Table detalle_orden_impresion {
+  id_orden_trabajo serial [pk, not null]
+  id_orden integer [not null]
+  id_cotizacion_trabajo bigint [not null, note: 'El backend guarda el ID directamente, sin anotación de relación JPA']
+  observaciones varchar(255)
+}
+
+Table facturacion {
+  id bigserial [pk, not null]
+  id_pedido integer [not null]
+  cuf varchar(255)
+  numero_factura_siat bigint
+  fecha_emision_siat timestamp
+  leyenda varchar(255)
+  url_qr varchar(255)
+  estado varchar(255) [not null]
+  json_enviado text
+  json_recibido text
+  mensajes_error text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table planificacion_semanal {
+  id_planificacion serial [pk, not null]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  creado_por integer
+  fecha_creacion timestamp [default: `CURRENT_TIMESTAMP`]
+  observaciones text
+}
+
+Table trabajo_programado {
+  id_trabajo_programado serial [pk, not null]
+  id_planificacion integer [not null]
+  id_pedido integer
+  id_orden_impresion integer
+  cliente varchar(255)
+  descripcion_trabajo text [not null]
+  area_trabajo varchar(100)
+  direccion text
+  fecha_programada date [not null]
+  hora_programada time
+  estado estado_trabajo_programado [default: 'PENDIENTE']
+  cumplido boolean
+  observaciones text
+  fecha_creacion timestamp [default: `CURRENT_TIMESTAMP`]
+  ultima_modificacion timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table reprogramacion_trabajo {
+  id_reprogramacion serial [pk, not null]
+  id_trabajo_programado integer [not null]
+  fecha_original date [not null]
+  fecha_nueva date [not null]
+  motivo text
+  usuario_reprogramo integer
+  fecha_reprogramacion timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Ref: people.id_people < users.id_people
+Ref: people.id_people < employees.id_people
+Ref: people.id_people < suppliers.id_people
+Ref: roles.id_role < users_roles.id_role
+Ref: users.id_user < users_roles.id_user
+Ref: roles.id_role < roles_permisos.id_role
+Ref: permisos.id_permiso < roles_permisos.id_permiso
+Ref: users.id_user < sesion.id_usuario
+Ref: sesion.id_sesion < sesion_accion.id_sesion
+Ref: sesion.id_sesion < refresh_token.id_sesion
+
+Ref: categorias.id_categoria < material_produccion.id_categoria
+Ref: unidades_medida.id_unidad < material_produccion.id_unidad
+Ref: suppliers.id_supplier < compras.id_proveedor
+Ref: compras.id_compra < detalle_compras.id_compra
+Ref: material_produccion.id_material < detalle_compras.id_material
+Ref: material_produccion.id_material < lotes_material.id_material
+Ref: compras.id_compra < lotes_material.id_compra
+Ref: material_produccion.id_material < residuos_material.id_material
+Ref: lotes_material.id_lote < residuos_material.id_lote_origen
+Ref: material_produccion.id_material < entradas.id_material
+Ref: lotes_material.id_lote < entradas.id_lote
+Ref: users.id_user < entradas.responsable
+Ref: material_produccion.id_material < movimiento_stock.id_material
+Ref: lotes_material.id_lote < movimiento_stock.id_lote
+Ref: compras.id_compra < movimiento_stock.id_compra
+Ref: entradas.id_entrada < movimiento_stock.id_entrada
+Ref: users.id_user < movimiento_stock.id_usuario
+
+Ref: herramientas.id_herramienta < movimiento_herramientas.id_herramienta
+Ref: users.id_user < movimiento_herramientas.responsable
+
+Ref: employees.id_employee < prestamos_material_trabajo.id_empleado
+Ref: prestamos_material_trabajo.id_prestamo < detalle_prestamo.id_prestamo
+Ref: herramientas.id_herramienta < detalle_prestamo.id_herramienta
+
+Ref: people.id_people - clientes.id_persona
+Ref: empresas.id_empresa < clientes.id_empresa
+Ref: clientes.id_cliente < solicitud_cotizacion.id_cliente
+Ref: solicitud_cotizacion.id_solicitud < solicitud_trabajo.id_solicitud
+Ref: trabajos.id_trabajo < solicitud_trabajo.id_trabajo
+Ref: solicitud_cotizacion.id_solicitud < cotizaciones.id_solicitud
+Ref: cotizaciones.id_cotizacion < cotizacion_trabajo.id_cotizacion
+Ref: solicitud_trabajo.id_solicitud_trabajo < cotizacion_trabajo.id_solicitud_trabajo
+Ref: cotizacion_trabajo.id_cotizacion_trabajo < detalle_cotizacion.id_cotizacion_trabajo
+Ref: material_produccion.id_material < detalle_cotizacion.id_material
+Ref: cotizaciones.id_cotizacion < pedidos.id_cotizacion
+Ref: clientes.id_cliente < pedidos.id_cliente
+Ref: pedidos.id_pedido < pagos_pedido.id_pedido
+Ref: pedidos.id_pedido - orden_impresion.id_pedido
+Ref: users.id_user < orden_impresion.responsable
+Ref: orden_impresion.id_orden < detalle_orden_impresion.id_orden
+Ref: cotizacion_trabajo.id_cotizacion_trabajo < detalle_orden_impresion.id_cotizacion_trabajo
+Ref: pedidos.id_pedido < facturacion.id_pedido
+
+Ref: users.id_user < planificacion_semanal.creado_por
+Ref: planificacion_semanal.id_planificacion < trabajo_programado.id_planificacion [delete: cascade]
+Ref: pedidos.id_pedido < trabajo_programado.id_pedido
+Ref: orden_impresion.id_orden < trabajo_programado.id_orden_impresion
+Ref: trabajo_programado.id_trabajo_programado < reprogramacion_trabajo.id_trabajo_programado [delete: cascade]
+Ref: users.id_user < reprogramacion_trabajo.usuario_reprogramo
