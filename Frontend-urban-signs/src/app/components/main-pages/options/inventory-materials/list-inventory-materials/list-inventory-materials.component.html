@@ -1,0 +1,396 @@
+<header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Materiales de trabajo </h1>
+    </div>
+</header>
+<!-- Filters -->
+<div class="bg-white p-4 border-b border-gray-200">
+    <div class="mb-3 flex justify-end">
+        <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+    </div>
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+        <div class="relative flex-1 lg:flex-[2]">
+            <input type="text"
+                class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                placeholder="Buscar material..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()">
+            <button (click)="search()"
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                Buscar
+            </button>
+        </div>
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="filterStatus" (change)="loadMateriales()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option ngValue="DISPONIBLE">Disponible</option>
+                <option ngValue="EN_USO">En uso</option>
+                <option ngValue="EN_MANTENIMIENTO">En Mantenimiento</option>
+                <option ngValue="DADO_DE_BAJA">Dado de baja</option>
+            </select>
+        </div>
+        <div class="w-full lg:w-auto">
+            <button
+                class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+                routerLink="/home/register-inventory-materials">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva herramienta
+            </button>
+        </div>
+    </div>
+</div>
+
+<app-responsive-data-view [items]="listMaterials" [mode]="viewMode" [loading]="isLoading" loadingLabel="Cargando herramientas" emptyTitle="No hay herramientas" emptyMessage="No se encontraron herramientas con los filtros seleccionados." tableMinWidth="54rem" [columns]="4">
+    <ng-template appDataHeader><div class="grid grid-cols-[10rem_minmax(25rem,1fr)_12rem_12rem] gap-5 items-center px-6 py-3"><span>Código</span><span>Herramienta</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+    <ng-template appDataRow let-herramienta><div class="grid grid-cols-[10rem_minmax(25rem,1fr)_12rem_12rem] gap-5 items-center px-6 py-4"><span class="font-medium text-gray-900 truncate">{{ herramienta.codigo }}</span><div class="min-w-0 flex items-center gap-4"><img [src]="herramienta.foto" [alt]="herramienta.nombre" class="w-12 h-12 rounded-md object-cover flex-shrink-0"><div class="min-w-0"><h3 class="font-medium text-gray-900 truncate">{{ herramienta.nombre }} <span class="text-xs font-normal text-gray-500">{{ herramienta.marca }} - {{ herramienta.modelo }}</span></h3><p class="text-sm text-gray-500 truncate">{{ herramienta.observaciones }}</p><p class="text-xs text-gray-400 truncate">Ubicación: {{ herramienta.ubicacion }}</p></div></div><span class="justify-self-start px-2.5 py-1 text-xs font-semibold rounded-full whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': herramienta.estadoActual === 'DISPONIBLE','bg-yellow-100 text-yellow-800': herramienta.estadoActual === 'EN_USO','bg-red-100 text-red-800': herramienta.estadoActual === 'EN_MANTENIMIENTO','bg-gray-100 text-gray-800': herramienta.estadoActual === 'DADO_DE_BAJA'}">{{ herramienta.estadoActual }}</span><div class="flex justify-end gap-2"><app-action-icon-button *ngIf="herramienta.estadoActual === 'EN_MANTENIMIENTO' || herramienta.estadoActual === 'DADO_DE_BAJA'" label="Marcar disponible" icon="ph ph-check-circle" variant="success" (action)="abrirModalEstado(herramienta, 'DISPONIBLE')"></app-action-icon-button><app-action-icon-button *ngIf="herramienta.estadoActual === 'DISPONIBLE'" label="Enviar a mantenimiento" icon="ph ph-wrench" variant="warning" (action)="abrirModalEstado(herramienta, 'EN_MANTENIMIENTO')"></app-action-icon-button><app-action-icon-button *ngIf="herramienta.estadoActual !== 'DADO_DE_BAJA'" label="Dar de baja" icon="ph ph-x-circle" variant="danger" (action)="abrirModalEstado(herramienta, 'DADO_DE_BAJA')"></app-action-icon-button></div></div></ng-template>
+    <ng-template appDataCard let-herramienta><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 flex items-start gap-4 border-b border-gray-100"><img [src]="herramienta.foto" [alt]="herramienta.nombre" class="w-16 h-16 rounded-lg object-cover flex-shrink-0"><div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-2"><h3 class="font-semibold text-gray-900 break-words">{{ herramienta.nombre }}</h3><span class="text-xs text-gray-500 whitespace-nowrap">{{ herramienta.codigo }}</span></div><p class="text-sm text-gray-500 mt-1 break-words">{{ herramienta.marca }} - {{ herramienta.modelo }}</p></div></div><div class="p-4 space-y-3 flex-1 min-w-0"><div class="flex justify-between gap-3"><span class="text-xs font-semibold text-gray-500 uppercase">Estado</span><span class="px-2.5 py-1 text-xs font-semibold rounded-full whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': herramienta.estadoActual === 'DISPONIBLE','bg-yellow-100 text-yellow-800': herramienta.estadoActual === 'EN_USO','bg-red-100 text-red-800': herramienta.estadoActual === 'EN_MANTENIMIENTO','bg-gray-100 text-gray-800': herramienta.estadoActual === 'DADO_DE_BAJA'}">{{ herramienta.estadoActual }}</span></div><p class="text-sm text-gray-600 break-words">{{ herramienta.observaciones }}</p><p class="text-xs text-gray-500 break-words"><i class="ph ph-map-pin mr-1"></i>{{ herramienta.ubicacion }}</p></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button *ngIf="herramienta.estadoActual === 'EN_MANTENIMIENTO' || herramienta.estadoActual === 'DADO_DE_BAJA'" label="Marcar disponible" icon="ph ph-check-circle" variant="success" (action)="abrirModalEstado(herramienta, 'DISPONIBLE')"></app-action-icon-button><app-action-icon-button *ngIf="herramienta.estadoActual === 'DISPONIBLE'" label="Enviar a mantenimiento" icon="ph ph-wrench" variant="warning" (action)="abrirModalEstado(herramienta, 'EN_MANTENIMIENTO')"></app-action-icon-button><app-action-icon-button *ngIf="herramienta.estadoActual !== 'DADO_DE_BAJA'" label="Dar de baja" icon="ph ph-x-circle" variant="danger" (action)="abrirModalEstado(herramienta, 'DADO_DE_BAJA')"></app-action-icon-button></footer></article></ng-template>
+    <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> materiales</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+</app-responsive-data-view>
+
+<app-loading *ngIf="false" variant="table" [columns]="6" label="Cargando herramientas"></app-loading>
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Código</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Herramienta</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            <tr class="hover:bg-gray-50" *ngFor="let herramienta of listMaterials">
+                <td data-label="Código" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{herramienta.codigo}}</td>
+                <td data-label="Herramienta" class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <img [src]="herramienta.foto" alt="Foto herramienta"
+                                class="h-10 w-10 rounded-md object-cover"
+                                onerror="this.onerror=null;this.src='ruta-por-defecto.png';" />
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">{{herramienta.nombre}}
+                                <span class="text-xs text-gray-500 ml-2">{{herramienta.marca}} -
+                                    {{herramienta.modelo}}</span>
+                            </div>
+                            <div class="text-sm text-gray-500">{{herramienta.observaciones}}</div>
+                            <div class="text-xs text-gray-400">Ubicación: {{herramienta.ubicacion}}</div>
+                        </div>
+                    </div>
+                </td>
+                <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                    <span [ngClass]="{
+        'bg-green-100 text-green-800': herramienta.estadoActual === 'DISPONIBLE',
+        'bg-yellow-100 text-yellow-800': herramienta.estadoActual === 'EN_USO',
+        'bg-red-100 text-red-800': herramienta.estadoActual === 'EN_MANTENIMIENTO',
+        'bg-gray-100 text-gray-800': herramienta.estadoActual === 'DADO_DE_BAJA'
+      }" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                        {{herramienta.estadoActual}}
+                    </span>
+                </td>
+                <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
+
+                    <button
+                        *ngIf="herramienta.estadoActual === 'EN_MANTENIMIENTO' || herramienta.estadoActual === 'DADO_DE_BAJA'"
+                        class="text-green-500 hover:text-green-700 text-2xl"
+                        (click)="abrirModalEstado(herramienta, 'DISPONIBLE')">
+                        <i class="ph ph-check-circle"></i>
+                    </button>
+
+                    <button *ngIf="herramienta.estadoActual === 'DISPONIBLE'"
+                        class="text-yellow-500 hover:text-yellow-700 text-2xl"
+                        (click)="abrirModalEstado(herramienta, 'EN_MANTENIMIENTO')">
+                        <i class="ph ph-wrench"></i>
+                    </button>
+
+                    <button *ngIf="herramienta.estadoActual !== 'DADO_DE_BAJA'"
+                        class="text-red-500 hover:text-red-700 text-2xl"
+                        (click)="abrirModalEstado(herramienta, 'DADO_DE_BAJA')">
+                        <i class="ph ph-x-circle"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Mostrando
+                    <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                    a
+                    <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                    de
+                    <span class="font-medium">{{totalItems}}</span>
+                    materiales
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Anterior</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                        [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                        {{page}}
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Siguiente</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="isEstadoModalOpen"
+    class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-11/12 max-w-md p-6 relative animate-fadeIn">
+        <button (click)="closeEstadoModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+            <i class="ph ph-x text-xl"></i>
+        </button>
+        <div class="flex justify-center mb-4">
+            <i class="ph text-5xl" [ngClass]="[
+          estadoConfig[nuevoEstado].icono,
+          'text-' + estadoConfig[nuevoEstado].color + '-500'
+        ]">
+            </i>
+        </div>
+        <h2 class="text-xl font-semibold text-center mb-2">
+            {{ estadoConfig[nuevoEstado].titulo }}
+        </h2>
+        <p class="text-center text-gray-700 mb-6">
+            {{ estadoConfig[nuevoEstado].mensaje }}
+            <br>
+            <strong>{{ materialSeleccionado?.nombre }}</strong>
+        </p>
+        <div class="flex justify-center gap-4">
+        <button (click)="confirmarCambioEstado()" [disabled]="isProcessing" class="px-6 py-2 rounded-lg text-white font-medium"
+                [ngClass]="'bg-' + estadoConfig[nuevoEstado].color + '-500 hover:bg-' + estadoConfig[nuevoEstado].color + '-600'">
+                {{ estadoConfig[nuevoEstado].boton }}
+            </button>
+
+            <button (click)="closeEstadoModal()" class="px-6 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="isModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+    <div
+        class="bg-white rounded-lg shadow-2xl w-full max-w-4xl p-6 relative transform transition-all duration-300 ease-out opacity-0 scale-95 animate-fade-in-modal">
+        <h2 class="text-2xl font-bold text-black mb-6">Modificar Material</h2>
+        <form [formGroup]="form" (ngSubmit)="modMaterial()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-black mb-2">Foto del material</label>
+                    <div class="relative">
+                        <input type="file" accept="image/*" (change)="onFileSelectedEdit($event)"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="materialPhoto">
+                        <label for="materialPhoto"
+                            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#FFD000] rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+                            <ng-container *ngIf="previewImage; else noImage">
+                                <img [src]="previewImage" alt="Vista previa"
+                                    class="h-full w-full object-contain rounded-lg">
+                            </ng-container>
+                            <ng-template #noImage>
+                                <span class="text-gray-500">+ Subir imagen</span>
+                                <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG (Max. 5MB)</span>
+                            </ng-template>
+                        </label>
+                    </div>
+                    <button type="button" class="mt-2 text-sm text-red-500 hover:text-red-700" (click)="removeImage()">
+                        Eliminar imagen
+                    </button>
+                </div>
+
+                <!-- Nombre -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">
+                        Nombre del material <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" formControlName="nombre"
+                        [class.border-red-500]="nombre?.invalid && (nombre?.dirty || nombre?.touched)"
+                        [class.border-green-500]="nombre?.valid && nombre?.dirty"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition placeholder-gray-400"
+                        placeholder="Taladro industrial" />
+                    <div *ngIf="nombre?.invalid && (nombre?.dirty || nombre?.touched)"
+                        class="text-red-500 text-xs mt-1">
+                        <span *ngIf="nombre?.errors?.['required']">El nombre es requerido</span>
+                        <span *ngIf="nombre?.errors?.['minlength']">Mínimo 2 caracteres</span>
+                        <span *ngIf="nombre?.errors?.['maxlength']">Máximo 100 caracteres</span>
+                        <span *ngIf="nombre?.errors?.['pattern']">Solo se permiten letras, números y espacios</span>
+                    </div>
+                </div>
+
+                <!-- Modelo -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Modelo</label>
+                    <input type="text" formControlName="modelo"
+                        [class.border-red-500]="modelo?.invalid && (modelo?.dirty || modelo?.touched)"
+                        [class.border-green-500]="modelo?.valid && modelo?.dirty"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition placeholder-gray-400"
+                        placeholder="Modelo XYZ" />
+                    <div *ngIf="modelo?.invalid && (modelo?.dirty || modelo?.touched)"
+                        class="text-red-500 text-xs mt-1">
+                        <span *ngIf="modelo?.errors?.['maxlength']">Máximo 50 caracteres</span>
+                        <span *ngIf="modelo?.errors?.['pattern']">Solo letras, números y guiones</span>
+                    </div>
+                </div>
+
+                <!-- Ubicación -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Ubicación</label>
+                    <input type="text" formControlName="ubicacion"
+                        [class.border-red-500]="ubicacion?.invalid && (ubicacion?.dirty || ubicacion?.touched)"
+                        [class.border-green-500]="ubicacion?.valid && ubicacion?.dirty"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition placeholder-gray-400"
+                        placeholder="Almacén 1" />
+                    <div *ngIf="ubicacion?.invalid && (ubicacion?.dirty || ubicacion?.touched)"
+                        class="text-red-500 text-xs mt-1">
+                        <span *ngIf="ubicacion?.errors?.['maxlength']">Máximo 100 caracteres</span>
+                        <span *ngIf="ubicacion?.errors?.['pattern']">Solo letras, números, espacios y guiones</span>
+                    </div>
+                </div>
+
+                <!-- Marca -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Marca</label>
+                    <input type="text" formControlName="marca"
+                        [class.border-red-500]="marca?.invalid && (marca?.dirty || marca?.touched)"
+                        [class.border-green-500]="marca?.valid && marca?.dirty"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition placeholder-gray-400"
+                        placeholder="Ej: Bosch" />
+                    <div *ngIf="marca?.invalid && (marca?.dirty || marca?.touched)" class="text-red-500 text-xs mt-1">
+                        <span *ngIf="marca?.errors?.['maxlength']">Máximo 50 caracteres</span>
+                        <span *ngIf="marca?.errors?.['pattern']">Solo letras, números y espacios</span>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-black mb-2">Observaciones</label>
+                    <textarea formControlName="observaciones"
+                        [class.border-red-500]="observaciones?.invalid && (observaciones?.dirty || observaciones?.touched)"
+                        [class.border-green-500]="observaciones?.valid && observaciones?.dirty"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition min-h-[100px] placeholder-gray-400"
+                        placeholder="Uso exclusivo para el área de instalaciones. Revisar cada mes."></textarea>
+                    <div *ngIf="observaciones?.invalid && (observaciones?.dirty || observaciones?.touched)"
+                        class="text-red-500 text-xs mt-1">
+                        <span *ngIf="observaciones?.errors?.['maxlength']">Máximo 500 caracteres</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {{ observaciones?.value?.length || 0 }}/500 caracteres
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-8 flex justify-end space-x-4">
+                <button type="reset" (click)="closeConfirmModal()"
+                    class="px-6 py-2 border border-black text-black rounded-lg hover:bg-gray-100 transition font-medium">
+                    Cancelar
+                </button>
+                <button type="submit" [disabled]="form.invalid || isProcessing"
+                    class="px-6 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Herramientas - Versión Minimalista -->
+<div *ngIf="isMaterialModalOpen"
+    class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
+
+    <div class="bg-white rounded-xl shadow-lg w-11/12 max-w-xl p-6 relative animate-fadeIn border border-gray-200">
+
+        <!-- Botón Cerrar -->
+        <button (click)="closeMaterialModal()"
+            class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-200">
+            <i class="ph ph-x text-xl"></i>
+        </button>
+
+        <!-- Título -->
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Detalles de la Herramienta</h2>
+
+        <!-- Imagen de la herramienta -->
+        <div class="flex justify-center mb-6">
+            <img *ngIf="materialSeleccionado?.foto; else noImage" [src]="materialSeleccionado?.foto"
+                alt="{{materialSeleccionado?.nombre}}"
+                class="w-32 h-32 object-cover rounded-lg shadow-sm border border-gray-200">
+            <ng-template #noImage>
+                <div
+                    class="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-lg shadow-sm text-gray-400 border border-gray-200">
+                    Sin Imagen
+                </div>
+            </ng-template>
+        </div>
+
+        <!-- Información de la herramienta -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 mb-2">
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Nombre:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.nombre}}</div>
+            </div>
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Marca:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.marca}}</div>
+            </div>
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Código:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.codigo}}</div>
+            </div>
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Modelo:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.modelo}}</div>
+            </div>
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Ubicación:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.ubicacion}}</div>
+            </div>
+            <div class="pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Estado:</span>
+                <div
+                    [ngClass]="materialSeleccionado?.estadoActual === 'DISPONIBLE' ? 'text-green-600' : 'text-red-600'">
+                    {{materialSeleccionado?.estadoActual}}
+                </div>
+            </div>
+            <div class="sm:col-span-2 pb-3 border-b border-gray-100">
+                <span class="font-medium text-gray-500 text-sm">Observaciones:</span>
+                <div class="text-gray-800">{{materialSeleccionado?.observaciones || 'N/A'}}</div>
+            </div>
+        </div>
+
+        <!-- Botón Cerrar -->
+        <div class="mt-6 flex justify-center">
+            <button (click)="closeMaterialModal()"
+                class="px-6 py-2 bg-[#FFD000] hover:bg-yellow-500 text-gray-900 font-medium rounded-lg shadow-sm transition-colors duration-200">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>

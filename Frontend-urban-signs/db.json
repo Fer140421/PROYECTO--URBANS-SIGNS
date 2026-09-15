@@ -1,0 +1,104 @@
+{
+  "compras": [
+    {
+      "id": "f298",
+      "proveedor": "angel mendieta perez",
+      "fecha": "2025-08-20",
+      "estado": "Completada",
+      "detalles": [
+        {
+          "productoId": "277b5e45-1c96-4b3e-8d86-73dc6f850b72",
+          "cantidad": 4,
+          "unidadMedida": "pieza",
+          "precioUnitario": 12,
+          "total": 48,
+          "precioVenta": 15
+        }
+      ],
+      "totalCompra": 48
+    }
+  ],
+  "materiales": [
+    {
+      "id_material": 1,
+      "codigo": "MAT-0001",
+      "id_categoria": 1,
+      "nombre": "Tela algodón",
+      "detalle": "Tela para camisetas",
+      "unidad_medida": "metro",
+      "foto": "url_imagen_1",
+      "fecha_creacion": "2025-08-18T12:00:00Z",
+      "id": "30e5"
+    },
+    {
+      "codigo": "MAT-0002",
+      "nombre": "Botón",
+      "detalle": "Botón para chaquetas",
+      "id_categoria": 2,
+      "unidad_medida": "pieza",
+      "foto": "url_imagen_2",
+      "id": "6a35"
+    },
+    {
+      "id": "277b5e45-1c96-4b3e-8d86-73dc6f850b72",
+      "id_material": 1755705815181,
+      "codigo": "US-ACR-001",
+      "id_categoria": "5",
+      "nombre": "acrilico",
+      "detalle": "20x10 ml",
+      "unidad_medida": "pieza",
+      "foto": "",
+      "fecha_creacion": "2025-08-20T16:03:35.181Z",
+      "stock": 4,
+      "precioVenta": 15
+    }
+  ],
+  "cotizaciones": [
+    {
+      "id": "coti-001",
+      "cliente": "Empresa XYZ",
+      "fecha": "2025-08-20",
+      "estado": "Pendiente",
+      "productoFinal": "Banner publicitario",
+      "detalles": [
+        {
+          "materialId": "277b5e45-1c96-4b3e-8d86-73dc6f850b72",
+          "descripcion": "Lona front light impresión UV",
+          "cantidad": 10,
+          "unidadMedida": "m2",
+          "precioUnitario": 90,
+          "total": 900
+        },
+        {
+          "materialId": "6a35",
+          "descripcion": "Tubin aluminio",
+          "cantidad": 5,
+          "unidadMedida": "pieza",
+          "precioUnitario": 30,
+          "total": 150
+        }
+      ],
+      "totalCotizacion": 1050,
+      "observaciones": "Incluye instalación básica"
+    },
+    {
+      "id": "coti-002",
+      "cliente": "Juan Pérez",
+      "fecha": "2025-08-21",
+      "estado": "Aceptada",
+      "productoFinal": "Vinilo adhesivo decorativo",
+      "detalles": [
+        {
+          "materialId": "30e5",
+          "descripcion": "Tela algodón estampada",
+          "cantidad": 20,
+          "unidadMedida": "metro",
+          "precioUnitario": 25,
+          "total": 500
+        }
+      ],
+      "totalCotizacion": 500,
+      "observaciones": "No incluye transporte"
+    }
+  ]
+}

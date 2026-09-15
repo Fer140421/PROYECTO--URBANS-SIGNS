@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  z-index: 100;
+}
+
+.fixed.inset-0 {
+  z-index: 100;
+}

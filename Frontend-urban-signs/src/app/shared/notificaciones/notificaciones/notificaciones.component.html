@@ -1,0 +1,49 @@
+<div *ngIf="isModalOpen"
+  class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+  <div
+    class="bg-white rounded-lg shadow-2xl w-96 p-6 relative transform transition-all duration-300 ease-out opacity-0 scale-95 animate-fade-in-modal">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Notificaciones</h2>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+        <i class="ph ph-x text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Lista de notificaciones -->
+    <div *ngIf="notifications.length > 0; else emptyState">
+      <ul class="divide-y divide-gray-200 max-h-80 overflow-y-auto">
+        <li *ngFor="let notification of notifications" class="py-3">
+          <div class="flex justify-between items-start">
+            <span [class.text-gray-400]="notification.read">{{ notification.message }}</span>
+            <small class="text-xs text-gray-400">{{ notification.date | date:'short' }}</small>
+          </div>
+
+          <div class="mt-2 flex justify-end">
+            <button
+              *ngIf="!notification.read"
+              (click)="markAsRead(notification)"
+              class="text-xs text-blue-500 hover:underline">
+              Marcar como leída
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Acciones -->
+      <div class="flex justify-end mt-4">
+        <button (click)="clearNotifications()"
+          class="text-sm text-red-500 hover:text-red-700 font-medium">
+          Limpiar todas
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <ng-template #emptyState>
+      <p class="text-gray-500 text-center py-8">No tienes notificaciones nuevas 🎉</p>
+    </ng-template>
+  </div>
+</div>

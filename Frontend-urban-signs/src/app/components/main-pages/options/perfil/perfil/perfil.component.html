@@ -1,0 +1,91 @@
+<div class="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
+    <!-- Header -->
+    <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Cargando perfil...</p>
+        </div>
+    </div>
+    <div *ngIf="!isLoading && !errorMessage">
+
+        <div class="mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-black">Mi Perfil</h1>
+            <p class="text-gray-600 mt-1">Gestiona tu información personal y configuración de cuenta</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Sidebar - Profile Photo -->
+            <div class="lg:col-span-1">
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <div class="text-center">
+                        <div class="relative inline-block">
+                            <div
+                                class="w-32 h-32 rounded-full border-4 border-yellow-400 overflow-hidden bg-gray-200 mx-auto">
+                                <img [src]="userProfile.avatar"
+                                    [alt]="userProfile.firstName + ' ' + userProfile.lastName"
+                                    class="w-full h-full object-cover" (error)="onImageError($event)">
+                            </div>
+                        </div>
+                        <h2 class="text-xl font-bold text-black mt-4">{{ userProfile.firstName }} {{
+                            userProfile.lastName }}
+                        </h2>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-center text-sm text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-yellow-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Cuenta Activa
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Miembro desde {{ userProfile.memberSince }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Forms -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Personal Information -->
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-black">Información Personal</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                                <input type="text" [(ngModel)]="userProfile.firstName" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
+                                <input type="text" [(ngModel)]="userProfile.lastName" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" [(ngModel)]="userProfile.email" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                <input type="tel" [(ngModel)]="userProfile.phone" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
+                                <input type="text" [(ngModel)]="userProfile.department" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                                <input type="text" [(ngModel)]="userProfile.address" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

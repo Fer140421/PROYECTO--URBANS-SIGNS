@@ -1,0 +1,369 @@
+<div class="min-w-0 bg-gray-50 p-3 sm:p-6">
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestión de Roles de Usuario</h1>
+      <p class="text-gray-600">Asigne y administre los roles de acceso para los usuarios del sistema</p>
+    </div>
+
+    <!-- Panel Principal -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <!-- Toolbar -->
+      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            <!-- Campo de búsqueda -->
+            <div class="relative">
+              <input 
+                type="text" 
+                placeholder="Buscar usuario..." 
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchTermChange()"
+                class="pl-10 pr-20 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent w-full sm:w-64">
+              <button 
+                (click)="searchEmployees()"
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm">
+                Buscar
+              </button>
+              <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+
+            <!-- Select de filtro por rol -->
+            <select 
+              [(ngModel)]="selectedRoleFilter"
+              (change)="onRoleFilterChange()"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-auto">
+              <option value="">Todos los roles</option>
+              <option *ngFor="let role of listRoles" [value]="role.name_role">
+                {{ role.name_role }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Contador de usuarios -->
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <i class="ph ph-users text-lg"></i>
+            <span>{{ totalItems }} usuarios encontrados</span>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+      </div>
+
+      <app-responsive-data-view [items]="filteredEmployees" [mode]="viewMode" [loading]="isLoading"
+        loadingLabel="Cargando roles" emptyTitle="No hay usuarios"
+        emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
+        tableMinWidth="56rem" [columns]="3">
+        <ng-template appDataHeader>
+          <div class="grid grid-cols-[minmax(20rem,1.4fr)_minmax(18rem,1fr)_7rem] gap-5 items-center px-6 py-3">
+            <span>Empleado</span><span>Roles asignados</span><span class="text-right">Acciones</span>
+          </div>
+        </ng-template>
+        <ng-template appDataRow let-emp>
+          <div class="grid grid-cols-[minmax(20rem,1.4fr)_minmax(18rem,1fr)_7rem] gap-5 items-center px-6 py-4">
+            <div class="min-w-0 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img *ngIf="emp.foto; else newNoFoto" [src]="emp.foto" [alt]="emp.name" class="w-full h-full object-cover">
+                <ng-template #newNoFoto><div class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">{{ emp.name.charAt(0) }}</div></ng-template>
+              </div>
+              <div class="min-w-0"><h3 class="font-semibold text-gray-900 truncate">{{ emp.name }} {{ emp.ap }} {{ emp.am }}</h3>
+                <p class="text-gray-600 text-sm truncate">CI: {{ emp.ci }}</p><p class="text-gray-500 text-xs truncate">Tel: {{ emp.phone }} · ID: {{ emp.idEmployee }}</p></div>
+            </div>
+            <div class="min-w-0 flex flex-wrap gap-2">
+              <span *ngFor="let role of emp.roles" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200"><i class="ph ph-shield-check"></i>{{ role }}</span>
+              <span *ngIf="!emp.roles || emp.roles.length === 0" class="text-gray-400 text-xs italic">Sin roles asignados</span>
+            </div>
+            <div class="flex justify-end"><app-action-icon-button label="Gestionar roles" icon="ph ph-pencil-simple" variant="neutral" (action)="openRoleModal(emp)"></app-action-icon-button></div>
+          </div>
+        </ng-template>
+        <ng-template appDataCard let-emp>
+          <article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 flex items-center gap-4 border-b border-gray-100">
+              <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img *ngIf="emp.foto; else newNoFotoCard" [src]="emp.foto" [alt]="emp.name" class="w-full h-full object-cover">
+                <ng-template #newNoFotoCard><div class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-xl uppercase">{{ emp.name.charAt(0) }}</div></ng-template>
+              </div>
+              <div class="min-w-0 flex-1"><h3 class="font-semibold text-gray-900 break-words">{{ emp.name }} {{ emp.ap }} {{ emp.am }}</h3><p class="text-xs text-gray-500 mt-1">ID: {{ emp.idEmployee }}</p></div>
+            </div>
+            <div class="p-4 space-y-3 flex-1 min-w-0">
+              <div class="grid grid-cols-[auto,minmax(0,1fr)] gap-2 text-sm"><span class="text-gray-500">CI</span><span class="text-right break-words">{{ emp.ci }}</span><span class="text-gray-500">Teléfono</span><span class="text-right break-words">{{ emp.phone }}</span></div>
+              <div class="pt-3 border-t border-gray-100"><p class="text-xs font-semibold text-gray-500 uppercase mb-2">Roles asignados</p><div class="flex flex-wrap gap-2"><span *ngFor="let role of emp.roles" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 border border-yellow-200"><i class="ph ph-shield-check"></i>{{ role }}</span><span *ngIf="!emp.roles || emp.roles.length === 0" class="text-gray-400 text-xs italic">Sin roles asignados</span></div></div>
+            </div>
+            <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end"><app-action-icon-button label="Gestionar roles" icon="ph ph-pencil-simple" variant="neutral" (action)="openRoleModal(emp)"></app-action-icon-button></footer>
+          </article>
+        </ng-template>
+        <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6">
+          <p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : currentPage * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> usuarios</p>
+          <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Paginación">
+            <button (click)="loadEmployees(currentPage - 1)" [disabled]="currentPage === 0" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button>
+            <button *ngFor="let page of [].constructor(totalPages); let i = index" (click)="loadEmployees(i)" [ngClass]="currentPage === i ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-300'" class="px-4 py-2 border text-sm">{{ i + 1 }}</button>
+            <button (click)="loadEmployees(currentPage + 1)" [disabled]="currentPage >= totalPages - 1" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button>
+          </nav>
+        </div>
+      </app-responsive-data-view>
+
+      <!-- Implementación anterior conservada temporalmente como referencia. -->
+      <ng-container *ngIf="false">
+      <!-- Lista de Usuarios -->
+      <app-loading *ngIf="isLoading" variant="list" label="Cargando roles"></app-loading>
+      <div *ngIf="!isLoading" class="view-surface">
+        <div *ngIf="viewMode === 'list'" class="view-list-header hidden md:grid grid-cols-12 gap-4 items-center px-6 py-3 bg-gray-50 border-b border-gray-200">
+          <span class="col-span-5">Empleado</span>
+          <span class="col-span-4">Roles asignados</span>
+          <span class="col-span-3 text-right">Acciones</span>
+        </div>
+        <div *ngFor="let emp of filteredEmployees" [class.hidden]="viewMode !== 'list'" class="p-4 sm:p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+          <div class="grid grid-cols-12 items-center gap-4">
+            <!-- Información del Empleado -->
+            <div class="col-span-12 lg:col-span-5 flex items-center gap-4 min-w-0">
+              <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">
+                <!-- Si tiene foto -->
+                <img *ngIf="emp.foto; else noFoto" [src]="emp.foto" alt="{{ emp.name }}"
+                  class="w-full h-full object-cover">
+                <ng-template #noFoto>
+                  <div
+                    class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">
+                    {{ emp.name.charAt(0) }}
+                  </div>
+                </ng-template>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-gray-900 truncate">
+                  {{ emp.name }} {{ emp.ap }} {{ emp.am }}
+                </h3>
+                <p class="text-gray-600 text-sm truncate">CI: {{ emp.ci }}</p>
+                <p class="text-gray-500 text-xs mt-1">Tel: {{ emp.phone }}</p>
+                <p class="text-gray-500 text-xs mt-1">ID: {{ emp.idEmployee }}</p>
+              </div>
+            </div>
+
+            <!-- Roles -->
+            <div class="col-span-12 lg:col-span-4 flex flex-wrap gap-2 min-w-0">
+              <span *ngFor="let role of emp.roles"
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                <i class="ph ph-shield-check text-yellow-600"></i>
+                {{ role }}
+              </span>
+
+              <span *ngIf="!emp.roles || emp.roles.length === 0" class="text-gray-400 text-xs italic">
+                Sin roles asignados
+              </span>
+            </div>
+
+            <!-- Acciones -->
+            <div class="col-span-12 lg:col-span-3 flex items-center justify-start lg:justify-end">
+              <button (click)="openRoleModal(emp)" title="Gestionar roles" aria-label="Gestionar roles"
+                class="inline-flex items-center justify-center w-9 h-9 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                <i class="ph ph-pencil-simple text-lg"></i>
+                <span class="sr-only">Gestionar roles</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards independientes y responsivas. -->
+        <div *ngIf="viewMode === 'cards'" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6 bg-gray-50">
+          <article *ngFor="let emp of filteredEmployees"
+            class="min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+            <div class="p-4 flex items-center gap-4 border-b border-gray-100">
+              <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img *ngIf="emp.foto; else noFotoCard" [src]="emp.foto" [alt]="emp.name" class="w-full h-full object-cover">
+                <ng-template #noFotoCard>
+                  <div class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-xl uppercase">
+                    {{ emp.name.charAt(0) }}
+                  </div>
+                </ng-template>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-gray-900 leading-snug break-words">{{ emp.name }} {{ emp.ap }} {{ emp.am }}</h3>
+                <p class="text-xs text-gray-500 mt-1">ID: {{ emp.idEmployee }}</p>
+              </div>
+            </div>
+
+            <div class="p-4 space-y-3 flex-1">
+              <div class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                <span class="text-gray-500">CI</span>
+                <span class="text-gray-800 text-right break-words">{{ emp.ci }}</span>
+                <span class="text-gray-500">Teléfono</span>
+                <span class="text-gray-800 text-right break-words">{{ emp.phone }}</span>
+              </div>
+              <div class="pt-3 border-t border-gray-100">
+                <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Roles asignados</p>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let role of emp.roles"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                    <i class="ph ph-shield-check"></i>{{ role }}
+                  </span>
+                  <span *ngIf="!emp.roles || emp.roles.length === 0" class="text-gray-400 text-xs italic">Sin roles asignados</span>
+                </div>
+              </div>
+            </div>
+
+            <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button (click)="openRoleModal(emp)" title="Gestionar roles" aria-label="Gestionar roles"
+                class="inline-flex items-center justify-center w-9 h-9 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                <i class="ph ph-pencil-simple text-lg"></i>
+              </button>
+            </footer>
+          </article>
+        </div>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div *ngIf="filteredEmployees.length === 0" class="text-center py-12">
+        <div class="max-w-md mx-auto">
+          <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <i class="ph ph-users-three text-3xl text-gray-400"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No hay usuarios</h3>
+          <p class="text-gray-600 mb-4">No se encontraron usuarios que coincidan con los criterios de búsqueda.</p>
+        </div>
+      </div>
+
+      <!-- ✅ PAGINACIÓN -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between w-full">
+          
+          <!-- Rango de usuarios visibles -->
+          <div>
+            <p class="text-sm text-gray-700">
+              Mostrando
+              <span class="font-medium">{{ currentPage * pageSize + 1 }}</span>
+              a
+              <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalItems) }}</span>
+              de
+              <span class="font-medium">{{ totalItems }}</span>
+              usuarios
+            </p>
+          </div>
+
+          <!-- Controles de paginación -->
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              
+              <!-- Botón Anterior -->
+              <button 
+                (click)="loadEmployees(currentPage - 1)" 
+                [disabled]="currentPage === 0"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Anterior</span>
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <!-- Números de página -->
+              <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+                <button 
+                  (click)="loadEmployees(i)" 
+                  [ngClass]="{
+                    'z-10 bg-black border-black text-white': currentPage === i,
+                    'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': currentPage !== i
+                  }"
+                  class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                  {{ i + 1 }}
+                </button>
+              </ng-container>
+
+              <!-- Botón Siguiente -->
+              <button 
+                (click)="loadEmployees(currentPage + 1)" 
+                [disabled]="currentPage >= totalPages - 1"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Siguiente</span>
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              
+            </nav>
+          </div>
+        </div>
+      </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Modal de Gestión de Roles -->
+  <div *ngIf="selectedEmployee"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+    <div
+      class="bg-white rounded-lg shadow-2xl w-96 p-6 relative transform transition-all duration-300 ease-out opacity-0 scale-95 animate-fade-in-modal">
+      <!-- Header del Modal -->
+      <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-yellow-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Gestionar Roles</h2>
+          </div>
+          <button (click)="closeModal()"
+            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            <i class="ph ph-x text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido del Modal -->
+      <div class="p-6">
+        <!-- Información del Usuario -->
+        <div class="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-semibold">
+            {{ selectedEmployee.name.charAt(0) }}
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">
+              {{ selectedEmployee.name }} {{ selectedEmployee.ap }} {{ selectedEmployee.am }}
+            </p>
+            <p class="text-gray-600 text-sm">CI: {{ selectedEmployee.ci }}</p>
+          </div>
+        </div>
+
+        <!-- Lista de Roles -->
+        <div class="space-y-3">
+          <h3 class="font-medium text-gray-900 mb-3">Seleccionar roles:</h3>
+
+          <div *ngFor="let role of listRoles" 
+            (click)="toggleRole(role)" 
+            [class]="tempRoles.includes(role.name_role) ? 
+              'border-yellow-200 bg-yellow-50' : 
+              'border-gray-200 hover:border-gray-300'"
+            class="border-2 rounded-lg p-4 cursor-pointer transition-all duration-200">
+
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div [class]="tempRoles.includes(role.name_role) ? 
+                  'bg-yellow-500 border-yellow-600' : 
+                  'bg-white border-gray-300'"
+                  class="w-5 h-5 border-2 rounded flex items-center justify-center transition-colors">
+                  <i *ngIf="tempRoles.includes(role.name_role)" class="ph ph-check text-white text-xs"></i>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-900">{{ role.name_role }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer del Modal -->
+      <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div class="flex justify-between items-center">
+          <div class="flex gap-3">
+            <button (click)="closeModal()" [disabled]="isSaving"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+              Cancelar
+            </button>
+                <button (click)="saveRoles()" [disabled]="isSaving"
+              class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center gap-2">
+              <i class="ph ph-floppy-disk"></i>
+              {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

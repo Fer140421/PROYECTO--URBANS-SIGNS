@@ -1,0 +1,16 @@
+<div class="inline-flex items-center rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-sm" role="group" aria-label="Cambiar vista del listado">
+  <button type="button" (click)="selectMode('list')" [class.view-toggle-active]="mode === 'list'"
+    class="view-toggle-button" [attr.aria-pressed]="mode === 'list'" aria-label="Vista de listado" title="Vista de listado">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
+    </svg>
+    <span class="hidden sm:inline">Listado</span>
+  </button>
+  <button type="button" (click)="selectMode('cards')" [class.view-toggle-active]="mode === 'cards'"
+    class="view-toggle-button" [attr.aria-pressed]="mode === 'cards'" aria-label="Vista de tarjetas" title="Vista de tarjetas">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 5a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1v-5z" />
+    </svg>
+    <span class="hidden sm:inline">Tarjetas</span>
+  </button>
+</div>

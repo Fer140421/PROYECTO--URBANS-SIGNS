@@ -1,0 +1,254 @@
+<div class="min-h-screen bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestión de Usuarios</h1>
+            <p class="text-gray-600">Administre las cuentas de usuario y sus credenciales de acceso</p>
+        </div>
+
+        <!-- Panel Principal -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Toolbar -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+                        <!-- Campo de búsqueda -->
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar usuario..." [(ngModel)]="searchTerm"
+                                (ngModelChange)="onSearchTermChange()"
+                                class="pl-10 pr-20 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64">
+                            <button (click)="searchUsers()"
+                                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm">
+                                Buscar
+                            </button>
+                            <i
+                                class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <select [(ngModel)]="statusFilter" (change)="filterUsers()"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                            <option value="">Todos los estados</option>
+                            <option value="active">Activos</option>
+                            <option value="inactive">Inactivos</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="ph ph-users text-lg"></i>
+                        <span>{{ filteredUsers.length }} usuarios encontrados</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Usuarios -->
+            <div class="divide-y divide-gray-200">
+                <div *ngFor="let user of filteredUsers" class="p-6 hover:bg-gray-50 transition-colors">
+                    <div class="grid grid-cols-12 gap-4 items-center">
+                        <!-- Foto y Nombre (Columna 1-6) -->
+                        <div class="col-span-12 lg:col-span-6 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                                <img *ngIf="user.foto" [src]="user.foto" [alt]="user.nombreCompleto"
+                                    class="w-full h-full object-cover">
+                                <div *ngIf="!user.foto"
+                                    class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">
+                                    {{ user.nombreCompleto.charAt(0) }}
+                                </div>
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-semibold text-gray-900 truncate">
+                                    {{ user.nombreCompleto }}
+                                </h3>
+                                <p class="text-gray-600 text-sm truncate">Usuario: {{ user.usuario }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Estado (Columna 7-8) -->
+                        <div class="col-span-12 lg:col-span-2 flex justify-start lg:justify-center">
+                            <span
+                                class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap w-24"
+                                [ngClass]="user.estadoUsuario ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                <i class="mr-1"
+                                    [ngClass]="user.estadoUsuario ? 'ph ph-check-circle text-green-600' : 'ph ph-x-circle text-red-600'"></i>
+                                {{ user.estadoUsuario ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </div>
+
+                        <!-- Acciones (Columna 9-12) -->
+                        <div class="col-span-12 lg:col-span-4 flex items-center gap-2 justify-start lg:justify-end">
+                            <button (click)="openUserModal(user)"
+                                class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm w-28">
+                                <i class="ph ph-pencil-simple"></i>
+                                <span>Editar</span>
+                            </button>
+                            <button (click)="toggleUserStatus(user)"
+                                class="flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-medium text-sm w-32"
+                                [ngClass]="user.estadoUsuario ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'">
+                                <i [ngClass]="user.estadoUsuario ? 'ph ph-user-minus' : 'ph ph-user-plus'"></i>
+                                <span>{{ user.estadoUsuario ? 'Desactivar' : 'Activar' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado Vacío -->
+            <div *ngIf="filteredUsers.length === 0" class="text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="ph ph-users-three text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay usuarios</h3>
+                    <p class="text-gray-600 mb-4">No se encontraron usuarios con los criterios de búsqueda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Gestión de Usuario -->
+    <div *ngIf="selectedUser"
+        class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+        <div
+            class="bg-white rounded-lg shadow-2xl w-full max-w-md relative transform transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto">
+            <!-- Header del Modal -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 sticky top-0 z-10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Gestionar Usuario</h2>
+                        <p class="text-gray-600 text-sm">{{ selectedUser.nombreCompleto }}</p>
+                    </div>
+                    <button (click)="closeModal()"
+                        class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenido del Modal -->
+            <div class="p-6">
+                <!-- Información del Usuario -->
+                <div class="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <img *ngIf="selectedUser.foto" [src]="selectedUser.foto" [alt]="selectedUser.nombreCompleto"
+                            class="w-full h-full object-cover">
+                        <div *ngIf="!selectedUser.foto"
+                            class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                            {{ selectedUser.nombreCompleto.charAt(0) }}
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-medium text-gray-900 truncate">{{ selectedUser.nombreCompleto }}</p>
+                        <p class="text-gray-600 text-sm truncate">&#64;{{ selectedUser.usuario }}</p>
+                    </div>
+                </div>
+
+                <!-- Formulario de Edición -->
+                <form [formGroup]="userForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de usuario</label>
+                        <input type="text" formControlName="usuario"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p *ngIf="isFieldInvalid('usuario')" class="text-red-600 text-xs mt-1">
+                            {{ getErrorMessage('usuario') }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                        <select formControlName="estadoUsuario"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option [value]="true">Activo</option>
+                            <option [value]="false">Inactivo</option>
+                        </select>
+                    </div>
+
+                    <!-- Cambio de contraseña -->
+                    <div class="border-t pt-4 mt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-medium text-gray-900">Cambiar contraseña</h3>
+                            <button type="button" (click)="togglePasswordChange()"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                {{ showPasswordChange ? 'Cancelar' : 'Cambiar' }}
+                            </button>
+                        </div>
+
+                        <div *ngIf="showPasswordChange" class="space-y-3 bg-blue-50 p-3 rounded-lg">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
+                                <div class="relative">
+                                    <input [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10">
+                                    <button type="button" (click)="togglePasswordVisibility('new')"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i [ngClass]="showNewPassword ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
+                                <div class="relative">
+                                    <input [type]="showConfirmPassword ? 'text' : 'password'"
+                                        formControlName="confirmPassword"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10">
+                                    <button type="button" (click)="togglePasswordVisibility('confirm')"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i [ngClass]="showConfirmPassword ? 'ph ph-eye-slash' : 'ph ph-eye'"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p *ngIf="userForm.errors && userForm.errors['mismatch']" class="text-red-600 text-xs">
+                                Las contraseñas no coinciden
+                            </p>
+
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                <i class="ph ph-info"></i>
+                                <span>La contraseña debe tener al menos 8 caracteres</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opciones adicionales -->
+                    <div class="border-t pt-4">
+                        <h3 class="font-medium text-gray-900 mb-3">Opciones adicionales</h3>
+
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" formControlName="forcePasswordChange"
+                                    class="rounded text-blue-600">
+                                <span class="text-sm text-gray-700">Forzar cambio de contraseña en próximo inicio</span>
+                            </label>
+
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" formControlName="multiFactorAuth" class="rounded text-blue-600">
+                                <span class="text-sm text-gray-700">Habilitar autenticación de dos factores</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer del Modal -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 sticky bottom-0">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button (click)="closeModal()"
+                            class="flex-1 sm:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                            Cancelar
+                        </button>
+                        <button (click)="saveUser()" [disabled]="!userForm.valid"
+                            class="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <i class="ph ph-floppy-disk"></i>
+                            <span>Guardar</span>
+                        </button>
+                    </div>
+
+                    <button (click)="resetUserPassword()"
+                        class="w-full sm:w-auto text-red-600 hover:text-red-800 text-sm font-medium whitespace-nowrap">
+                        Restablecer contraseña
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

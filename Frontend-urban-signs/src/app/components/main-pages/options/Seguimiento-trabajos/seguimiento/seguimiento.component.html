@@ -1,0 +1,496 @@
+<div class="min-w-0 bg-gray-50 py-6">
+    <div class="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Planificación Semanal</h1>
+                    <p class="text-gray-600 mt-2" *ngIf="planificacionActual">
+                        Semana del {{ planificacionActual.fechaInicio | date:'dd/MM/yyyy' }} al
+                        {{ planificacionActual.fechaFin | date:'dd/MM/yyyy' }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Filtro rápido -->
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar trabajo..." [(ngModel)]="filtroBusqueda"
+                            (ngModelChange)="aplicarFiltros()"
+                            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 w-64">
+                        <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Botón Nuevo Trabajo -->
+                    <button (click)="abrirModalNuevoTrabajo()"
+                        class="bg-yellow-500 text-black font-semibold py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 flex items-center gap-2">
+                        <i class="ph ph-plus-circle"></i>
+                        Nuevo Trabajo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="ph ph-clock-countdown text-yellow-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Pendientes</p>
+                        <p class="text-2xl font-bold text-gray-900">{{estadisticas.pendientes}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="ph ph-gear text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">En Proceso</p>
+                        <p class="text-2xl font-bold text-gray-900">{{estadisticas.enProceso}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="ph ph-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Completados</p>
+                        <p class="text-2xl font-bold text-gray-900">{{estadisticas.completados}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="ph ph-warning text-red-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Por Entregar</p>
+                        <p class="text-2xl font-bold text-gray-900">{{estadisticas.porEntregar}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros Avanzados -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                    <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROCESO">En Proceso</option>
+                        <option value="COMPLETADO">Completado</option>
+                        <option value="REPROGRAMADO">Reprogramado</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Área de Trabajo</label>
+                    <select [(ngModel)]="filtroAreaTrabajo" (change)="aplicarFiltros()"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Todas las áreas</option>
+                        <option *ngFor="let area of areasTrabajo" [value]="area">{{area}}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+                    <select [(ngModel)]="filtroFecha" (change)="aplicarFiltros()"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Todas las fechas</option>
+                        <option value="HOY">Hoy</option>
+                        <option value="SEMANA">Esta semana</option>
+                        <option value="VENCIDO">Vencidos</option>
+                    </select>
+                </div>
+
+                <div class="flex-1"></div>
+
+                <button (click)="exportarExcel()"
+                    class="bg-green-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200 flex items-center gap-2">
+                    <i class="ph ph-file-xls"></i>
+                    Exportar Excel
+                </button>
+
+                <button (click)="actualizarVista()" [disabled]="cargando"
+                    class="bg-gray-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200 flex items-center gap-2">
+                    <i class="ph ph-arrows-clockwise" [class.animate-spin]="cargando"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-t-lg">
+            <h2 class="text-lg font-semibold text-gray-900">Lista de Trabajos ({{ trabajosFiltrados.length }} resultados)</h2>
+            <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+        <app-responsive-data-view [items]="trabajosPaginados" [mode]="viewMode" [loading]="cargando" loadingLabel="Cargando trabajos" emptyTitle="No hay trabajos programados" emptyMessage="No se encontraron trabajos con los filtros seleccionados." tableMinWidth="76rem" [columns]="8">
+            <ng-template appDataHeader><div class="grid grid-cols-[14rem_minmax(16rem,1fr)_10rem_14rem_13rem_14rem_10rem_10rem] gap-4 items-center px-6 py-3"><span>Cliente</span><span>Descripción</span><span>Área</span><span>Dirección</span><span>Trabajador</span><span>Fecha programada</span><span>Estado</span><span>Acciones</span></div></ng-template>
+            <ng-template appDataRow let-trabajo><div class="grid grid-cols-[14rem_minmax(16rem,1fr)_10rem_14rem_13rem_14rem_10rem_10rem] gap-4 items-center px-6 py-4"><div class="min-w-0"><p class="font-medium text-gray-900 truncate">{{ trabajo.cliente || 'Sin cliente' }}</p><p class="text-xs text-gray-500 truncate">Cotizador: {{ trabajo.cotizador }}</p></div><p class="text-sm text-gray-700 line-clamp-2 break-words">{{ trabajo.descripcionTrabajo }}</p><span class="justify-self-start px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ trabajo.areaTrabajo }}</span><span class="text-sm text-gray-700 truncate">{{ trabajo.direccion || '-' }}</span><div class="min-w-0 flex items-center gap-2"><div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-medium">{{ getIniciales(trabajo.trabajador) }}</div><span class="text-sm truncate">{{ trabajo.trabajador }}</span></div><div><p class="text-sm font-medium" [ngClass]="getClaseFechaEntrega(trabajo.fechaProgramada)">{{ trabajo.fechaProgramada | date:'dd/MM/yyyy' }}</p><p class="text-xs text-gray-500">{{ trabajo.horaProgramada || 'Sin hora' }} · {{ calcularDiasRestantes(trabajo.fechaProgramada) }}</p></div><span [ngClass]="getClaseEstado(trabajo.estado)">{{ trabajo.estado }}</span><div class="flex gap-2"><app-action-icon-button *ngIf="trabajo.estado !== 'COMPLETADO'" label="Marcar completado" icon="ph ph-check-circle" variant="success" (action)="marcarCompletado(trabajo)"></app-action-icon-button><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="warning" (action)="editarTrabajo(trabajo)"></app-action-icon-button><app-action-icon-button label="Eliminar" icon="ph ph-trash" variant="danger" (action)="eliminarTrabajo(trabajo)"></app-action-icon-button></div></div></ng-template>
+            <ng-template appDataCard let-trabajo><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-gray-900 break-words">{{ trabajo.cliente || 'Sin cliente' }}</h3><p class="text-xs text-gray-500 mt-1 break-words">Cotizador: {{ trabajo.cotizador }}</p></div><span [ngClass]="getClaseEstado(trabajo.estado)">{{ trabajo.estado }}</span></div></div><div class="p-4 flex-1 space-y-3 text-sm min-w-0"><p class="text-gray-700 break-words">{{ trabajo.descripcionTrabajo }}</p><div class="grid grid-cols-[auto,minmax(0,1fr)] gap-x-3 gap-y-2"><span class="text-gray-500">Área</span><span class="text-right break-words">{{ trabajo.areaTrabajo }}</span><span class="text-gray-500">Dirección</span><span class="text-right break-words">{{ trabajo.direccion || '-' }}</span><span class="text-gray-500">Trabajador</span><span class="text-right break-words">{{ trabajo.trabajador }}</span><span class="text-gray-500">Fecha</span><span class="text-right">{{ trabajo.fechaProgramada | date:'dd/MM/yyyy' }} {{ trabajo.horaProgramada || '' }}</span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button *ngIf="trabajo.estado !== 'COMPLETADO'" label="Marcar completado" icon="ph ph-check-circle" variant="success" (action)="marcarCompletado(trabajo)"></app-action-icon-button><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="warning" (action)="editarTrabajo(trabajo)"></app-action-icon-button><app-action-icon-button label="Eliminar" icon="ph ph-trash" variant="danger" (action)="eliminarTrabajo(trabajo)"></app-action-icon-button></footer></article></ng-template>
+            <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando {{ trabajosPaginados.length }} de {{ trabajosFiltrados.length }} trabajos</p><div class="flex items-center gap-2"><button (click)="paginaAnterior()" [disabled]="paginaActual === 1" class="px-3 py-2 border rounded-lg text-sm disabled:opacity-50">Anterior</button><span class="px-3 py-2 text-sm">Página {{ paginaActual }}</span><button (click)="paginaSiguiente()" [disabled]="paginaActual * itemsPorPagina >= trabajosFiltrados.length" class="px-3 py-2 border rounded-lg text-sm disabled:opacity-50">Siguiente</button></div></div>
+        </app-responsive-data-view>
+
+        <!-- Tabla de Trabajos anterior conservada temporalmente. -->
+        <app-loading *ngIf="false" variant="table" [columns]="8" label="Cargando trabajos"></app-loading>
+        <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+            <!-- Header de la Tabla -->
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h2 class="text-lg font-semibold text-gray-900">Lista de Trabajos ({{trabajosFiltrados.length}} resultados)</h2>
+                <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+            </div>
+
+            <!-- Tabla -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Área</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trabajador</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Programada
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr *ngFor="let trabajo of trabajosPaginados" class="hover:bg-gray-50">
+                            <!-- Cliente -->
+                            <td data-label="Cliente" class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{trabajo.cliente || 'Sin cliente'}}
+                                </div>
+                                <div class="text-xs text-gray-500">Cotizador: {{trabajo.cotizador}}</div>
+                            </td>
+
+                            <!-- Descripción -->
+                            <td data-label="Descripción" class="px-6 py-4">
+                                <div class="text-sm text-gray-900 max-w-xs">{{trabajo.descripcionTrabajo}}</div>
+                            </td>
+
+                            <!-- Área -->
+                            <td data-label="Área" class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{trabajo.areaTrabajo}}
+                                </span>
+                            </td>
+
+                            <!-- Dirección -->
+                            <td data-label="Dirección" class="px-6 py-4">
+                                <div class="text-sm text-gray-700 max-w-xs truncate">{{trabajo.direccion || '-'}}</div>
+                            </td>
+
+                            <!-- Trabajador -->
+                            <td data-label="Trabajador" class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 mr-2">
+                                        {{getIniciales(trabajo.trabajador)}}
+                                    </div>
+                                    <span class="text-sm text-gray-900">{{trabajo.trabajador}}</span>
+                                </div>
+                            </td>
+
+                            <!-- Fecha Programada -->
+                            <td data-label="Fecha programada" class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium"
+                                    [ngClass]="getClaseFechaEntrega(trabajo.fechaProgramada)">
+                                    {{trabajo.fechaProgramada | date:'dd/MM/yyyy'}}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{trabajo.horaProgramada || 'Sin hora'}} •
+                                    {{calcularDiasRestantes(trabajo.fechaProgramada)}}
+                                </div>
+                            </td>
+
+                            <!-- Estado -->
+                            <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                                <span [ngClass]="getClaseEstado(trabajo.estado)">
+                                    {{trabajo.estado}}
+                                </span>
+                            </td>
+
+                            <!-- Acciones -->
+                            <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center gap-2">
+                                    <button (click)="marcarCompletado(trabajo)" *ngIf="trabajo.estado !== 'COMPLETADO'"
+                                        class="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                                        title="Marcar completado">
+                                        <i class="ph ph-check-circle text-lg"></i>
+                                    </button>
+
+                                    <button (click)="editarTrabajo(trabajo)"
+                                        class="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50"
+                                        title="Editar">
+                                        <i class="ph ph-pencil-simple text-lg"></i>
+                                    </button>
+
+                                    <button (click)="eliminarTrabajo(trabajo)"
+                                        class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                                        title="Eliminar">
+                                        <i class="ph ph-trash text-lg"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Sin resultados -->
+                        <tr *ngIf="trabajosFiltrados.length === 0">
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <i class="ph ph-clipboard-text text-6xl text-gray-400 mb-4 block"></i>
+                                <p class="text-gray-500 text-lg">No hay trabajos programados</p>
+                                <button (click)="abrirModalNuevoTrabajo()"
+                                    class="mt-4 text-yellow-600 hover:text-yellow-700 font-medium">
+                                    Crear el primer trabajo
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="bg-white px-6 py-4 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-700">
+                        Mostrando {{trabajosPaginados.length}} de {{trabajosFiltrados.length}} trabajos
+                    </div>
+                    <div class="flex gap-2">
+                        <button (click)="paginaAnterior()" [disabled]="paginaActual === 1"
+                            class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            Anterior
+                        </button>
+                        <span class="px-3 py-1 text-sm text-gray-700">
+                            Página {{paginaActual}}
+                        </span>
+                        <button (click)="paginaSiguiente()"
+                            [disabled]="paginaActual * itemsPorPagina >= trabajosFiltrados.length"
+                            class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ MODAL NUEVO TRABAJO - ACTUALIZADO -->
+<div *ngIf="mostrarModalNuevoTrabajo" class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50
+           transition-opacity duration-300 ease-in-out opacity-100">
+
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4
+               transform transition-all duration-300 ease-out scale-95 opacity-0"
+        [ngClass]="{'scale-100 opacity-100': mostrarModalNuevoTrabajo}">
+
+        <!-- HEADER -->
+        <div class="bg-yellow-500 px-6 py-4">
+            <h3 class="text-xl font-bold text-gray-900">Programar Trabajo desde Pedido</h3>
+        </div>
+
+        <!-- CUERPO -->
+        <div class="p-6">
+
+            <!-- PASO 1: Seleccionar Pedido -->
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 class="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                    <i class="ph ph-package"></i>
+                    Paso 1: Seleccionar Pedido
+                </h4>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pedido *</label>
+                    <select [(ngModel)]="nuevoTrabajo.idPedido" (change)="onPedidoSeleccionado(nuevoTrabajo.idPedido!)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option [value]="null">Seleccione un pedido</option>
+                        <option *ngFor="let pedido of pedidosPendientes" [value]="pedido.idPedido">
+                            Pedido #{{pedido.idPedido}} - {{pedido.cliente}} - Bs. {{pedido.total | number:'1.2-2'}} -
+                            {{pedido.estadoPedido}}
+                        </option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1" *ngIf="cargandoPedidos">Cargando pedidos...</p>
+                </div>
+            </div>
+
+            <!-- PASO 2: Vista previa del pedido seleccionado -->
+            <div *ngIf="pedidoSeleccionado && trabajosDisponibles.length > 0"
+                class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 class="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    <i class="ph ph-info"></i>
+                    Trabajos del Pedido
+                </h4>
+                <div class="space-y-2">
+                    <div *ngFor="let trabajo of trabajosDisponibles"
+                        class="bg-white p-3 rounded border border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-medium text-gray-900">{{trabajo.nombreTrabajo}}</p>
+                                <p class="text-sm text-gray-600">{{trabajo.descripcionTrabajo}}</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Cantidad: {{trabajo.cantidad}} | Área: {{trabajo.areaTotal | number:'1.2-2'}} m² |
+                                    Subtotal: Bs. {{trabajo.subtotal | number:'1.2-2'}}
+                                </p>
+                            </div>
+                            <span *ngIf="trabajo.yaProgramado"
+                                class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                Ya programado
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: Datos de programación -->
+            <div *ngIf="pedidoSeleccionado" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h4 class="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
+                    <i class="ph ph-calendar-check"></i>
+                    Paso 2: Programar Trabajo
+                </h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Área de Trabajo *</label>
+                        <select [(ngModel)]="nuevoTrabajo.areaTrabajo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                            <option *ngFor="let area of areasTrabajo" [value]="area">{{area}}</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Operario Asignado *</label>
+                        <select [(ngModel)]="nuevoTrabajo.idTrabajador"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                            <option [ngValue]="null">-- Seleccionar Operario --</option>
+                            <option *ngFor="let emp of empleadosActivos" [value]="emp.idEmployee">{{emp.fullName}}</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Programada *</label>
+                        <input type="date" [(ngModel)]="nuevoTrabajo.fechaProgramada"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora</label>
+                        <input type="time" [(ngModel)]="nuevoTrabajo.horaProgramada"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+                        <textarea [(ngModel)]="nuevoTrabajo.observaciones" rows="3"
+                            placeholder="Notas adicionales sobre el trabajo..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje de ayuda -->
+            <div *ngIf="!pedidoSeleccionado" class="text-center py-8">
+                <i class="ph ph-arrow-up text-4xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">Seleccione un pedido para continuar</p>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button (click)="cerrarModalNuevoTrabajo()" [disabled]="isProcessing"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button (click)="guardarNuevoTrabajo()" [disabled]="!pedidoSeleccionado || isProcessing"
+                    class="px-4 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                    {{ isProcessing ? 'Programando...' : 'Programar Trabajo' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ MODAL EDITAR TRABAJO - ACTUALIZADO -->
+<div *ngIf="mostrarModalEditarTrabajo && trabajoEditando"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
+        <div class="bg-blue-500 px-6 py-4">
+            <h3 class="text-xl font-bold text-white">Editar Trabajo Programado</h3>
+        </div>
+        <div class="p-6">
+
+            <!-- Info del pedido (solo lectura) -->
+            <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h4 class="font-semibold text-gray-900 mb-2">Información del Pedido</h4>
+                <div class="space-y-1 text-sm">
+                    <p><span class="font-medium">Cliente:</span> {{trabajoEditando.cliente}}</p>
+                    <p><span class="font-medium">Descripción:</span> {{trabajoEditando.descripcionTrabajo}}</p>
+                    <p><span class="font-medium">Dirección:</span> {{trabajoEditando.direccion}}</p>
+                    <p><span class="font-medium">Cotizador:</span> {{trabajoEditando.cotizador}}</p>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    <i class="ph ph-info"></i> Esta información proviene del pedido y no puede modificarse aquí
+                </p>
+            </div>
+
+            <!-- Campos editables -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Área de Trabajo</label>
+                    <select [(ngModel)]="trabajoEditando.areaTrabajo"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option *ngFor="let area of areasTrabajo" [value]="area">{{area}}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Operario Asignado</label>
+                    <select [(ngModel)]="trabajoEditando.idTrabajador"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option [ngValue]="undefined">-- Seleccionar Operario --</option>
+                        <option *ngFor="let emp of empleadosActivos" [value]="emp.idEmployee">{{emp.fullName}}</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Programada</label>
+                    <input type="date" [(ngModel)]="trabajoEditando.fechaProgramada"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora</label>
+                    <input type="time" [(ngModel)]="trabajoEditando.horaProgramada"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+                    <textarea [(ngModel)]="trabajoEditando.observaciones" rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button (click)="cerrarModalEditarTrabajo()" [disabled]="isProcessing"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button (click)="guardarEdicionTrabajo()" [disabled]="isProcessing"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
+                    {{ isProcessing ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

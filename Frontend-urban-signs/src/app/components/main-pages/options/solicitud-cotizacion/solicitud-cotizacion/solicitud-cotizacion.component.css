@@ -1,0 +1,32 @@
+.step-item .step-number {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-number {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.step-item.completed .step-number {
+  background-color: #FFD000;
+  color: #fff;
+  border-color: #FFD000;
+}
+
+.step-item .step-title {
+  color: #6b7280;
+}
+
+.step-item.active .step-title {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.step-item.completed .step-title {
+  font-weight: 500;
+  color: #FFD000;
+}

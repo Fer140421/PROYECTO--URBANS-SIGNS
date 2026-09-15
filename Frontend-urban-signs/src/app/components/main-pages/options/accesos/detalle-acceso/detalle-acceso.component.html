@@ -1,0 +1,218 @@
+<!-- Modal de Detalle de Sesión -->
+<div class="fixed inset-0 backdrop-blur-sm bg-black/70 flex items-center justify-center z-50" *ngIf="mostrar">
+
+    <div
+        class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-500/20">
+
+        <!-- Header -->
+        <div class="bg-black px-8 py-5 relative border-b border-yellow-500/30">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center shadow-lg">
+                        <i class="ph ph-clock-clockwise text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Detalle de Sesión</h2>
+                        <p class="text-gray-300 text-sm mt-1" *ngIf="sesionDetalle">
+                            Sesión #{{ sesionDetalle.idSesion }} • {{ sesionDetalle.nombreUsuario }}
+                        </p>
+                    </div>
+                </div>
+                <button (click)="cerrarModal()"
+                    class="text-gray-300 hover:text-white hover:bg-yellow-500/20 p-3 rounded-xl transition-all duration-200 group">
+                    <i class="ph ph-x text-2xl group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="p-8 overflow-y-auto max-h-[calc(90vh-90px)] bg-gradient-to-br from-white to-gray-50/50">
+
+            <!-- Loading State -->
+            <div *ngIf="cargando" class="flex items-center justify-center py-16">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Cargando detalle de sesión...</p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="error && !cargando" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                <i class="ph ph-warning-circle text-red-500 text-4xl mb-2"></i>
+                <p class="text-red-800 font-medium">{{ error }}</p>
+            </div>
+
+            <!-- Detalle de Sesión -->
+            <div *ngIf="sesionDetalle && !cargando && !error">
+
+                <!-- Información de la Sesión -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    
+                    <!-- Duración -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Duración</h3>
+                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                <i class="ph ph-timer text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black text-gray-900">{{ sesionDetalle.duracionSesion }}</p>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Estado</h3>
+                            <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <i class="ph ph-activity text-gray-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1.5 rounded-full text-xs font-bold border" 
+                              [ngClass]="getEstadoBadgeClass()">
+                            {{ sesionDetalle.estado }}
+                        </span>
+                    </div>
+
+                    <!-- IP -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">IP</h3>
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <i class="ph ph-globe text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">{{ sesionDetalle.ipDireccion }}</p>
+                    </div>
+
+                    <!-- Total Acciones -->
+                    <div class="bg-white rounded-xl p-6 border border-yellow-200 shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Acciones</h3>
+                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                <i class="ph ph-lightning text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-black text-gray-900">{{ sesionDetalle.totalAcciones }}</p>
+                    </div>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-md mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Dispositivo</p>
+                            <p class="text-gray-900 font-medium flex items-center gap-2">
+                                <i class="ph ph-device-mobile text-gray-400"></i>
+                                {{ sesionDetalle.dispositivo }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Inicio de Sesión</p>
+                            <p class="text-gray-900 font-medium">{{ formatearFecha(sesionDetalle.loginInicio) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Fin de Sesión</p>
+                            <p class="text-gray-900 font-medium">
+                                {{ sesionDetalle.loginFin ? formatearFecha(sesionDetalle.loginFin) : 'En curso' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones por Módulo -->
+                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-md mb-8">
+                    <h3 class="font-bold text-gray-900 text-lg mb-4">Distribución por Módulo</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div *ngFor="let stat of getAccionesPorModulo()" 
+                             class="p-4 rounded-lg border" 
+                             [ngClass]="getColorModulo(stat.modulo)">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i [class]="getIconoModulo(stat.modulo)"></i>
+                                <p class="text-xs font-medium">{{ stat.modulo }}</p>
+                            </div>
+                            <p class="text-2xl font-bold">{{ stat.cantidad }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro de Módulos -->
+                <div class="mb-6 flex items-center gap-4">
+                    <label class="text-sm font-medium text-gray-700">Filtrar por módulo:</label>
+                    <select [(ngModel)]="moduloSeleccionado" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                        <option *ngFor="let modulo of modulosDisponibles" [value]="modulo">
+                            {{ modulo }}
+                        </option>
+                    </select>
+                    <span class="text-sm text-gray-500">
+                        Mostrando {{ accionesFiltradas.length }} de {{ sesionDetalle.totalAcciones }} acciones
+                    </span>
+                </div>
+
+                <!-- Tabla de Acciones -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="font-bold text-gray-900 text-lg">Historial de Acciones</h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-black">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase">ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase">Módulo</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase">Descripción</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase">Fecha</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase">Tiempo</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="divide-y divide-gray-100">
+                                <tr *ngFor="let accion of accionesFiltradas" 
+                                    class="hover:bg-gray-50/80 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <span class="text-sm font-medium text-gray-900">#{{ accion.idAccion }}</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-3 py-1.5 rounded-full text-xs font-bold border" 
+                                              [ngClass]="getColorModulo(accion.modulo)">
+                                            <i [class]="getIconoModulo(accion.modulo) + ' mr-1'"></i>
+                                            {{ accion.modulo }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm text-gray-900">{{ accion.descripcion }}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm text-gray-700">{{ formatearFecha(accion.fechaAccion) }}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm text-gray-500">{{ accion.tiempoTranscurrido }}</p>
+                                    </td>
+                                </tr>
+
+                                <tr *ngIf="accionesFiltradas.length === 0">
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                        No hay acciones registradas en este módulo
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botón Cerrar -->
+            <div class="flex justify-end pt-8 border-t border-gray-200 mt-8" *ngIf="sesionDetalle">
+                <button (click)="cerrarModal()"
+                    class="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-bold flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95 duration-200">
+                    <i class="ph ph-x text-lg"></i>
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,398 @@
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="mostrar">
+    <div
+        class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-black/5"></div>
+            <div class="flex justify-between items-center relative z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Detalles de Pedido #{{pedido?.idPedido}}</h2>
+                    <p class="text-gray-800 text-sm mt-1 font-medium">
+                        Código Cotización: {{pedido?.cotizacion?.codCotizacion}}
+                    </p>
+                </div>
+                <button (click)="cerrarModal()"
+                    class="text-gray-900 hover:text-gray-700 transition-colors p-2 hover:bg-black/10 rounded-lg">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
+
+            <!-- Stepper de Trazabilidad Operativa -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-8">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-5 flex items-center gap-2">
+                    <i class="ph ph-git-fork text-yellow-500 text-base"></i> Trazabilidad del Flujo Operativo
+                </h3>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <!-- Paso 1: Anticipo -->
+                    <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
+                         [ngClass]="getEtapaActual() >= 1 ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
+                             [ngClass]="getEtapaActual() >= 1 ? 'bg-amber-500 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i *ngIf="getEtapaActual() > 1" class="ph ph-check font-bold"></i>
+                            <span *ngIf="getEtapaActual() <= 1">1</span>
+                        </div>
+                        <span class="text-xs font-bold">1. Anticipo</span>
+                        <span class="text-[10px] text-gray-500 mt-0.5">Comercial / Caja</span>
+                    </div>
+
+                    <!-- Paso 2: Impresión -->
+                    <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
+                         [ngClass]="getEtapaActual() >= 2 ? 'bg-blue-50 border-blue-300 text-blue-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
+                             [ngClass]="getEtapaActual() >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i *ngIf="getEtapaActual() > 2" class="ph ph-check font-bold"></i>
+                            <span *ngIf="getEtapaActual() <= 2">2</span>
+                        </div>
+                        <span class="text-xs font-bold">2. Impresión</span>
+                        <span class="text-[10px] text-gray-500 mt-0.5">Diseño y Plotter</span>
+                    </div>
+
+                    <!-- Paso 3: Taller & Armado -->
+                    <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
+                         [ngClass]="getEtapaActual() >= 3 ? 'bg-purple-50 border-purple-300 text-purple-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
+                             [ngClass]="getEtapaActual() >= 3 ? 'bg-purple-600 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i *ngIf="getEtapaActual() > 3" class="ph ph-check font-bold"></i>
+                            <span *ngIf="getEtapaActual() <= 3">3</span>
+                        </div>
+                        <span class="text-xs font-bold">3. Taller</span>
+                        <span class="text-[10px] text-gray-500 mt-0.5">Planner / Armado</span>
+                    </div>
+
+                    <!-- Paso 4: Listo p/ Entrega -->
+                    <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
+                         [ngClass]="getEtapaActual() >= 4 ? 'bg-green-50 border-green-300 text-green-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
+                             [ngClass]="getEtapaActual() >= 4 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i *ngIf="getEtapaActual() > 4" class="ph ph-check font-bold"></i>
+                            <span *ngIf="getEtapaActual() <= 4">4</span>
+                        </div>
+                        <span class="text-xs font-bold">4. Finalizado</span>
+                        <span class="text-[10px] text-gray-500 mt-0.5">Listo en Almacén</span>
+                    </div>
+
+                    <!-- Paso 5: Entregado -->
+                    <div class="col-span-2 md:col-span-1 p-3 rounded-xl border flex flex-col items-center text-center transition-all"
+                         [ngClass]="getEtapaActual() >= 5 ? 'bg-emerald-100 border-emerald-400 text-emerald-950 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
+                             [ngClass]="getEtapaActual() >= 5 ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i *ngIf="getEtapaActual() >= 5" class="ph ph-check font-bold"></i>
+                            <span *ngIf="getEtapaActual() < 5">5</span>
+                        </div>
+                        <span class="text-xs font-bold">5. Entregado</span>
+                        <span class="text-[10px] text-gray-500 mt-0.5">Con Evidencia ✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidencia de Entrega Física (si existe) -->
+            <div *ngIf="pedido?.fotoEvidencia" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 mb-8 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl">
+                        <i class="ph ph-camera"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-emerald-950 text-lg">Evidencia Fotográfica de Entrega / Instalación</h3>
+                        <p class="text-xs text-emerald-800">
+                            Fecha de entrega: {{ pedido?.fechaEntregaReal ? (pedido?.fechaEntregaReal | date:'dd/MM/yyyy HH:mm') : 'Completado' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        <a [href]="pedido?.fotoEvidencia" target="_blank" rel="noopener noreferrer">
+                            <img [src]="pedido?.fotoEvidencia" alt="Foto Evidencia de Entrega"
+                                 class="rounded-xl max-h-64 w-full object-cover border-2 border-white shadow-md hover:scale-[1.02] transition-transform" />
+                        </a>
+                        <p class="text-[11px] text-gray-500 mt-1">Clic en la fotografía para abrir en tamaño completo</p>
+                    </div>
+                    <div class="space-y-3 bg-white p-5 rounded-xl border border-emerald-200">
+                        <div *ngIf="pedido?.observacionEntrega">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Observaciones de Entrega:</p>
+                            <p class="text-sm font-medium text-gray-800 mt-0.5">{{ pedido?.observacionEntrega }}</p>
+                        </div>
+                        <div *ngIf="pedido?.entregadoPor">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Operario / Entregador:</p>
+                            <p class="text-sm font-medium text-gray-800 mt-0.5">ID Empleado #{{ pedido?.entregadoPor }}</p>
+                        </div>
+                        <div class="pt-2 border-t border-gray-100 flex items-center gap-2 text-emerald-700 font-bold text-xs">
+                            <i class="ph ph-seal-check text-base"></i>
+                            <span>Entrega verificada físicamente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Principal del Pedido -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <!-- Estado del Pedido -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-info text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Estado</h3>
+                    </div>
+                    <span [ngClass]="{
+                        'bg-yellow-100 text-yellow-800 border-yellow-400': pedido?.estadoPedido === 'PENDIENTE',
+                        'bg-blue-100 text-blue-800 border-blue-400': pedido?.estadoPedido === 'EN_PROCESO',
+                        'bg-purple-100 text-purple-800 border-purple-400': pedido?.estadoPedido === 'EN_TALLER',
+                        'bg-green-100 text-green-800 border-green-400': pedido?.estadoPedido === 'FINALIZADO',
+                        'bg-emerald-100 text-emerald-800 border-emerald-400': pedido?.estadoPedido === 'ENTREGADO',
+                        'bg-red-100 text-red-800 border-red-400': pedido?.estadoPedido === 'CANCELADO'
+                    }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
+                        {{ pedido?.estadoPedido }}
+                    </span>
+                </div>
+
+                <!-- Fecha de Emisión -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-calendar-check text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Fecha Emisión</h3>
+                    </div>
+                    <p class="text-gray-700 text-lg font-medium">{{ pedido?.cotizacion?.fechaEmision }}</p>
+                </div>
+
+                <!-- Fecha de Caducidad -->
+                <div class="bg-white rounded-xl p-5 border-2 hover:border-yellow-400 transition-all shadow-sm"
+                    [ngClass]="{
+                         'border-red-400 bg-red-50': estaVencida(),
+                         'border-gray-200': !estaVencida()
+                     }">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" [ngClass]="{
+                                 'bg-red-400': estaVencida(),
+                                 'bg-yellow-400': !estaVencida()
+                             }">
+                            <i class="ph ph-clock text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Caducidad</h3>
+                    </div>
+                    <p class="text-gray-700 text-lg font-medium">{{pedido?.cotizacion?.fechaCaducado }}</p>
+                    <p class="text-xs mt-2" [ngClass]="{
+                        'text-red-600 font-bold': estaVencida() || diasRestantes() <= 3,
+                        'text-yellow-600': diasRestantes() > 3 && diasRestantes() <= 7,
+                        'text-green-600': diasRestantes() > 7
+                    }">
+                        <span *ngIf="estaVencida()">¡VENCIDA!</span>
+                        <span *ngIf="!estaVencida()">{{ diasRestantes() }} días restantes</span>
+                    </p>
+                </div>
+
+                <!-- Total del Pedido -->
+                <div
+                    class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl p-5 border-2 border-yellow-600 shadow-lg">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-gray-900 flex items-center justify-center mr-3">
+                            <i class="ph ph-coins text-yellow-400 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Total Pedido</h3>
+                    </div>
+                    <p class="text-gray-900 text-2xl font-bold">{{ pedido?.totalPedido | number:'1.2-2' }} Bs</p>
+                </div>
+            </div>
+
+            <!-- Información Financiera -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm">
+                <h3 class="font-bold text-gray-900 mb-5 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                        <i class="ph ph-wallet text-gray-900 text-xl"></i>
+                    </div>
+                    Información de Pagos
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Anticipo -->
+                    <div class="bg-green-50 rounded-lg p-4 border-2 border-green-200">
+                        <label class="block text-sm font-semibold text-green-700 mb-2">Anticipo Pagado</label>
+                        <p class="text-green-900 text-2xl font-bold">{{ pedido?.anticipo | number:'1.2-2' }} Bs</p>
+                        <p class="text-xs text-green-600 mt-1">{{ getPorcentajePagado() | number:'1.0-0' }}% del total
+                        </p>
+                    </div>
+
+                    <!-- Saldo Pendiente -->
+                    <div class="bg-red-50 rounded-lg p-4 border-2 border-red-200">
+                        <label class="block text-sm font-semibold text-red-700 mb-2">Saldo Pendiente</label>
+                        <p class="text-red-900 text-2xl font-bold">{{ pedido?.saldoPendiente | number:'1.2-2' }} Bs</p>
+                        <p class="text-xs text-red-600 mt-1">{{ (100 - getPorcentajePagado()) | number:'1.0-0' }}%
+                            restante</p>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+                        <label class="block text-sm font-semibold text-blue-700 mb-2">Total</label>
+                        <p class="text-blue-900 text-2xl font-bold">{{ pedido?.totalPedido | number:'1.2-2' }} Bs</p>
+                        <p class="text-xs text-blue-600 mt-1">Costo total del pedido</p>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso de pago -->
+                <div class="mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Progreso de Pago</span>
+                        <span class="text-sm font-bold text-gray-900">{{ getPorcentajePagado() | number:'1.1-1'
+                            }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                            [style.width.%]="getPorcentajePagado()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Trabajos -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center mb-6 border-b-2 border-yellow-400 pb-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                        <i class="ph ph-hammer text-gray-900 text-xl"></i>
+                    </div>
+                    Trabajos de la Cotización
+                    <span class="ml-auto text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                        {{ pedido?.cotizacion?.trabajos?.length || 0 }} trabajo(s)
+                    </span>
+                </h3>
+
+                <!-- Lista de Trabajos -->
+                <div class="space-y-5">
+                    <div *ngFor="let trabajo of pedido?.cotizacion?.trabajos; let i = index"
+                        class="border-2 border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-yellow-400 transition-all">
+
+                        <!-- Header del Trabajo -->
+                        <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-yellow-400">
+                            <h4 class="font-bold text-gray-900 text-lg flex items-center">
+                                <span
+                                    class="bg-yellow-400 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">{{i
+                                    + 1}}</span>
+                                Trabajo #{{ trabajo.idCotizacionTrabajo }}
+                            </h4>
+                            <span class="text-sm text-white bg-yellow-500 px-4 py-2 rounded-lg font-bold shadow-sm">
+                                Subtotal: {{ trabajo.subtotal | number:'1.2-2' }} Bs
+                            </span>
+                        </div>
+
+                        <!-- Información del Trabajo -->
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <!-- Subtotal destacado -->
+                            <div
+                                class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-5 border-2 border-yellow-400">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Subtotal
+                                            del Trabajo</label>
+                                        <p class="text-gray-900 text-2xl font-bold">{{ trabajo.subtotal | number:'1.2-2'
+                                            }} Bs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Materiales (Detalles) -->
+                        <div class="mt-5" *ngIf="trabajo.detalles && trabajo.detalles.length > 0">
+                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+                                <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                    <i class="ph ph-package text-blue-600 mr-2 text-xl"></i>
+                                    Materiales Utilizados
+                                    <span
+                                        class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
+                                        {{ trabajo.detalles.length }}
+                                    </span>
+                                </h5>
+                                <div class="space-y-2">
+                                    <div *ngFor="let detalle of trabajo.detalles"
+                                        class="bg-white rounded-lg p-4 flex justify-between items-center border border-blue-200 hover:border-blue-400 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <i class="ph ph-cube text-blue-600 text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-gray-900">{{ detalle.nombreMaterial }}</p>
+                                                <p class="text-xs text-gray-500">ID Material: {{ detalle.idMaterial }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span
+                                                class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                                Detalle #{{ detalle.idDetalleCotizacion }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sin materiales -->
+                        <div *ngIf="!trabajo.detalles || trabajo.detalles.length === 0"
+                            class="mt-5 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <i class="ph ph-package text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-gray-500 font-medium">No hay materiales asignados a este trabajo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje cuando no hay trabajos -->
+                <div *ngIf="!pedido?.cotizacion?.trabajos || pedido.cotizacion.trabajos.length === 0"
+                    class="text-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                    <i class="ph ph-hammer text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500 text-lg font-medium">No hay trabajos registrados en este pedido</p>
+                </div>
+            </div>
+
+            <!-- Resumen Final -->
+            <div class="mt-8 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                    <i class="ph ph-calculator text-gray-900 text-2xl mr-2"></i>
+                    Resumen del Pedido
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total de Trabajos</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</p>
+                    </div>
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total Materiales</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ getTotalMateriales() }}</p>
+                    </div>
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Anticipo</p>
+                        <p class="text-3xl font-bold text-green-600">{{ pedido?.anticipo | number:'1.2-2' }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Bs</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-5 text-center shadow-lg">
+                        <p class="text-xs text-yellow-400 font-semibold mb-2 uppercase tracking-wide">Total Pedido</p>
+                        <p class="text-3xl font-bold text-yellow-400">{{ pedido?.totalPedido | number:'1.2-2' }}</p>
+                        <p class="text-xs text-yellow-300 mt-1">Bs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex justify-end gap-3 pt-8">
+                <button *ngIf="pedido?.idPedido" (click)="irAPrestarHerramientas()"
+                    class="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl">
+                    <i class="ph ph-wrench text-xl text-yellow-400"></i>
+                    Prestar Herramientas para este Pedido
+                </button>
+                <button (click)="cerrarModal()"
+                    class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105">
+                    <i class="ph ph-x text-xl"></i>
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

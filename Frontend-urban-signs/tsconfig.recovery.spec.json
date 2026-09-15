@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/app/core/services/users/users-recovery.service.spec.ts",
+    "src/app/components/auth/recovery-flow.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

@@ -1,0 +1,262 @@
+<div class="min-w-0">
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="mb-3 flex justify-end">
+            <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Lista de Cotizaciones</h1>
+        </div>
+    </section>
+    <div class="bg-white p-4 border-b border-gray-200">
+        <div class="flex items-center space-x-4">
+            <div class="relative flex-1">
+                <input type="text" [(ngModel)]="terminoBusqueda" placeholder="Buscar por código o nombre..."
+                    class="block w-full pl-4 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm" />
+                <button (click)="buscar()"
+                    class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                    Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="flex border-b border-gray-200 mb-4">
+            <button [ngClass]="{
+        'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'PENDIENTE',
+        'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'PENDIENTE'
+      }" class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('PENDIENTE')">
+                Cotizaciones Pendientes
+            </button>
+
+            <button [ngClass]="{
+        'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'APROBADA',
+        'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'APROBADA'
+      }" class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('APROBADA')">
+                Cotizaciones Aprobadas
+            </button>
+
+            <button [ngClass]="{
+        'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'CADUCADA',
+        'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'CADUCADA'
+      }" class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('CADUCADA')">
+                Cotizaciones Caducadas
+            </button>
+        </div>
+    </section>
+    <div class="p-6">
+        <app-responsive-data-view [items]="ListCotizaciones" [mode]="viewMode" [loading]="cargando" loadingLabel="Cargando cotizaciones" emptyTitle="No hay cotizaciones" emptyMessage="No se encontraron cotizaciones para el estado seleccionado." tableMinWidth="64rem" [columns]="6">
+            <ng-template appDataHeader><div class="grid grid-cols-[12rem_11rem_11rem_11rem_10rem_15rem] gap-4 items-center px-6 py-3"><span>Código cotización</span><span>Fecha emisión</span><span>Fecha caducidad</span><span>Costo total</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+            <ng-template appDataRow let-data><div class="grid grid-cols-[12rem_11rem_11rem_11rem_10rem_15rem] gap-4 items-center px-6 py-4"><span class="font-medium text-gray-900 truncate">{{ data.codCotizacion }}</span><span class="text-sm text-gray-600">{{ data.fechaEmision | date:'dd/MM/yyyy' }}</span><span class="text-sm text-gray-600">{{ data.fechaCaducado | date:'dd/MM/yyyy' }}</span><span class="text-sm font-semibold text-gray-900">{{ data.costoTotal | currency:'BOB':'symbol':'1.2-2' }}</span><span class="justify-self-start px-2.5 py-1 rounded-full text-xs font-semibold" [ngClass]="{'bg-green-100 text-green-800': data.estado === 'COTIZADA' || data.estado === 'APROBADA','bg-red-100 text-red-800': data.estado === 'CADUCADA','bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'}">{{ data.estado }}</span><div class="flex justify-end gap-2"><app-action-icon-button *hasPermission="'COTIZACION_VER'" label="Ver detalles" icon="ph ph-eye" variant="neutral" [disabled]="cargandoDetalle" (action)="visualizarModal(data)"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado !== 'PENDIENTE'" label="Confirmar aceptación" icon="ph ph-check-circle" variant="success" [routerLink]="['/home/confirmar-cotizacion', data.solicitud.idSolicitud]"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado === 'CADUCADA'" label="Editar" icon="ph ph-pencil-simple" variant="primary" [disabled]="cargandoDetalle" (action)="abrirModal(data)"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_VER'" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirCotizacion(data)"></app-action-icon-button></div></div></ng-template>
+            <ng-template appDataCard let-data><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100 flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-gray-900 break-all">{{ data.codCotizacion }}</h3><p class="text-sm text-gray-500 mt-1">{{ data.fechaEmision | date:'dd/MM/yyyy' }}</p></div><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': data.estado === 'COTIZADA' || data.estado === 'APROBADA','bg-red-100 text-red-800': data.estado === 'CADUCADA','bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'}">{{ data.estado }}</span></div><div class="p-4 flex-1 space-y-3 text-sm"><div class="flex justify-between gap-3"><span class="text-gray-500">Caducidad</span><span>{{ data.fechaCaducado | date:'dd/MM/yyyy' }}</span></div><div class="flex justify-between gap-3 pt-3 border-t border-gray-100"><span class="font-medium text-gray-600">Costo total</span><span class="font-semibold text-gray-900">{{ data.costoTotal | currency:'BOB':'symbol':'1.2-2' }}</span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button *hasPermission="'COTIZACION_VER'" label="Ver detalles" icon="ph ph-eye" variant="neutral" [disabled]="cargandoDetalle" (action)="visualizarModal(data)"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado !== 'PENDIENTE'" label="Confirmar aceptación" icon="ph ph-check-circle" variant="success" [routerLink]="['/home/confirmar-cotizacion', data.solicitud.idSolicitud]"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado === 'CADUCADA'" label="Editar" icon="ph ph-pencil-simple" variant="primary" [disabled]="cargandoDetalle" (action)="abrirModal(data)"></app-action-icon-button><app-action-icon-button *hasPermission="'COTIZACION_VER'" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirCotizacion(data)"></app-action-icon-button></footer></article></ng-template>
+            <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> cotizaciones</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+        </app-responsive-data-view>
+
+        <app-loading *ngIf="false" variant="table" [columns]="6" label="Cargando cotizaciones"></app-loading>
+        <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Código Cotización
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Fecha Emisión
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Fecha Caducado
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Costo Total
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50" *ngFor="let data of ListCotizaciones">
+
+                            <!-- Código Cotización -->
+                            <td data-label="Código cotización" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ data.codCotizacion }}
+                            </td>
+
+                            <!-- Fecha Emisión -->
+                            <td data-label="Fecha de emisión" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ data.fechaEmision | date:'dd/MM/yyyy' }}
+                            </td>
+
+                            <!-- Fecha Caducado -->
+                            <td data-label="Fecha de caducidad" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ data.fechaCaducado | date:'dd/MM/yyyy' }}
+                            </td>
+
+                            <!-- Costo Total -->
+                            <td data-label="Costo total" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ data.costoTotal | currency:'BOB':'symbol':'1.2-2' }}
+                            </td>
+
+                            <!-- Estado -->
+                            <td data-label="Estado" class="px-6 py-4 whitespace-nowrap text-sm font-medium" [ngClass]="{
+            'bg-green-100 text-green-800': data.estado === 'COTIZADA',
+            'bg-red-100 text-red-800': data.estado === 'CADUCADA',
+            'bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'
+          }">
+                                <strong>{{ data.estado }}</strong>
+                            </td>
+                            <!-- Acciones -->
+                            <td data-label="Acciones"
+                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                                <button title="Ver Detalles" (click)="visualizarModal(data)" *hasPermission="'COTIZACION_VER'"
+                                    class="text-gray-500 hover:text-gray-700 text-2xl">
+                                    <i class="ph ph-eye"></i>
+                                </button>
+                                <button title="Confirmar Aceptación" *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado !== 'PENDIENTE'"
+                                    [routerLink]="['/home/confirmar-cotizacion', data.solicitud.idSolicitud]"
+                                    class="text-green-700 hover:text-green-900 text-2xl">
+                                    <i class="ph ph-check-circle"></i>
+                                </button>
+                                <button title="Editar" class="text-blue-500 hover:text-blue-700 text-2xl"
+                                    (click)="abrirModal(data)" *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado === 'CADUCADA'">
+                                    <i class="ph ph-pencil-simple"></i>
+                                </button>
+                                <button title="Imprimir" class="text-purple-500 hover:text-purple-700 text-2xl" *hasPermission="'COTIZACION_VER'"
+                                    (click)="imprimirCotizacion(data)">
+                                    <i class="ph ph-printer"></i>
+                                </button>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div *ngIf="ListCotizaciones.length === 0" class="text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="ph ph-folders text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay solicitudes pendientes</h3>
+                    <p class="text-gray-600 mb-6">No se encontraron solicitudes pendientes, posiblemente ya fueron
+                        cotizadas.</p>
+                </div>
+            </div>
+            <!-- Pagination -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex items-center justify-between w-full">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                            a
+                            <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                            de
+                            <span class="font-medium">{{totalItems}}</span>
+                            solicitudes
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button (click)="previousPage()" [disabled]="currentPage === 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Anterior</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                                [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                                {{page}}
+                            </button>
+                            <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Siguiente</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                    <ng-template #loading>
+                        <app-loading variant="table" [columns]="6" label="Cargando cotizaciones"></app-loading>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalles -->
+<div *ngIf="isModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-lg p-6 shadow-lg w-11/12 max-w-2xl animate-fade-in-modal">
+
+        <!-- Título -->
+        <h2 class="text-xl font-bold mb-4 text-gray-800">
+            Detalles de Cotización - {{ cotizacion?.cod_cotizacion }}
+        </h2>
+
+        <!-- Información general -->
+        <div class="mb-4 text-gray-700">
+            <p><strong>Cliente:</strong> {{ cotizacion?.cliente }}</p>
+            <p><strong>Fecha:</strong> {{ cotizacion?.fecha_emision }}</p>
+            <p><strong>Estado:</strong> {{ cotizacion?.estado }}</p>
+            <p><strong>Observaciones:</strong> {{ cotizacion?.detalles }}</p>
+        </div>
+
+        <!-- Tabla de detalles -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 border-b">Descripción</th>
+                        <th class="p-2 border-b">Cantidad</th>
+                        <th class="p-2 border-b">Unidad</th>
+                        <th class="p-2 border-b">Precio Unitario</th>
+                        <th class="p-2 border-b">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let det of cotizacion?.detalles">
+                        <td class="p-2 border-b">{{ det.material }}</td>
+                        <td class="p-2 border-b">cantidad</td>
+                        <td class="p-2 border-b">unidad de medida</td>
+                        <td class="p-2 border-b">{{ det.precio_unitario}} Bs</td>
+                        <td class="p-2 border-b">{{ det.subtotal}} Bs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 text-right font-bold text-gray-800">
+            Total: {{ cotizacion?.costo_total}} Bs
+        </div>
+        <div class="flex justify-end mt-4">
+            <button (click)="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<app-detalles-cotizacion [mostrar]="mostrarModalVisualizacion" [cotizacion]="cotizacionSeleccionada"
+    (cerrar)="cerrarModalVisualizacion()"> </app-detalles-cotizacion>
+
+<app-modificar-cotizacion [mostrar]="mostrarModalModificacion" [cotizacion]="cotizacionSeleccionada"
+    (cerrar)="cerrarModalModificacion()" (guardado)="onCotizacionGuardada($event)" (error)="onErrorModal($event)">
+</app-modificar-cotizacion>

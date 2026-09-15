@@ -1,0 +1,402 @@
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
+    <!-- Progress Steps - Versión Mejorada -->
+    <div class="relative mb-8">
+        <!-- Línea de fondo gris -->
+        <div class="absolute top-4 left-0 right-0 h-1 bg-gray-200 z-0 mx-16">
+            <!-- Línea verde que avanza -->
+            <div class="h-full bg-[#FFD000] transition-all duration-300 ease-out"
+                [style.width.%]="(currentStep / 3) * 100"></div>
+        </div>
+        <!-- Progress Steps -->
+        <div class="flex justify-between relative z-10">
+            <!-- Paso 1 -->
+            <div class="step-item w-1/3" [class.active]="currentStep === 0" [class.completed]="currentStep > 0">
+                <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">1
+                </div>
+                <div class="step-title text-center text-sm">Datos Personales</div>
+            </div>
+
+            <!-- Paso 2 -->
+            <div class="step-item w-1/3" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+                <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">2
+                </div>
+                <div class="step-title text-center text-sm">Usuario</div>
+            </div>
+
+            <div class="step-item w-1/3" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+                <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">3
+                </div>
+                <div class="step-title text-center text-sm">Verificar correo</div>
+            </div>
+
+            <!-- Paso 3 -->
+            <div class="step-item w-1/3" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+                <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">4
+                </div>
+                <div class="step-title text-center text-sm">Confirmación</div>
+            </div>
+        </div>
+    </div>
+
+    <form [formGroup]="employeeForm" class="space-y-6">
+        <!-- Step 1: Personal Data -->
+        <div *ngIf="currentStep === 0">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Datos Personales del Empleado</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-black mb-2">Foto del material</label>
+                    <div class="relative">
+                        <input type="file" accept="image/*"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="materialPhoto"
+                            (change)="onFileSelected($event)">
+                        <label for="materialPhoto"
+                            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#FFD000] rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+                            <ng-container *ngIf="!imagePreview">
+                                <span class="text-gray-500">+ Subir imagen</span>
+                                <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG (Max. 5MB)</span>
+                            </ng-container>
+                            <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa"
+                                class="h-full w-full object-contain rounded-lg" />
+                        </label>
+                    </div>
+                    <button type="button" (click)="removeImage()" *ngIf="imagePreview"
+                        class="mt-2 text-sm text-red-500 hover:text-red-700">
+                        Eliminar imagen
+                    </button>
+                </div>
+                <!-- Identification -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cédula de identidad</label>
+                    <input type="text" formControlName="ci" class="w-full px-4 py-2 border rounded-md"
+                        [ngClass]="{'border-red-500': employeeForm.get('ci')?.invalid && employeeForm.get('ci')?.touched}">
+                    <div *ngIf="employeeForm.get('ci')?.invalid && employeeForm.get('ci')?.touched"
+                        class="text-red-600 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('ci')?.errors?.['required']">Este campo es obligatorio.</span>
+                        <span *ngIf="employeeForm.get('ci')?.errors?.['pattern']">Debe tener entre 6 y 10 dígitos
+                            numéricos.</span>
+                    </div>
+                </div>
+                <!-- Nombres -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
+                    <input type="text" formControlName="namePeople"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        [ngClass]="{'border-red-500': employeeForm.get('namePeople')?.invalid && employeeForm.get('namePeople')?.touched}"
+                        required />
+                    <div *ngIf="employeeForm.get('namePeople')?.touched && employeeForm.get('namePeople')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('namePeople')?.errors?.['required']">Este campo es
+                            obligatorio.</span>
+                        <span *ngIf="employeeForm.get('namePeople')?.errors?.['pattern']">Solo se permiten
+                            letras.</span>
+                    </div>
+                </div>
+
+                <!-- Apellido paterno -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Apellido paterno</label>
+                    <input type="text" formControlName="ap"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        [ngClass]="{'border-red-500': employeeForm.get('ap')?.invalid && employeeForm.get('ap')?.touched}"
+                        required />
+                    <div *ngIf="employeeForm.get('ap')?.touched && employeeForm.get('ap')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('ap')?.errors?.['required']">Este campo es obligatorio.</span>
+                        <span *ngIf="employeeForm.get('ap')?.errors?.['pattern']">Solo se permiten letras.</span>
+                    </div>
+                </div>
+
+                <!-- Apellido materno -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Apellido materno</label>
+                    <input type="text" formControlName="am"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        [ngClass]="{'border-red-500': employeeForm.get('am')?.invalid && employeeForm.get('am')?.touched}"
+                        required />
+                    <div *ngIf="employeeForm.get('am')?.touched && employeeForm.get('am')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('am')?.errors?.['required']">Este campo es obligatorio.</span>
+                        <span *ngIf="employeeForm.get('am')?.errors?.['pattern']">Solo se permiten letras.</span>
+                    </div>
+                </div>
+
+
+                <!-- Teléfono -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <input type="text" formControlName="phoneNumber"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        [ngClass]="{'border-red-500': employeeForm.get('phoneNumber')?.invalid && employeeForm.get('phoneNumber')?.touched}" />
+                    <div *ngIf="employeeForm.get('phoneNumber')?.touched && employeeForm.get('phoneNumber')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('phoneNumber')?.errors?.['required']">Este campo es
+                            obligatorio.</span>
+                        <span *ngIf="employeeForm.get('phoneNumber')?.errors?.['pattern']">Número inválido. Debe
+                            comenzar con 6 o 7 y tener 8 dígitos.</span>
+                    </div>
+                </div>
+
+
+                <!-- Dirección (no requerida por backend) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                    <input type="text"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        formControlName="address"
+                        [ngClass]="{'border-red-500': employeeForm.get('address')?.invalid && employeeForm.get('address')?.touched}">
+                    <div *ngIf="employeeForm.get('address')?.touched && employeeForm.get('address')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="employeeForm.get('address')?.errors?.['required']">Este campo es
+                            obligatorio.</span>
+                        <span *ngIf="employeeForm.get('address')?.errors?.['pattern']">Solo se permiten
+                            letras.</span>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Asignar Roles</label>
+                    <div class="flex space-x-4">
+                        <select #roleSelect
+                            class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:outline-none">
+                            <option *ngFor="let role of availableRoles" [value]="role.idRole">
+                                {{ role.name_role }}
+                            </option>
+                        </select>
+                        <button type="button" (click)="addRole(+roleSelect.value); roleSelect.value=''"
+                            class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
+                            Agregar
+                        </button>
+                    </div>
+
+                    <table class="mt-4 w-full text-left border border-gray-300 rounded-md overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2">Rol</th>
+                                <th class="px-4 py-2 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let role of assignedRoles; let i = index" class="border-t">
+                                <td class="px-4 py-2">{{ role.name_role }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    <button type="button" (click)="removeRole(i)"
+                                        class="text-red-600 hover:underline">Eliminar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </form>
+
+    <!-- Step 2: User Account -->
+    <form [formGroup]="userForm">
+        <div *ngIf="currentStep === 1 && !isLoadingCode">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Correo electrónico</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Username -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                    <input type="text" formControlName="userAcces"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        [ngClass]="{'border-red-500': userForm.get('userAcces')?.invalid && userForm.get('userAcces')?.touched || this.existsUser}"
+                        (ngModelChange)="checkUser()" />
+                    <div *ngIf="userForm.get('userAcces')?.touched && userForm.get('userAcces')?.invalid"
+                        class="text-red-500 text-sm mt-1">
+                        <span *ngIf="userForm.get('userAcces')?.errors?.['required']">Este campo es
+                            obligatorio.</span>
+                        <span *ngIf="userForm.get('userAcces')?.errors?.['email']">Correo inválido.</span>
+                    </div>
+                    <div *ngIf="existsUser" class="text-red-500 text-sm mt-1">
+                        Este correo ya está registrado.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Carga -->
+        <div *ngIf="isLoadingCode" class="flex flex-col items-center justify-center min-h-[400px] space-y-6">
+            <!-- Spinner animado -->
+            <div class="relative">
+                <div class="w-20 h-20 border-4 border-gray-200 rounded-full"></div>
+                <div
+                    class="w-20 h-20 border-4 border-[#FFD000] rounded-full animate-spin border-t-transparent absolute top-0 left-0">
+                </div>
+            </div>
+
+            <!-- Texto -->
+            <div class="text-center space-y-2">
+                <h3 class="text-xl font-semibold text-gray-800">Enviando código de verificación</h3>
+                <p class="text-gray-600">Estamos enviando el código a <span class="font-semibold">{{ email }}</span></p>
+            </div>
+
+            <!-- Animación de puntos -->
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-[#FFD000] rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                <div class="w-3 h-3 bg-[#FFD000] rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-3 h-3 bg-[#FFD000] rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+
+            <!-- Icono de email -->
+            <div class="mt-4 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Step 3: Verificación de código -->
+        <div *ngIf="currentStep === 2 && !isLoadingCode"
+            class="p-6 bg-white rounded-2xl shadow-lg border border-gray-100 max-w-3xl mx-auto">
+            <h2 class="text-2xl font-bold mb-4 text-gray-900">Verificación de Código</h2>
+
+            <p class="text-gray-600 mb-6">
+                Hemos enviado un código de verificación al correo
+                <span class="font-semibold text-black">{{ email }}</span>.
+                Por favor, introduce el código a continuación para continuar.
+            </p>
+
+            <!-- Cuadro de inputs para el código de verificación -->
+            <div class="flex justify-between gap-2 md:gap-4 max-w-lg mx-auto mb-6">
+                <input *ngFor="let digit of codeDigits; let i = index" type="text" maxlength="1"
+                    class="w-12 h-12 md:w-14 md:h-14 text-center text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD000] focus:border-transparent shadow-sm transition"
+                    [(ngModel)]="verificationCode[i]" (input)="autoFocusNext($event, i)"
+                    (keydown.backspace)="autoFocusPrev($event, i)" [id]="'codeInput' + i"
+                    [ngModelOptions]="{ standalone: true }" [disabled]="codeVerified" />
+            </div>
+            <div *ngIf="codeMessage" class="text-sm text-center mt-2" [ngClass]="{
+   'text-green-600': messageType === 'success',
+   'text-red-600': messageType === 'error'
+ }">
+                {{ codeMessage }}
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-between items-center mt-6">
+                <button type="button" class="text-sm text-gray-500 hover:underline" (click)="resendCode()"
+                    [disabled]="resendDisabled || codeVerified">
+                    <ng-container *ngIf="resendDisabled">
+                        Reenviar código en {{ formatCountdown() }}
+                    </ng-container>
+                    <ng-container *ngIf="!resendDisabled">
+                        Reenviar código
+                    </ng-container>
+                </button>
+                <button type="button" [disabled]="verificationCode.join('').length < 6 || codeVerified"
+                    (click)="verifyEnteredCode()"
+                    class="bg-[#FFD000] text-black px-6 py-2 rounded-xl font-semibold hover:bg-black hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Verificar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Step 3: Confirmation - Versión extendida -->
+    <div *ngIf="currentStep === 3">
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">Confirmación de Datos</h2>
+
+        <div class="space-y-6">
+            <!-- Sección Datos Personales -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Datos Personales
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Nombre completo</p>
+                        <p class="font-medium">{{employeeForm.value.namePeople}} {{employeeForm.value.ap}}
+                            {{employeeForm.value.am}}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Cédula de identidad</p>
+                        <p class="font-medium">{{employeeForm.value.ci}}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Teléfono</p>
+                        <p class="font-medium">{{employeeForm.value.phoneNumber}}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Salario</p>
+                        <p class="font-medium">Bs {{ employeeForm.value.salary | number:'1.2-2' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Cuenta de Usuario -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Cuenta de Usuario
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Nombre de usuario</p>
+                        <p class="font-medium">{{userForm.value.userAcces}}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">La contraseña se generará automáticamente</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Roles -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path
+                            d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
+                    </svg>
+                    Roles Asignados
+                </h3>
+
+                <div *ngIf="assignedRoles.length > 0" class="flex flex-wrap gap-2">
+                    <span *ngFor="let role of assignedRoles"
+                        class="px-3 py-1 bg-gray-200 rounded-full text-sm font-medium">
+                        {{role.name_role}}
+                    </span>
+                </div>
+                <p *ngIf="assignedRoles.length === 0" class="text-gray-500">No se han asignado roles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between pt-6 border-t border-gray-200">
+        <!-- Botón Cancelar -->
+        <button type="button" (click)="onCancel()" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">
+            Cancelar
+        </button>
+        <button type="button" (click)="previousStep()" *ngIf="currentStep > 0"
+            class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            Anterior
+        </button>
+        <button type="button" (click)="nextStep()" *ngIf="currentStep < 3"
+            class="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ml-auto">
+            Siguiente
+        </button>
+        <button type="button" *ngIf="currentStep === 3" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+          disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed" (click)="registrarEmpleado()" [disabled]="isProcessing">
+            Registrar Empleado
+        </button>
+    </div>
+
+</div>

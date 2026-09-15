@@ -1,0 +1,41 @@
+<section id="portfolio" class="portfolio-section">
+    <div class="container">
+        <div appScrollReveal class="text-center mb-16">
+            <span class="section-tag">Portafolio</span>
+            <h2 class="section-title mt-4">
+                Proyectos que <span class="text-amber-400">inspiran</span>
+            </h2>
+            <p class="section-description">
+                Descubre algunos de nuestros trabajos más destacados que han transformado espacios en Tarija
+            </p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div appScrollReveal class="filter-tabs">
+            @for (category of categories; track category.id) {
+            <button (click)="selectCategory(category.id)" [class.active]="selectedCategory() === category.id"
+                class="filter-button">
+                {{ category.label }}
+            </button>
+            }
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="projects-grid">
+            @for (project of filteredProjects(); track project.id) {
+            <div appScrollReveal class="project-card group">
+                <div class="project-image-wrapper">
+                    <img [src]="project.image" [alt]="project.title" class="project-image">
+                    <div class="project-overlay">
+                        <div class="project-content">
+                            <span class="project-category">{{ project.category }}</span>
+                            <h3 class="project-title">{{ project.title }}</h3>
+                            <p class="project-description">{{ project.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</section>

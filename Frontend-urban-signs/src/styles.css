@@ -1,0 +1,590 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tipografía base para pantallas densas de un ERP: clara en tablas y formularios. */
+html {
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  font-family: inherit;
+  font-synthesis: none;
+}
+
+/*
+ * Campos del ERP
+ *
+ * Se aplica al área administrativa para homogeneizar los controles existentes
+ * sin mezclar la estética de las pantallas públicas o de autenticación. Las
+ * clases .app-* son el contrato para cualquier formulario nuevo.
+ */
+:root {
+  --erp-field-border: #cbd5e1;
+  --erp-field-border-hover: #94a3b8;
+  --erp-field-text: #0f172a;
+  --erp-field-placeholder: #64748b;
+  --erp-field-focus: #facc15;
+  --erp-field-focus-ring: rgb(250 204 21 / 0.28);
+  --erp-field-error: #dc2626;
+  --erp-field-error-ring: rgb(220 38 38 / 0.16);
+  --erp-modal-border: #e2e8f0;
+  --erp-modal-surface: #ffffff;
+  --erp-modal-accent: #facc15;
+  --erp-modal-shadow: 0 20px 48px rgb(15 23 42 / 0.22), 0 4px 12px rgb(15 23 42 / 0.08);
+  --erp-surface: #ffffff;
+  --erp-canvas: #f8fafc;
+  --erp-border: #e2e8f0;
+  --erp-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --erp-shadow-md: 0 8px 20px rgb(15 23 42 / 0.08);
+}
+
+/* Capa minimalista: menos variaciones de radio, sombra y movimiento en el ERP. */
+app-main-pages {
+  background-color: var(--erp-canvas);
+  color: #0f172a;
+}
+
+app-main-pages :is(.rounded-md, .rounded-lg) {
+  border-radius: 0.5rem !important;
+}
+
+app-main-pages :is(.rounded-xl, .rounded-2xl, .rounded-3xl) {
+  border-radius: 0.75rem !important;
+}
+
+app-main-pages :is(.shadow-sm, .shadow, .shadow-md, .shadow-lg) {
+  box-shadow: var(--erp-shadow-sm) !important;
+}
+
+app-main-pages :is(.shadow-xl, .shadow-2xl) {
+  box-shadow: var(--erp-shadow-md) !important;
+}
+
+app-main-pages :is(.bg-white.rounded-md, .bg-white.rounded-lg, .bg-white.rounded-xl, .bg-white.rounded-2xl) {
+  border: 1px solid var(--erp-border);
+}
+
+app-main-pages button:not(.rounded-full),
+app-main-pages [role="button"]:not(.rounded-full) {
+  border-radius: 0.5rem !important;
+  box-shadow: none;
+  transition-duration: 150ms !important;
+}
+
+app-main-pages [class*="transition"] {
+  transition-duration: 150ms !important;
+}
+
+app-main-pages [class*="hover:scale"],
+app-main-pages [class*="active:scale"] {
+  transform: none !important;
+}
+
+/* Acceso: conserva contraste, pero elimina gradientes, brillos y escalados decorativos. */
+:is(app-login, app-solicitud-email, app-new-contrasenia) form > div {
+  background-color: #111827 !important;
+  background-image: none !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--erp-shadow-md) !important;
+}
+
+:is(app-login, app-solicitud-email, app-new-contrasenia) h2 {
+  background-image: none !important;
+  color: #facc15 !important;
+}
+
+:is(app-login, app-solicitud-email, app-new-contrasenia) .group > .absolute {
+  display: none;
+}
+
+:is(app-login, app-solicitud-email, app-new-contrasenia) button[type="submit"] {
+  background-color: #facc15 !important;
+  background-image: none !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* La landing mantiene su carácter comercial, sin animaciones ornamentales continuas. */
+app-landing-page :is(.rounded-2xl, .rounded-3xl) {
+  border-radius: 0.75rem !important;
+}
+
+app-landing-page :is(.animate-pulse, .animate-glow) {
+  animation: none !important;
+}
+
+.app-field-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.app-input,
+.app-select,
+.app-textarea,
+app-main-pages input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="reset"]):not([type="button"]),
+app-main-pages select:not([multiple]),
+app-main-pages textarea {
+  border-color: var(--erp-field-border);
+  border-radius: 0.5rem;
+  background-color: #fff;
+  color: var(--erp-field-text);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  min-height: 2.5rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.app-textarea,
+app-main-pages textarea {
+  min-height: 5rem;
+}
+
+.app-input::placeholder,
+.app-textarea::placeholder,
+app-main-pages input::placeholder,
+app-main-pages textarea::placeholder {
+  color: var(--erp-field-placeholder);
+  opacity: 1;
+}
+
+.app-input:hover:not(:disabled):not([readonly]),
+.app-select:hover:not(:disabled):not([readonly]),
+.app-textarea:hover:not(:disabled):not([readonly]),
+app-main-pages input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(:disabled):not([readonly]):hover,
+app-main-pages select:not(:disabled):hover,
+app-main-pages textarea:not(:disabled):not([readonly]):hover {
+  border-color: var(--erp-field-border-hover);
+}
+
+.app-input:focus,
+.app-select:focus,
+.app-textarea:focus,
+app-main-pages input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="reset"]):not([type="button"]):focus,
+app-main-pages select:not([multiple]):focus,
+app-main-pages textarea:focus {
+  outline: none;
+  border-color: var(--erp-field-focus);
+  box-shadow: 0 0 0 3px var(--erp-field-focus-ring);
+}
+
+.app-input--error,
+.app-select--error,
+.app-textarea--error,
+app-main-pages input.ng-invalid.ng-touched,
+app-main-pages select.ng-invalid.ng-touched,
+app-main-pages textarea.ng-invalid.ng-touched,
+app-main-pages [aria-invalid="true"] {
+  border-color: var(--erp-field-error);
+}
+
+.app-input--error:focus,
+.app-select--error:focus,
+.app-textarea--error:focus,
+app-main-pages input.ng-invalid.ng-touched:focus,
+app-main-pages select.ng-invalid.ng-touched:focus,
+app-main-pages textarea.ng-invalid.ng-touched:focus,
+app-main-pages [aria-invalid="true"]:focus {
+  border-color: var(--erp-field-error);
+  box-shadow: 0 0 0 3px var(--erp-field-error-ring);
+}
+
+.app-input:disabled,
+.app-select:disabled,
+.app-textarea:disabled,
+app-main-pages input:disabled,
+app-main-pages select:disabled,
+app-main-pages textarea:disabled {
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+  background-color: #f1f5f9;
+  color: #64748b;
+  opacity: 1;
+}
+
+.app-input[readonly],
+.app-textarea[readonly],
+app-main-pages input[readonly],
+app-main-pages textarea[readonly] {
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+  color: #475569;
+}
+
+.app-field-help {
+  margin-top: 0.375rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.app-field-error {
+  margin-top: 0.375rem;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1rem;
+}
+
+/*
+ * Contrato visual de modales
+ *
+ * Los modales históricos usan utilidades Tailwind distintas para el overlay
+ * (bg-white/10, bg-black/30, bg-black/70, etc.). Esta capa los normaliza sin
+ * alterar el tamaño ni el contenido particular de cada diálogo. Para modales
+ * nuevos se deben usar directamente .app-modal-overlay y .app-modal-panel.
+ */
+.app-modal-overlay,
+.fixed.inset-0.backdrop-blur-sm.bg-white\/10,
+.fixed.inset-0.backdrop-blur-sm.bg-black\/20,
+.fixed.inset-0.backdrop-blur-sm.bg-black\/30,
+.fixed.inset-0.backdrop-blur-sm.bg-black\/50,
+.fixed.inset-0.backdrop-blur-sm.bg-black\/60,
+.fixed.inset-0.backdrop-blur-sm.bg-black\/70,
+.fixed.inset-0.backdrop-blur-sm.bg-gray-900\/70,
+.fixed.inset-0.bg-black.bg-opacity-50 {
+  background-color: rgb(15 23 42 / 0.52) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: app-modal-overlay-enter 180ms ease-out both;
+}
+
+.app-modal-panel,
+.app-modal-overlay > div,
+.modal-overlay > div,
+:is(
+  .fixed.inset-0.backdrop-blur-sm.bg-white\/10,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/20,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/30,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/50,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/60,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/70,
+  .fixed.inset-0.backdrop-blur-sm.bg-gray-900\/70,
+  .fixed.inset-0.bg-black.bg-opacity-50
+) > div {
+  background-color: var(--erp-modal-surface) !important;
+  border: 1px solid var(--erp-modal-border) !important;
+  border-top: 4px solid var(--erp-modal-accent) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--erp-modal-shadow) !important;
+  color: #0f172a;
+  animation: app-modal-panel-enter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Compatibilidad: anima también los paneles existentes que ya usan este nombre. */
+.animate-fade-in-modal,
+.animate-fadeIn {
+  animation: app-modal-panel-enter 180ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+@keyframes app-modal-overlay-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes app-modal-panel-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-modal-overlay,
+  .fixed.inset-0.backdrop-blur-sm.bg-white\/10,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/20,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/30,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/50,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/60,
+  .fixed.inset-0.backdrop-blur-sm.bg-black\/70,
+  .fixed.inset-0.backdrop-blur-sm.bg-gray-900\/70,
+  .fixed.inset-0.bg-black.bg-opacity-50,
+  .app-modal-panel,
+  .animate-fade-in-modal,
+  .animate-fadeIn,
+  :is(
+    .fixed.inset-0.backdrop-blur-sm.bg-white\/10,
+    .fixed.inset-0.backdrop-blur-sm.bg-black\/20,
+    .fixed.inset-0.backdrop-blur-sm.bg-black\/30,
+    .fixed.inset-0.backdrop-blur-sm.bg-black\/50,
+    .fixed.inset-0.backdrop-blur-sm.bg-black\/60,
+    .fixed.inset-0.backdrop-blur-sm.bg-black\/70,
+    .fixed.inset-0.backdrop-blur-sm.bg-gray-900\/70,
+    .fixed.inset-0.bg-black.bg-opacity-50
+  ) > div {
+    animation: none !important;
+  }
+}
+
+/* Vistas reutilizables para listados */
+.view-surface.cards-view table {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.view-surface.cards-view thead {
+  display: none;
+}
+
+.view-surface.cards-view .overflow-x-auto {
+  overflow: visible;
+}
+
+.view-surface.cards-view tbody {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.view-surface.cards-view tbody tr {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.06);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.view-surface.cards-view tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.1);
+}
+
+.view-surface.cards-view tbody td {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.25rem;
+  padding: 0.625rem 0.875rem;
+  white-space: normal;
+  border: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.view-surface.cards-view tbody td[data-label]::before {
+  content: attr(data-label);
+  flex: 0 0 7.5rem;
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25rem;
+  text-transform: uppercase;
+}
+
+.view-surface.cards-view tbody td[data-label] > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.view-surface.cards-view tbody td[colspan] {
+  display: block;
+  text-align: center;
+}
+
+.view-surface.cards-view tbody td:last-child {
+  margin-top: auto;
+  border-top: 1px solid #f3f4f6;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  text-align: right;
+}
+
+.view-surface.cards-view tbody td:last-child[data-label]::before {
+  margin-right: auto;
+}
+
+.view-surface.cards-view .bg-white.divide-y,
+.view-surface.cards-view.divide-y {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.view-surface.cards-view .bg-white.divide-y > div,
+.view-surface.cards-view.divide-y > div {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.06);
+}
+
+.view-surface.list-view .view-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.view-surface,
+.view-surface * {
+  box-sizing: border-box;
+}
+
+.view-surface img,
+.view-surface svg {
+  max-width: 100%;
+}
+
+.view-surface :is(p, span, h2, h3, h4, a) {
+  overflow-wrap: anywhere;
+}
+
+.view-surface :is(.grid, .flex) > * {
+  min-width: 0;
+}
+
+.view-surface:not(.cards-view) table {
+  width: 100%;
+}
+
+.view-surface:not(.cards-view) table td {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.view-surface:not(.cards-view) table td[data-label="Acciones"] {
+  text-align: right;
+}
+
+.view-list-header {
+  color: #6b7280;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .view-surface.list-view .view-item {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(10rem, 3fr);
+    align-items: center;
+  }
+
+  .view-surface.list-view .view-item > .relative {
+    min-width: 0;
+  }
+
+  .view-surface.list-view .view-item > .relative img {
+    height: 7rem;
+    border-radius: 0.75rem 0 0 0.75rem;
+  }
+
+  .view-surface.list-view .view-item > .p-4,
+  .view-surface.list-view .view-item > .px-4 {
+    min-width: 0;
+  }
+
+  .view-surface.list-view .view-item > .border-t {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .view-surface.cards-view tbody {
+    padding: 0.75rem;
+  }
+
+  .view-surface.cards-view tbody td {
+    padding-inline: 0.75rem;
+  }
+
+  .view-surface.cards-view tbody td[data-label]::before {
+    flex-basis: min(7.5rem, 38%);
+  }
+
+  .view-surface.list-view .view-item {
+    overflow: hidden;
+  }
+
+  .view-surface.list-view .view-item > * {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-surface.cards-view tbody tr {
+    transition: none;
+  }
+
+  .view-surface.cards-view tbody tr:hover {
+    transform: none;
+  }
+}
+
+/* Tema oscuro para las superficies, textos y controles del área administrativa. */
+html.dark {
+  color-scheme: dark;
+  --erp-field-border: #475569;
+  --erp-field-border-hover: #64748b;
+  --erp-field-text: #e5e7eb;
+  --erp-field-placeholder: #94a3b8;
+  --erp-modal-border: #475569;
+  --erp-modal-surface: #1f2937;
+  --erp-surface: #1f2937;
+  --erp-canvas: #111827;
+  --erp-border: #374151;
+  --erp-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.24);
+  --erp-shadow-md: 0 8px 20px rgb(0 0 0 / 0.28);
+}
+
+html.dark,
+html.dark body {
+  background-color: #111827;
+}
+
+html.dark app-main-pages { color: #e5e7eb; }
+html.dark app-main-pages .bg-gray-50,
+html.dark app-main-pages .bg-gray-100,
+html.dark app-main-pages .bg-slate-50 { background-color: #111827 !important; }
+html.dark app-main-pages .bg-white { background-color: #1f2937 !important; }
+html.dark app-main-pages .bg-black { background-color: #1f2937 !important; }
+html.dark app-main-pages .bg-gray-200 { background-color: #374151 !important; }
+html.dark app-main-pages .bg-gray-300 { background-color: #4b5563 !important; }
+html.dark app-main-pages .bg-yellow-50 { background-color: #3b3420 !important; }
+html.dark app-main-pages .text-gray-900,
+html.dark app-main-pages .text-gray-800 { color: #f9fafb !important; }
+html.dark app-main-pages .text-gray-700,
+html.dark app-main-pages .text-gray-600 { color: #d1d5db !important; }
+html.dark app-main-pages .text-gray-500,
+html.dark app-main-pages .text-gray-400 { color: #9ca3af !important; }
+html.dark app-main-pages .border-gray-100,
+html.dark app-main-pages .border-gray-200,
+html.dark app-main-pages .border-gray-300,
+html.dark app-main-pages .divide-gray-100,
+html.dark app-main-pages .divide-gray-200 { border-color: #374151 !important; }
+html.dark app-main-pages input:not([type="checkbox"]):not([type="radio"]),
+html.dark app-main-pages select,
+html.dark app-main-pages textarea { background-color: #111827 !important; color: #e5e7eb !important; }
+html.dark app-main-pages .hover\:bg-gray-50:hover,
+html.dark app-main-pages .hover\:bg-gray-100:hover { background-color: #374151 !important; }
+html.dark app-main-pages .hover\:bg-black:hover,
+html.dark app-main-pages .hover\:bg-gray-800:hover { background-color: #374151 !important; }
+
+/* Algunos módulos históricos fijan text-black incluso sobre superficies oscuras. */
+html.dark app-main-pages .text-black { color: #f9fafb !important; }
+
+/* En los controles amarillos el texto negro conserva el contraste correcto. */
+html.dark app-main-pages header .text-black,
+html.dark app-main-pages .bg-yellow-400.text-black,
+html.dark app-main-pages .bg-yellow-500.text-black,
+html.dark app-main-pages .bg-yellow-600.text-black,
+html.dark app-main-pages .bg-yellow-400 .text-black,
+html.dark app-main-pages .bg-yellow-500 .text-black,
+html.dark app-main-pages .bg-yellow-600 .text-black { color: #111827 !important; }

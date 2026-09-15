@@ -1,0 +1,30 @@
+.action-icon-button {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  transition: color 150ms ease, background-color 150ms ease, opacity 150ms ease;
+}
+
+.action-icon-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.action-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.action-icon-button--neutral { color: #4b5563; }
+.action-icon-button--neutral:hover:not(:disabled) { background: #f3f4f6; color: #111827; }
+.action-icon-button--primary { color: #2563eb; }
+.action-icon-button--primary:hover:not(:disabled) { background: #eff6ff; color: #1d4ed8; }
+.action-icon-button--warning { color: #d97706; }
+.action-icon-button--warning:hover:not(:disabled) { background: #fffbeb; color: #b45309; }
+.action-icon-button--danger { color: #dc2626; }
+.action-icon-button--danger:hover:not(:disabled) { background: #fef2f2; color: #b91c1c; }
+.action-icon-button--success { color: #16a34a; }
+.action-icon-button--success:hover:not(:disabled) { background: #f0fdf4; color: #15803d; }

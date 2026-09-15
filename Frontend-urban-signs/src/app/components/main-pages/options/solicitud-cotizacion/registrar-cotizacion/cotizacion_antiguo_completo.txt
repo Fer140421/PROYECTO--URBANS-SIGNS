@@ -1,0 +1,1323 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Crear Cotización</h1>
+      <p class="text-gray-600 mt-2">Complete los detalles de la cotización paso a paso</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="relative mb-8">
+      <!-- Línea de fondo gris -->
+      <div class="absolute top-4 left-0 right-0 h-1 bg-gray-200 z-0 mx-16">
+        <!-- Línea amarilla que avanza -->
+        <div class="h-full bg-yellow-500 transition-all duration-300 ease-out"
+          [style.width.%]="((currentStep) / 3) * 100"></div>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="flex justify-between relative z-10">
+        <!-- Paso 1 -->
+        <div class="step-item w-1/3" [class.active]="currentStep === 0" [class.completed]="currentStep > 0">
+          <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">1</div>
+          <div class="step-title text-center text-sm">Cliente</div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="step-item w-1/3" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+          <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">2</div>
+          <div class="step-title text-center text-sm">Detalles</div>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="step-item w-1/3" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+          <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">3</div>
+          <div class="step-title text-center text-sm">Materiales</div>
+        </div>
+
+        <!-- Paso 4 -->
+        <div class="step-item w-1/3" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+          <div class="step-number flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2 border-2">4</div>
+          <div class="step-title text-center text-sm">Confirmación</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div *ngIf="!cotizacionCreada" class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <form [formGroup]="cotizacionForm" (ngSubmit)="onSubmit()" class="p-6">
+
+        <!-- Paso 1: Gestión de Clientes -->
+        <div *ngIf="currentStep === 0">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">Selección del Cliente</h2>
+
+          <!-- Pestañas de Búsqueda/Registro -->
+          <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8">
+              <button type="button" (click)="modoCliente = 'buscar'"
+                [class]="modoCliente === 'buscar' ? 
+                  'border-yellow-500 text-yellow-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm' : 
+                  'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'">
+                Buscar Cliente Existente
+              </button>
+              <button type="button" (click)="modoCliente = 'registrar'"
+                [class]="modoCliente === 'registrar' ? 
+                  'border-yellow-500 text-yellow-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm' : 
+                  'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'">
+                Registrar Nuevo Cliente
+              </button>
+            </nav>
+          </div>
+
+          <!-- Búsqueda de Cliente -->
+          <div *ngIf="modoCliente === 'buscar'" class="space-y-4">
+            <div class="flex space-x-4">
+              <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Buscar Cliente</label>
+                <div class="flex space-x-2">
+                  <input type="text" [(ngModel)]="query" [ngModelOptions]="{standalone: true}"
+                    placeholder="Nombre o teléfono"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                  <button type="button" (click)="onBuscar()"
+                    class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition duration-200">
+                    Buscar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resultados de Búsqueda -->
+            <div *ngIf="clientesFiltrados.length > 0" class="border border-gray-200 rounded-lg">
+              <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                <h4 class="font-medium text-gray-700">Seleccione un cliente:</h4>
+              </div>
+              <div class="max-h-48 overflow-y-auto">
+                <div *ngFor="let cliente of clientesFiltrados" (click)="seleccionarCliente(cliente)" [class]="clienteSeleccionado?.id_cliente === cliente.idCliente ? 
+                       'bg-yellow-50 border-l-4 border-yellow-500 cursor-pointer' : 
+                       'hover:bg-gray-50 cursor-pointer'" class="p-4 border-b border-gray-100 last:border-b-0">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <p class="font-medium text-gray-900">{{ cliente.displayName }}</p>
+                      <p class="text-sm text-gray-600">{{ cliente.tipo }}</p>
+                    </div>
+                    <span *ngIf="clienteSeleccionado?.id_cliente === cliente.idCliente"
+                      class="bg-yellow-500 text-black px-2 py-1 rounded-full text-xs font-medium">
+                      Seleccionado
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sin resultados -->
+            <div *ngIf="terminoBusqueda && clientesFiltrados.length === 0" class="text-center py-8 text-gray-500">
+              <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="mt-2">No se encontraron clientes</p>
+              <button type="button" (click)="modoCliente = 'registrar'"
+                class="text-yellow-600 hover:text-yellow-700 font-medium mt-2">
+                Registrar nuevo cliente
+              </button>
+            </div>
+          </div>
+
+          <!-- Registro de Nuevo Cliente -->
+          <div *ngIf="modoCliente === 'registrar'" class="space-y-6">
+            <!-- Selector de Tipo de Cliente -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Cliente *</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button type="button" (click)="tipoCliente = 'Persona'" [class]="tipoCliente === 'Persona' ? 
+                  'border-2 border-yellow-500 bg-yellow-50 text-yellow-700' : 
+                  'border-2 border-gray-300 bg-white text-gray-700 hover:border-gray-400'"
+                  class="p-4 rounded-lg text-left transition duration-200">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                      <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Persona Natural</p>
+                      <p class="text-sm opacity-75">Cliente individual</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" (click)="tipoCliente = 'Empresa'" [class]="tipoCliente === 'Empresa' ? 
+                  'border-2 border-yellow-500 bg-yellow-50 text-yellow-700' : 
+                  'border-2 border-gray-300 bg-white text-gray-700 hover:border-gray-400'"
+                  class="p-4 rounded-lg text-left transition duration-200">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                      <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Empresa</p>
+                      <p class="text-sm opacity-75">Cliente corporativo</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Formulario para Persona Natural -->
+            <div *ngIf="tipoCliente === 'Persona'" class="space-y-4">
+              <h4 class="font-semibold text-gray-900 border-b pb-2">Información Personal</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                  <input type="text" [(ngModel)]="nuevaPersona.nombre" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: Juan">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno *</label>
+                  <input type="text" [(ngModel)]="nuevaPersona.ap" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: Pérez">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
+                  <input type="text" [(ngModel)]="nuevaPersona.am" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: González">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Carnet de Identidad *</label>
+                  <input type="text" [(ngModel)]="nuevaPersona.ci" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: 1234567 LP">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Celular *</label>
+                  <input type="tel" [(ngModel)]="nuevaPersona.celular" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: 71234567">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input type="email" [(ngModel)]="nuevoCliente.email" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: juan@email.com">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                <textarea [(ngModel)]="nuevaPersona.direccion" [ngModelOptions]="{standalone: true}" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  placeholder="Dirección completa"></textarea>
+              </div>
+            </div>
+
+            <!-- Formulario para Empresa -->
+            <div *ngIf="tipoCliente === 'Empresa'" class="space-y-4">
+              <h4 class="font-semibold text-gray-900 border-b pb-2">Información de la Empresa</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Razón Social *</label>
+                  <input type="text" [(ngModel)]="nuevaEmpresa.razon_social" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: Mi Empresa S.A.">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">NIT *</label>
+                  <input type="text" [(ngModel)]="nuevaEmpresa.nit" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: 123456789">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+                  <input type="tel" [(ngModel)]="nuevaEmpresa.telefono" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: 22765432">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input type="email" [(ngModel)]="nuevoCliente.email" [ngModelOptions]="{standalone: true}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Ej: contacto@empresa.com">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                <textarea [(ngModel)]="nuevaEmpresa.direccion" [ngModelOptions]="{standalone: true}" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  placeholder="Dirección de la empresa"></textarea>
+              </div>
+            </div>
+
+            <!-- Tipo de Cliente (normal/destacado) -->
+            <div *ngIf="tipoCliente" class="border-t pt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Cliente</label>
+              <div class="flex space-x-4">
+                <label class="flex items-center">
+                  <input type="radio" name="tipoCliente" [(ngModel)]="nuevoCliente.tipo_cliente"
+                    [ngModelOptions]="{standalone: true}" value="normal" checked
+                    class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                  <span class="ml-2 text-gray-700">Cliente Normal</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="radio" name="tipoCliente" [(ngModel)]="nuevoCliente.tipo_cliente"
+                    [ngModelOptions]="{standalone: true}" value="destacado"
+                    class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                  <span class="ml-2 text-gray-700">Cliente Destacado</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Botón de Registro -->
+            <div class="flex justify-end pt-4 border-t">
+              <button type="button" (click)="registrarCliente()" [disabled]="!validarFormularioCliente()"
+                class="px-6 py-2 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                  </path>
+                </svg>
+                Registrar Cliente {{ tipoCliente === 'Persona' ? 'Persona' : 'Empresa' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Cliente Seleccionado -->
+          <div *ngIf="clienteSeleccionado" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="font-medium text-green-900">Cliente seleccionado:</p>
+                <p class="text-green-700">{{ clienteSeleccionado.nombre }}</p>
+                <p class="text-sm text-green-600">{{ clienteSeleccionado.email }} | {{ clienteSeleccionado.telefono }}
+                </p>
+              </div>
+              <button type="button" (click)="deseleccionarCliente()"
+                class="text-green-600 hover:text-green-700 text-sm font-medium">
+                Cambiar cliente
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 2: Información de la Cotización -->
+        <div *ngIf="currentStep === 1">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">Información de la Cotización</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Fecha de Emisión -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Emisión *</label>
+              <input type="date" formControlName="fecha_emision"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                [class.border-red-500]="cotizacionForm.get('fecha_emision')?.invalid && cotizacionForm.get('fecha_emision')?.touched">
+              <div *ngIf="cotizacionForm.get('fecha_emision')?.invalid && cotizacionForm.get('fecha_emision')?.touched"
+                class="text-red-500 text-sm mt-1">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Fecha de Caducidad -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Caducidad *</label>
+              <input type="date" formControlName="fecha_caducado"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                [class.border-red-500]="cotizacionForm.get('fecha_caducado')?.invalid && cotizacionForm.get('fecha_caducado')?.touched">
+              <div
+                *ngIf="cotizacionForm.get('fecha_caducado')?.invalid && cotizacionForm.get('fecha_caducado')?.touched"
+                class="text-red-500 text-sm mt-1">
+                Este campo es requerido
+              </div>
+            </div>
+          </div>
+
+          <!-- Campo oculto para ID del cliente -->
+          <input type="hidden" formControlName="id_cliente">
+        </div>
+
+        <!-- Paso 3: Trabajos y Materiales -->
+        <!-- Paso 3: Trabajos y Materiales -->
+        <div *ngIf="currentStep === 2">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">Trabajos y Materiales</h2>
+
+          <!-- Agregar Nuevo Trabajo -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">Trabajos a cotizar</h3>
+              <button type="button" (click)="agregarTrabajo()"
+                class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition duration-200 flex items-center gap-2">
+                <i class="ph ph-plus-circle"></i>
+                Agregar Trabajo
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de Trabajos (1 cotización → muchos trabajos) -->
+          <div formArrayName="trabajos">
+            <div *ngFor="let trabajo of trabajos.controls; let i = index" [formGroupName]="i"
+              class="border border-gray-200 rounded-lg p-6 mb-6 bg-white shadow-sm">
+
+              <!-- Header del Trabajo -->
+              <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <i class="ph ph-hammer text-yellow-600 text-lg"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Trabajo {{ i + 1 }}</h4>
+                    <p class="text-sm text-gray-500">
+                      {{ getMaterialesDelTrabajo(i).length }} material(es) asociado(s)
+                    </p>
+                  </div>
+                </div>
+                <button type="button" (click)="removerTrabajo(i)" *ngIf="trabajos.length > 1"
+                  class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                  <i class="ph ph-trash text-lg"></i>
+                </button>
+              </div>
+
+              <!-- Configuración del Trabajo -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Tipo de Trabajo -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Trabajo *</label>
+                  <select formControlName="id_trabajo" (change)="onTrabajoChange(i)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                    <option value="">Seleccione trabajo</option>
+                    <option *ngFor="let trabajo of listTrabajos" [value]="trabajo.id">
+                      {{ trabajo.nombre }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Cantidad -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad *</label>
+                  <input type="number" formControlName="cantidad" (input)="onCantidadChange(i)" min="1"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                </div>
+
+                <!-- Base -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Base (m) *</label>
+                  <input type="number" step="0.01" formControlName="base" (input)="onDimensionesChange(i)" min="0.1"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                </div>
+
+                <!-- Altura -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Altura (m) *</label>
+                  <input type="number" step="0.01" formControlName="altura" (input)="onDimensionesChange(i)" min="0.1"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                </div>
+              </div>
+
+              <!-- Información Calculada -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Área Total</label>
+                  <div class="px-3 py-2 bg-gray-100 rounded-md text-center font-medium">
+                    {{ trabajo.get('area_total')?.value || 0 }} m²
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Costo Unitario</label>
+                  <div class="px-3 py-2 bg-gray-100 rounded-md text-center font-medium">
+                    ${{ trabajo.get('costo_unitario')?.value || 0 }}
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">Subtotal</label>
+                  <div class="px-3 py-2 bg-yellow-100 rounded-md text-center font-bold">
+                    ${{ trabajo.get('subtotal')?.value || 0 }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Materiales para este trabajo (1 trabajo → muchos materiales) -->
+              <div class="border-t pt-6">
+                <div class="flex justify-between items-center mb-4">
+                  <h5 class="font-medium text-gray-700">Materiales requeridos para este trabajo</h5>
+                  <button type="button" (click)="agregarMaterialATrabajo(i)"
+                    class="text-yellow-600 hover:text-yellow-700 text-sm font-medium flex items-center gap-2"
+                    [disabled]="!trabajo.get('id_trabajo')?.value">
+                    <i class="ph ph-plus"></i>
+                    Agregar Material
+                  </button>
+                </div>
+
+                <!-- Lista de Materiales -->
+                <div formArrayName="materiales" class="space-y-3">
+                  <div *ngFor="let material of getMaterialesDelTrabajo(i).controls; let j = index" [formGroupName]="j"
+                    class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+
+                    <!-- Material -->
+                    <div class="flex-1">
+                      <select formControlName="id_material"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                        <option value="">Seleccione material</option>
+                        <option *ngFor="let material of materiales" [value]="material.id_material">
+                          {{ material.nombre }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="w-32">
+                      <input type="number" formControlName="cantidad" min="1" placeholder="Cantidad"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                    </div>
+
+                    <!-- Acción -->
+                    <button type="button" (click)="removerMaterialDeTrabajo(i, j)"
+                      *ngIf="getMaterialesDelTrabajo(i).length > 1"
+                      class="text-red-500 hover:text-red-700 p-2 rounded-md hover:bg-red-50 transition-colors">
+                      <i class="ph ph-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Mensaje cuando no hay materiales -->
+                <div *ngIf="getMaterialesDelTrabajo(i).length === 0"
+                  class="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
+                  <i class="ph ph-package text-3xl text-gray-300 mb-2"></i>
+                  <p class="text-gray-500 text-sm">No hay materiales agregados</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen General -->
+          <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Resumen General</h4>
+                <div class="space-y-1 text-sm text-gray-600">
+                  <div class="flex justify-between">
+                    <span>Trabajos:</span>
+                    <span class="font-medium">{{ trabajos.length }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Materiales totales:</span>
+                    <span class="font-medium">{{ getTotalMateriales() }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Área total:</span>
+                    <span class="font-medium">{{ getAreaTotal() }} m²</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <div class="flex justify-between items-center text-lg">
+                  <span class="font-semibold text-gray-900">Total de la cotización:</span>
+                  <span class="text-2xl font-bold text-gray-900">${{ getCostoTotal() }}</span>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">
+                  Incluye {{ trabajos.length }} trabajo(s) y {{ getTotalMateriales() }} material(es)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 4: Confirmación -->
+        <div *ngIf="currentStep === 3">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">Confirmación de la Cotización</h2>
+
+          <div class="space-y-6">
+            <!-- Sección Cliente -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Información del Cliente
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-gray-500">Cliente</p>
+                  <p class="font-medium">{{ getNombreCliente(cotizacionForm.value.id_cliente) }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Tipo</p>
+                  <p class="font-medium">{{ clienteSeleccionado?.tipo || 'Persona' }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Email</p>
+                  <p class="font-medium">{{ clienteSeleccionado?.email || 'No especificado' }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Teléfono</p>
+                  <p class="font-medium">{{ clienteSeleccionado?.telefono || 'No especificado' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección Fechas -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Fechas de la Cotización
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-gray-500">Fecha de Emisión</p>
+                  <p class="font-medium">{{ cotizacionForm.value.fecha_emision | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Fecha de Caducidad</p>
+                  <p class="font-medium">{{ cotizacionForm.value.fecha_caducado | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Días de validez</p>
+                  <p class="font-medium">{{ calcularDiasValidez() }} días</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Estado</p>
+                  <span
+                    class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Pendiente</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección Trabajos -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                  </path>
+                </svg>
+                Trabajos Cotizados
+              </h3>
+
+              <div *ngFor="let trabajo of cotizacionForm.value.trabajos; let i = index"
+                class="border border-gray-200 rounded-lg p-4 mb-4 bg-white">
+
+                <!-- Header del Trabajo -->
+                <div class="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 class="font-semibold text-gray-900">{{ getNombreTrabajo(trabajo.id_trabajo) }}</h4>
+                    <p class="text-sm text-gray-600">Trabajo {{ i + 1 }} • Cantidad: {{ trabajo.cantidad }}</p>
+                  </div>
+                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    ${{ trabajo.subtotal }}
+                  </span>
+                </div>
+
+                <!-- Especificaciones del Trabajo -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                  <div>
+                    <span class="text-gray-500">Dimensiones:</span>
+                    <span class="font-medium ml-2">{{ trabajo.base }}m × {{ trabajo.altura }}m</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Área total:</span>
+                    <span class="font-medium ml-2">{{ trabajo.area_total }} m²</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Costo unitario:</span>
+                    <span class="font-medium ml-2">${{ trabajo.costo_unitario }}</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">DPIs:</span>
+                    <span class="font-medium ml-2">{{ trabajo.dpis || 'No especificado' }}</span>
+                  </div>
+                </div>
+
+                <!-- Materiales del Trabajo -->
+                <div class="border-t pt-3">
+                  <h5 class="font-medium text-gray-700 mb-2 text-sm">Materiales requeridos:</h5>
+                  <div class="space-y-2">
+                    <div *ngFor="let material of trabajo.materiales; let j = index"
+                      class="flex justify-between items-center text-sm bg-gray-50 px-3 py-2 rounded">
+                      <span class="text-gray-700">{{ getNombreMaterial(material.id_material) }}</span>
+                      <span class="font-medium">Cantidad: {{ material.cantidad }}</span>
+                    </div>
+                    <div *ngIf="trabajo.materiales.length === 0" class="text-center text-gray-500 text-sm py-2">
+                      No se especificaron materiales
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen General -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+              <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                  </path>
+                </svg>
+                Resumen General
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Número de trabajos:</span>
+                    <span class="font-medium">{{ cotizacionForm.value.trabajos?.length || 0 }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Total de materiales:</span>
+                    <span class="font-medium">{{ getTotalMaterialesConfirmacion() }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Área total:</span>
+                    <span class="font-medium">{{ getAreaTotal() }} m²</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Código de cotización:</span>
+                    <span class="font-medium text-blue-600">COT-{{ generarCodigoTemporal() }}</span>
+                  </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div class="flex justify-between items-center text-lg">
+                    <span class="font-semibold text-gray-900">Total de la cotización:</span>
+                    <span class="text-2xl font-bold text-gray-900">${{ getCostoTotal() }}</span>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-2">Incluye impuestos y todos los conceptos listados</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between pt-6 border-t border-gray-200 mt-8">
+          <button type="button" (click)="onCancel()"
+            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
+            Cancelar
+          </button>
+
+          <div class="flex space-x-4">
+            <button type="button" (click)="previousStep()" *ngIf="currentStep > 0"
+              class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-200">
+              Anterior
+            </button>
+
+            <button type="button" (click)="nextStep()" *ngIf="currentStep < 3" [disabled]="!validarPasoActual()"
+              class="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Siguiente
+            </button>
+
+            <button type="submit" *ngIf="currentStep === 3" [disabled]="isLoading"
+              class="px-6 py-2 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold">
+              {{ isLoading ? 'Creando...' : 'Crear Cotización' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Resultado -->
+    <div *ngIf="cotizacionCreada && cotizacionResultado" class="bg-white shadow-lg rounded-lg p-6">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">¡Cotización Creada Exitosamente!</h2>
+        <p class="text-gray-600 mb-4">Código de cotización: <span class="font-semibold">#{{
+            cotizacionResultado.cod_cotizacion }}</span></p>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="text-right font-medium">Cliente:</div>
+            <div>{{ getNombreCliente(cotizacionResultado.id_cliente) }}</div>
+            <div class="text-right font-medium">Fecha Emisión:</div>
+            <div>{{ cotizacionResultado.fecha_emision | date:'dd/MM/yyyy' }}</div>
+            <div class="text-right font-medium">Fecha Caducidad:</div>
+            <div>{{ cotizacionResultado.fecha_caducado | date:'dd/MM/yyyy' }}</div>
+            <div class="text-right font-medium">Total:</div>
+            <div class="font-bold text-lg">${{ cotizacionResultado.costo_total }}</div>
+          </div>
+        </div>
+
+        <button (click)="resetForm()"
+          class="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition duration-200">
+          Crear Nueva Cotización
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+.step-item .step-number {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-number {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.step-item.completed .step-number {
+  background-color: #FFD000;
+  color: #fff;
+  border-color: #FFD000;
+}
+
+.step-item .step-title {
+  color: #6b7280;
+}
+
+.step-item.active .step-title {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.step-item.completed .step-title {
+  font-weight: 500;
+  color: #FFD000;
+}
+
+
+export class RegistrarCotizacionComponent {
+  trabajoService = inject(TrabajosService);
+  clienteService = inject(ClientesService);
+  cotizacionForm!: FormGroup;
+  currentStep = 0;
+  totalSteps = 4;
+  modoCliente: 'buscar' | 'registrar' = 'buscar';
+  tipoCliente: 'Persona' | 'Empresa' = 'Persona';
+  terminoBusqueda = '';
+  clientes: any[] = [];
+  clientesFiltrados: ClienteBusquedaDTO[] = [];
+  listTrabajos: any[] = [];
+  clienteSeleccionado: any | null = null;
+
+  query: string = '';
+
+  // Nuevos clientes
+  nuevoCliente: any = {
+    tipo_cliente: 'normal',
+    email: ''
+  };
+  nuevaPersona: any = {
+    nombre: '',
+    ap: '',
+    am: '',
+    ci: '',
+    celular: '',
+    direccion: ''
+  };
+  nuevaEmpresa: any = {
+    razon_social: '',
+    nit: '',
+    direccion: '',
+    telefono: ''
+  };
+
+  // Materiales y detalles
+  materiales: Material[] = [];
+  isLoading = false;
+  cotizacionCreada = false;
+  cotizacionResultado?: any;
+  mostrarErrores = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private cotizacionService: CotizacionService
+  ) {
+    this.cotizacionForm = this.createForm();
+  }
+
+  ngOnInit(): void {
+    this.cargarDatosIniciales();
+    this.autoSeleccionarFechas();
+    this.loadTrabajos();
+  }
+
+  loadTrabajos() {
+    this.trabajoService.listarSimple().subscribe(trabajos => {
+      this.listTrabajos = trabajos;
+      console.log('Trabajos cargados:', this.listTrabajos);
+    });
+  }
+
+  createForm(): FormGroup {
+    return this.fb.group({
+      id_cliente: ['', Validators.required],
+      fecha_emision: ['', Validators.required],
+      fecha_caducado: ['', Validators.required],
+      trabajos: this.fb.array([this.crearTrabajoFormGroup()])
+    });
+  }
+
+  get trabajos(): FormArray {
+    return this.cotizacionForm.get('trabajos') as FormArray;
+  }
+
+  crearTrabajoFormGroup(): FormGroup {
+    return this.fb.group({
+      id_trabajo: ['', Validators.required],
+      cantidad: [1, [Validators.required, Validators.min(1)]],
+      dpis: [0, [Validators.min(0)]],
+      base: [0, [Validators.required, Validators.min(0.1)]],
+      altura: [0, [Validators.required, Validators.min(0.1)]],
+      area_total: [{ value: 0, disabled: true }],
+      costo_unitario: [{ value: 0, disabled: true }],
+      subtotal: [{ value: 0, disabled: true }],
+      materiales: this.fb.array([this.crearMaterialFormGroup()])
+    });
+  }
+
+  crearMaterialFormGroup(): FormGroup {
+    return this.fb.group({
+      id_material: ['', Validators.required],
+      cantidad: [1, [Validators.required, Validators.min(1)]]
+    });
+  }
+
+  agregarTrabajo(): void {
+    this.trabajos.push(this.crearTrabajoFormGroup());
+  }
+
+  removerTrabajo(index: number): void {
+    if (this.trabajos.length > 1) {
+      this.trabajos.removeAt(index);
+      this.calcularTotales();
+    }
+  }
+
+  getMaterialesDelTrabajo(trabajoIndex: number): FormArray {
+    return this.trabajos.at(trabajoIndex).get('materiales') as FormArray;
+  }
+
+  agregarMaterialATrabajo(trabajoIndex: number): void {
+    this.getMaterialesDelTrabajo(trabajoIndex).push(this.crearMaterialFormGroup());
+  }
+
+  removerMaterialDeTrabajo(trabajoIndex: number, materialIndex: number): void {
+    const materiales = this.getMaterialesDelTrabajo(trabajoIndex);
+    if (materiales.length > 1) {
+      materiales.removeAt(materialIndex);
+    }
+  }
+
+  crearDetalleFormGroup(): FormGroup {
+    return this.fb.group({
+      id_material: ['', Validators.required],
+      base: [0, [Validators.required, Validators.min(0.1)]],
+      altura: [0, [Validators.required, Validators.min(0.1)]],
+      precio_unitario: [{ value: 0, disabled: true }],
+      subtotal: [{ value: 0, disabled: true }]
+    });
+  }
+
+  autoSeleccionarFechas(): void {
+    const hoy = new Date();
+    const caducidad = new Date();
+    caducidad.setDate(hoy.getDate() + 30); // 30 días para caducidad
+
+    this.cotizacionForm.patchValue({
+      fecha_emision: hoy.toISOString().split('T')[0],
+      fecha_caducado: caducidad.toISOString().split('T')[0]
+    });
+  }
+
+  get detalles(): FormArray {
+    return this.cotizacionForm.get('detalles') as FormArray;
+  }
+
+  // ========== MÉTODOS DE NAVEGACIÓN DE PASOS ==========
+  nextStep(): void {
+    if (this.validarPasoActual()) {
+      if (this.currentStep < this.totalSteps - 1) {
+        this.currentStep++;
+      }
+    } else {
+      this.mostrarErrores = true;
+    }
+  }
+
+  previousStep(): void {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+      this.mostrarErrores = false;
+    }
+  }
+
+  // ========== MÉTODOS DE GESTIÓN DE CLIENTES ==========
+  cargarDatosIniciales(): void {
+    this.cotizacionService.getClientes().subscribe(clientes => {
+      this.clientes = clientes;
+      //this.clientesFiltrados = clientes;
+    });
+
+    this.cotizacionService.getMateriales().subscribe(materiales => {
+      this.materiales = materiales;
+    });
+  }
+
+  onBuscar() {
+    if (this.query.trim().length > 0) {
+      this.clienteService.buscarClientes(this.query).subscribe({
+        next: (data) => this.clientesFiltrados = data,
+        error: (err) => console.error('Error en búsqueda', err)
+      });
+    } else {
+      this.clientesFiltrados = [];
+    }
+  }
+
+  seleccionarCliente(cliente: any): void {
+    this.clienteSeleccionado = cliente;
+    this.cotizacionForm.patchValue({
+      id_cliente: cliente.id_cliente
+    });
+    this.mostrarErrores = false;
+  }
+
+  deseleccionarCliente(): void {
+    this.clienteSeleccionado = null;
+    this.cotizacionForm.patchValue({
+      id_cliente: ''
+    });
+  }
+
+  validarFormularioCliente(): boolean {
+    if (this.tipoCliente === 'Persona') {
+      return !!this.nuevaPersona.nombre &&
+        !!this.nuevaPersona.ap &&
+        !!this.nuevaPersona.ci &&
+        !!this.nuevaPersona.celular;
+    } else {
+      return !!this.nuevaEmpresa.razon_social &&
+        !!this.nuevaEmpresa.nit &&
+        !!this.nuevaEmpresa.telefono;
+    }
+  }
+
+  registrarCliente(): void {
+    if (!this.validarFormularioCliente()) {
+      this.mostrarErrores = true;
+      return;
+    }
+
+    // Simular creación de cliente (en una app real, harías una llamada HTTP)
+    const nuevoCliente: any = {
+      id_cliente: Math.max(0, ...this.clientes.map(c => c.id_cliente)) + 1,
+      nombre: this.tipoCliente === 'Persona'
+        ? `${this.nuevaPersona.nombre} ${this.nuevaPersona.ap} ${this.nuevaPersona.am}`
+        : this.nuevaEmpresa.razon_social,
+      email: this.nuevoCliente.email,
+      telefono: this.tipoCliente === 'Persona' ? this.nuevaPersona.celular : this.nuevaEmpresa.telefono,
+      tipo: this.tipoCliente,
+      tipo_cliente: this.nuevoCliente.tipo_cliente
+    };
+
+    this.clientes.push(nuevoCliente);
+    this.seleccionarCliente(nuevoCliente);
+
+    // Resetear formularios de registro
+    this.nuevaPersona = { nombre: '', ap: '', am: '', ci: '', celular: '', direccion: '' };
+    this.nuevaEmpresa = { razon_social: '', nit: '', direccion: '', telefono: '' };
+    this.nuevoCliente.email = '';
+
+    this.mostrarErrores = false;
+  }
+
+  // ========== MÉTODOS DE GESTIÓN DE DETALLES ==========
+  agregarDetalle(): void {
+    this.detalles.push(this.crearDetalleFormGroup());
+  }
+
+  removerDetalle(index: number): void {
+    if (this.detalles.length > 1) {
+      this.detalles.removeAt(index);
+      this.calcularTotales();
+    }
+  }
+
+
+  calcularSubtotal(index: number): void {
+    const detalle = this.detalles.at(index);
+    const base = detalle.get('base')?.value || 0;
+    const altura = detalle.get('altura')?.value || 0;
+    const precio = detalle.get('precio_unitario')?.value || 0;
+
+    const subtotal = base * altura * precio;
+    detalle.patchValue({ subtotal: subtotal });
+    this.calcularTotales();
+  }
+
+  getNombreMaterial(idMaterial: number): string {
+    const material = this.materiales.find(m => m.id_material === idMaterial);
+    return material ? material.nombre : 'Material no encontrado';
+  }
+
+  getNombreCliente(idCliente: number): string {
+    if (this.clienteSeleccionado && this.clienteSeleccionado.id_cliente === idCliente) {
+      return this.clienteSeleccionado.nombre;
+    }
+
+    const cliente = this.clientes.find(c => c.id_cliente === idCliente);
+    return cliente ? cliente.nombre : 'Cliente no encontrado';
+  }
+
+
+  marcarControlesComoSucios(): void {
+    Object.keys(this.cotizacionForm.controls).forEach(key => {
+      const control = this.cotizacionForm.get(key);
+      control?.markAsTouched();
+    });
+    this.mostrarErrores = true;
+  }
+
+  onCancel(): void {
+    if (confirm('¿Está seguro de que desea cancelar? Se perderán todos los datos ingresados.')) {
+      this.resetForm();
+    }
+  }
+
+  onMaterialChange(trabajoIndex: number, materialIndex: number): void {
+    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
+    const idMaterial = material.get('id_material')?.value;
+    const materialData = this.materiales.find(m => m.id_material === parseInt(idMaterial));
+
+    if (materialData) {
+      material.patchValue({
+        precio_unitario: materialData.precio_unitario
+      });
+      this.calcularSubtotalMaterial(trabajoIndex, materialIndex);
+    }
+  }
+
+  calcularSubtotalMaterial(trabajoIndex: number, materialIndex: number): void {
+    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
+    const ancho = material.get('ancho')?.value || 0;
+    const alto = material.get('alto')?.value || 0;
+    const precio = material.get('precio_unitario')?.value || 0;
+
+    const subtotal = ancho * alto * precio;
+    material.patchValue({ subtotal: subtotal });
+    this.calcularSubtotalTrabajo(trabajoIndex);
+  }
+
+  calcularAreaMaterial(trabajoIndex: number, materialIndex: number): number {
+    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
+    const ancho = material.get('ancho')?.value || 0;
+    const alto = material.get('alto')?.value || 0;
+    return ancho * alto;
+  }
+
+  onDimensionesChange(trabajoIndex: number): void {
+    const trabajo = this.trabajos.at(trabajoIndex);
+    const base = trabajo.get('base')?.value || 0;
+    const altura = trabajo.get('altura')?.value || 0;
+
+    const areaTotal = base * altura;
+    trabajo.patchValue({ area_total: areaTotal });
+
+    this.calcularSubtotalTrabajo(trabajoIndex);
+  }
+
+  calcularTotales(): void {
+    // Método para recalcular todos los totales si es necesario
+  }
+
+  validarPasoActual(): boolean {
+    switch (this.currentStep) {
+      case 0: // Paso Cliente
+        return this.clienteSeleccionado !== null;
+
+      case 1: // Paso Detalles
+        return (this.cotizacionForm.get('fecha_emision')?.valid ?? false) &&
+          (this.cotizacionForm.get('fecha_caducado')?.valid ?? false);
+
+      case 2: // Paso Trabajos (ACTUALIZADO)
+        return this.trabajos.length > 0 &&
+          this.trabajos.controls.every(trabajo => {
+            return trabajo.get('id_trabajo')?.valid &&
+              trabajo.get('base')?.valid &&
+              trabajo.get('altura')?.valid &&
+              trabajo.get('cantidad')?.valid;
+          });
+
+      case 3: // Paso Confirmación
+        return this.cotizacionForm.valid;
+
+      default:
+        return false;
+    }
+  }
+
+  onCantidadChange(trabajoIndex: number): void {
+    this.calcularSubtotalTrabajo(trabajoIndex);
+  }
+
+  onTrabajoChange(trabajoIndex: number): void {
+    const trabajo = this.trabajos.at(trabajoIndex);
+    const idTrabajo = trabajo.get('id_trabajo')?.value;
+    const trabajoData = this.listTrabajos.find(t => t.id === parseInt(idTrabajo));
+
+    if (trabajoData && trabajoData.costo_unitario) {
+      trabajo.patchValue({
+        costo_unitario: trabajoData.costo_unitario
+      });
+      this.calcularSubtotalTrabajo(trabajoIndex);
+    }
+  }
+
+  onSubmit(): void {
+    if (this.cotizacionForm.valid && this.clienteSeleccionado) {
+      this.isLoading = true;
+
+      const formValue = this.cotizacionForm.getRawValue();
+      const codCotizacion = 'COT-' + Date.now().toString().slice(-6);
+
+      // ✅ ESTRUCTURA CORRECTA PARA LA BD
+      const cotizacionData = {
+        cod_cotizacion: codCotizacion,
+        id_cliente: formValue.id_cliente,
+        fecha_emision: formValue.fecha_emision,
+        fecha_caducado: formValue.fecha_caducado,
+        costo_total: this.getCostoTotal(),
+        estado: 'Pendiente',
+        trabajos: formValue.trabajos.map((trabajo: any) => ({
+          // Esto va a la tabla cotizacion_trabajo
+          id_trabajo: trabajo.id_trabajo,
+          cantidad: trabajo.cantidad,
+          dpis: trabajo.dpis || 0,
+          base: trabajo.base,
+          altura: trabajo.altura,
+          area_total: trabajo.area_total,
+          costo_unitario: trabajo.costo_unitario,
+          subtotal: trabajo.subtotal,
+          materiales: trabajo.materiales.map((material: any) => ({
+            // Esto va a la tabla detalle_cotizacion
+            id_material: material.id_material,
+            cantidad: material.cantidad
+          }))
+        }))
+      };
+
+      this.cotizacionService.crearCotizacion(cotizacionData).subscribe({
+        next: (result) => {
+          this.cotizacionResultado = result;
+          this.cotizacionCreada = true;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error al crear cotización:', error);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.marcarControlesComoSucios();
+    }
+  }
+  // ========== ACTUALIZAR resetForm() ==========
+  resetForm(): void {
+    this.cotizacionForm.reset();
+    this.trabajos.clear();
+    this.trabajos.push(this.crearTrabajoFormGroup());
+
+    this.currentStep = 0;
+    this.clienteSeleccionado = null;
+    this.modoCliente = 'buscar';
+    this.tipoCliente = 'Persona';
+    this.terminoBusqueda = '';
+    this.cotizacionCreada = false;
+    this.mostrarErrores = false;
+
+    // Resetear nuevos clientes
+    this.nuevoCliente = { tipo_cliente: 'normal', email: '' };
+    this.nuevaPersona = { nombre: '', ap: '', am: '', ci: '', celular: '', direccion: '' };
+    this.nuevaEmpresa = { razon_social: '', nit: '', direccion: '', telefono: '' };
+
+    this.autoSeleccionarFechas();
+  }
+
+  calcularSubtotalTrabajo(trabajoIndex: number): void {
+    const trabajo = this.trabajos.at(trabajoIndex);
+    const areaTotal = trabajo.get('area_total')?.value || 0;
+    const costoUnitario = trabajo.get('costo_unitario')?.value || 0;
+    const cantidad = trabajo.get('cantidad')?.value || 1;
+
+    const subtotal = areaTotal * costoUnitario * cantidad;
+    trabajo.patchValue({ subtotal: subtotal });
+
+    this.calcularTotales();
+  }
+
+  getCostoTotal(): number {
+    return this.trabajos.controls.reduce((total, trabajo) => {
+      return total + (trabajo.get('subtotal')?.value || 0);
+    }, 0);
+  }
+
+  getTotalMateriales(): number {
+    return this.trabajos.controls.reduce((total, trabajo, index) => {
+      return total + this.getMaterialesDelTrabajo(index).length;
+    }, 0);
+  }
+
+  getAreaTotal(): number {
+    return this.trabajos.controls.reduce((total, trabajo) => {
+      return total + (trabajo.get('area_total')?.value || 0);
+    }, 0);
+  }
+
+  getTrabajoSeleccionado(trabajoIndex: number): any {
+    const idTrabajo = this.trabajos.at(trabajoIndex).get('id_trabajo')?.value;
+    return this.listTrabajos.find(t => t.id === parseInt(idTrabajo));
+  }
+
+  // Métodos adicionales para la confirmación
+  getNombreTrabajo(idTrabajo: number): string {
+    const trabajo = this.listTrabajos.find(t => t.id === idTrabajo);
+    return trabajo ? trabajo.nombre : 'Trabajo no encontrado';
+  }
+
+  getTotalMaterialesConfirmacion(): number {
+    if (!this.cotizacionForm.value.trabajos) return 0;
+
+    return this.cotizacionForm.value.trabajos.reduce((total: number, trabajo: any) => {
+      return total + (trabajo.materiales?.length || 0);
+    }, 0);
+  }
+
+  calcularDiasValidez(): number {
+    const emision = new Date(this.cotizacionForm.value.fecha_emision);
+    const caducidad = new Date(this.cotizacionForm.value.fecha_caducado);
+    const diffTime = Math.abs(caducidad.getTime() - emision.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  generarCodigoTemporal(): string {
+    return Date.now().toString().slice(-6);
+  }
+}

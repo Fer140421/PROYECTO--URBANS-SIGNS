@@ -1,0 +1,562 @@
+<header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Listado de Clientes</h1>
+    </div>
+</header>
+<div class="bg-white p-4 border-b border-gray-200">
+    <div class="mb-3 flex justify-end">
+        <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+    </div>
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+        <!-- Campo de búsqueda -->
+        <div class="relative flex-1 lg:flex-[2]">
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+                class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                placeholder="Buscar cliente..." />
+            <button (click)="searchCategories()"
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                Buscar
+            </button>
+        </div>
+
+        <!-- Select de filtro por estado -->
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="statusFilter" (change)="filterByStatus()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option value="todos">Listar por estado</option>
+                <option value="true">Activos</option>
+                <option value="false">Inactivos</option>
+            </select>
+        </div>
+
+        <!-- Select de filtro por tipo (Persona/Empresa) -->
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="tipoFilter" (change)="filterByTipo()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option value="">Todos los tipos</option>
+                <option value="Persona">Personas</option>
+                <option value="Empresa">Empresas</option>
+            </select>
+        </div>
+
+        <!-- Select de filtro por categoría (Normal/Destacado) - NUEVO -->
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="categoriaFilter" (change)="filterByCategoria()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option value="">Todas las categorías</option>
+                <option value="normal">Normal</option>
+                <option value="destacado">Destacado</option>
+            </select>
+        </div>
+
+        <!-- Botón de nuevo cliente -->
+        <div class="w-full lg:w-auto">
+            <button
+                class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+                routerLink="/home/register-clients">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo Cliente
+            </button>
+        </div>
+    </div>
+</div>
+
+<app-responsive-data-view [items]="listClientes" [mode]="viewMode" [loading]="isListLoading" loadingLabel="Cargando clientes" emptyTitle="No se encontraron clientes" emptyMessage="No existen clientes con los filtros seleccionados." tableMinWidth="64rem" [columns]="6">
+    <ng-template appDataHeader><div class="grid grid-cols-[5rem_minmax(16rem,1fr)_10rem_10rem_8rem_10rem] gap-4 items-center px-6 py-3"><span>ID</span><span>Nombre</span><span>Tipo de cliente</span><span>Categoría</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+    <ng-template appDataRow let-cliente><div class="grid grid-cols-[5rem_minmax(16rem,1fr)_10rem_10rem_8rem_10rem] gap-4 items-center px-6 py-4">
+        <span class="font-medium text-gray-900">{{ cliente.idCliente }}</span><span class="min-w-0 truncate text-sm text-gray-700">{{ cliente.tipoClientePersonaEmpresa === 'Persona' ? (cliente.persona?.name_people + ' ' + cliente.persona?.ap + ' ' + (cliente.persona?.am || '')) : cliente.empresa?.razonSocial }}</span>
+        <span class="inline-flex items-center justify-self-start px-2.5 py-1 rounded-full text-xs font-medium" [ngClass]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'"><i [class]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'ph ph-user' : 'ph ph-buildings'" class="mr-1"></i>{{ cliente.tipoClientePersonaEmpresa }}</span>
+        <span class="inline-flex items-center justify-self-start px-2.5 py-1 rounded-full text-xs font-medium" [ngClass]="cliente.tipoCliente === 'destacado' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'">{{ cliente.tipoCliente === 'destacado' ? 'Destacado' : 'Normal' }}</span><span class="justify-self-start px-2.5 py-1 text-xs font-medium rounded-full" [ngClass]="cliente.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">{{ cliente.estado ? 'Activo' : 'Inactivo' }}</span>
+        <div class="flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openEditModal(cliente)"></app-action-icon-button><app-action-icon-button *ngIf="cliente.estado" [label]="cliente.tipoCliente === 'normal' ? 'Marcar como destacado' : 'Marcar como normal'" [icon]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill' : 'ph ph-star'" variant="warning" (action)="cambiarTipoCliente(cliente)"></app-action-icon-button><app-action-icon-button [label]="cliente.estado ? 'Desactivar' : 'Activar'" [icon]="cliente.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'" [variant]="cliente.estado ? 'danger' : 'success'" (action)="toggleClienteStatus(cliente)"></app-action-icon-button></div>
+    </div></ng-template>
+    <ng-template appDataCard let-cliente><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 flex items-start gap-3 border-b border-gray-100"><div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center" [ngClass]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'"><i [class]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'ph ph-user text-2xl' : 'ph ph-buildings text-2xl'"></i></div><div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-2"><h3 class="font-semibold text-gray-900 break-words">{{ cliente.tipoClientePersonaEmpresa === 'Persona' ? (cliente.persona?.name_people + ' ' + cliente.persona?.ap + ' ' + (cliente.persona?.am || '')) : cliente.empresa?.razonSocial }}</h3><span class="text-xs text-gray-500 whitespace-nowrap">#{{ cliente.idCliente }}</span></div><p class="text-sm text-gray-500 mt-1">{{ cliente.tipoClientePersonaEmpresa }}</p></div></div><div class="p-4 space-y-3 flex-1"><div class="flex justify-between gap-3"><span class="text-xs font-semibold text-gray-500 uppercase">Categoría</span><span class="px-2.5 py-1 rounded-full text-xs" [ngClass]="cliente.tipoCliente === 'destacado' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'">{{ cliente.tipoCliente === 'destacado' ? 'Destacado' : 'Normal' }}</span></div><div class="flex justify-between gap-3"><span class="text-xs font-semibold text-gray-500 uppercase">Estado</span><span class="px-2.5 py-1 rounded-full text-xs" [ngClass]="cliente.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">{{ cliente.estado ? 'Activo' : 'Inactivo' }}</span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openEditModal(cliente)"></app-action-icon-button><app-action-icon-button *ngIf="cliente.estado" [label]="cliente.tipoCliente === 'normal' ? 'Marcar como destacado' : 'Marcar como normal'" [icon]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill' : 'ph ph-star'" variant="warning" (action)="cambiarTipoCliente(cliente)"></app-action-icon-button><app-action-icon-button [label]="cliente.estado ? 'Desactivar' : 'Activar'" [icon]="cliente.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'" [variant]="cliente.estado ? 'danger' : 'success'" (action)="toggleClienteStatus(cliente)"></app-action-icon-button></footer></article></ng-template>
+    <div dataViewFooter *ngIf="listClientes.length > 4" class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> clientes</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+</app-responsive-data-view>
+
+<!-- Tabla responsiva anterior conservada temporalmente como referencia. -->
+<app-loading *ngIf="false" variant="table" [columns]="6" label="Cargando clientes"></app-loading>
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden">
+    <div *ngIf="viewMode === 'list'" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tipo Cliente</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Categoría</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50" *ngFor="let cliente of listClientes">
+                    <td data-label="ID" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ cliente.idCliente }}
+                    </td>
+
+                    <!-- Nombre: persona o empresa -->
+                    <td data-label="Nombre" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ cliente.tipoClientePersonaEmpresa === 'Persona'
+                        ? (cliente.persona?.name_people + ' ' + cliente.persona?.ap + ' ' + (cliente.persona?.am || ''))
+                        : cliente.empresa?.razonSocial }}
+                    </td>
+
+                    <!-- Tipo de Cliente (Persona/Empresa) -->
+                    <td data-label="Tipo de cliente" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="cliente.tipoClientePersonaEmpresa === 'Persona' 
+                                ? 'bg-blue-100 text-blue-800' 
+                                : 'bg-purple-100 text-purple-800'">
+                            <i [class]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'ph ph-user' : 'ph ph-buildings'"
+                                class="mr-1"></i>
+                            {{cliente.tipoClientePersonaEmpresa}}
+                        </span>
+                    </td>
+
+                    <!-- Categoría (Normal/Destacado) - NUEVO -->
+                    <td data-label="Categoría" class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="cliente.tipoCliente === 'destacado' 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-gray-100 text-gray-800'">
+                            <i [class]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill' : 'ph ph-user-circle'"
+                                class="mr-1"></i>
+                            {{cliente.tipoCliente === 'destacado' ? 'Destacado' : 'Normal'}}
+                        </span>
+                    </td>
+
+                    <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                        <span [class]="cliente.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                            class="px-2 py-1 text-xs font-medium rounded-full">
+                            {{ cliente.estado ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+
+                    <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end gap-2">
+                            <!-- Botón Editar -->
+                            <button title="Editar" (click)="openEditModal(cliente)"
+                                class="text-blue-500 hover:text-blue-700 text-2xl transition-colors">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button>
+
+                            <!-- Botón Destacar/Normal - NUEVO -->
+                            <button *ngIf="cliente.estado" (click)="cambiarTipoCliente(cliente)"
+                                [title]="cliente.tipoCliente === 'normal' ? 'Marcar como destacado' : 'Marcar como normal'"
+                                [ngClass]="cliente.tipoCliente === 'destacado' 
+                                    ? 'text-yellow-500 hover:text-yellow-700' 
+                                    : 'text-gray-400 hover:text-yellow-500'" class="text-2xl transition-colors">
+                                <i [class]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill' : 'ph ph-star'"></i>
+                            </button>
+
+                            <!-- Botón Activar/Desactivar -->
+                            <button (click)="toggleClienteStatus(cliente)"
+                                [title]="cliente.estado ? 'Desactivar' : 'Activar'" [ngClass]="cliente.estado 
+                                    ? 'text-red-500 hover:text-red-700' 
+                                    : 'text-green-500 hover:text-green-700'" class="text-2xl transition-colors">
+                                <i [ngClass]="cliente.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="listClientes.length === 0">
+                    <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        No se encontraron clientes.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cards reales: se mantiene separada de la tabla para evitar filas verticales. -->
+    <div *ngIf="viewMode === 'cards'"
+        class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6 bg-gray-50">
+        <article *ngFor="let cliente of listClientes"
+            class="min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+            <div class="p-4 flex items-start gap-3 border-b border-gray-100">
+                <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center"
+                    [ngClass]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'">
+                    <i [class]="cliente.tipoClientePersonaEmpresa === 'Persona' ? 'ph ph-user text-2xl' : 'ph ph-buildings text-2xl'"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                        <h3 class="font-semibold text-gray-900 leading-snug break-words">
+                            {{ cliente.tipoClientePersonaEmpresa === 'Persona'
+                            ? (cliente.persona?.name_people + ' ' + cliente.persona?.ap + ' ' + (cliente.persona?.am || ''))
+                            : cliente.empresa?.razonSocial }}
+                        </h3>
+                        <span class="text-xs text-gray-500 whitespace-nowrap">#{{ cliente.idCliente }}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ cliente.tipoClientePersonaEmpresa }}</p>
+                </div>
+            </div>
+
+            <div class="p-4 space-y-3 flex-1">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase">Categoría</span>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="cliente.tipoCliente === 'destacado' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'">
+                        <i [class]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill' : 'ph ph-user-circle'" class="mr-1"></i>
+                        {{ cliente.tipoCliente === 'destacado' ? 'Destacado' : 'Normal' }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase">Estado</span>
+                    <span class="px-2.5 py-1 text-xs font-medium rounded-full"
+                        [ngClass]="cliente.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                        {{ cliente.estado ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </div>
+            </div>
+
+            <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-2">
+                <button title="Editar" (click)="openEditModal(cliente)"
+                    class="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
+                    <i class="ph ph-pencil-simple text-xl"></i>
+                </button>
+                <button *ngIf="cliente.estado" (click)="cambiarTipoCliente(cliente)"
+                    [title]="cliente.tipoCliente === 'normal' ? 'Marcar como destacado' : 'Marcar como normal'"
+                    [ngClass]="cliente.tipoCliente === 'destacado' ? 'text-yellow-500 hover:text-yellow-700' : 'text-gray-400 hover:text-yellow-500'"
+                    class="p-2 hover:bg-yellow-50 rounded-lg transition-colors">
+                    <i [class]="cliente.tipoCliente === 'destacado' ? 'ph ph-star-fill text-xl' : 'ph ph-star text-xl'"></i>
+                </button>
+                <button (click)="toggleClienteStatus(cliente)" [title]="cliente.estado ? 'Desactivar' : 'Activar'"
+                    [ngClass]="cliente.estado ? 'text-red-500 hover:text-red-700 hover:bg-red-50' : 'text-green-500 hover:text-green-700 hover:bg-green-50'"
+                    class="p-2 rounded-lg transition-colors">
+                    <i [ngClass]="cliente.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'" class="text-xl"></i>
+                </button>
+            </footer>
+        </article>
+
+        <div *ngIf="listClientes.length === 0" class="sm:col-span-2 xl:col-span-3 text-center py-10 text-sm text-gray-500">
+            No se encontraron clientes.
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+        *ngIf="listClientes.length > 4">
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Mostrando
+                    <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                    a
+                    <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                    de
+                    <span class="font-medium">{{totalItems}}</span>
+                    clientes
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Anterior</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                        [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                        {{page}}
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Siguiente</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE EDICIÓN -->
+<div *ngIf="isModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+    <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out">
+
+        <!-- Header del Modal -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-900">Modificar Cliente</h2>
+                <button (click)="closeModal()"
+                    class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del Formulario -->
+        <form [formGroup]="clienteForm" (ngSubmit)="updateCategory()" class="p-6">
+
+            <!-- Selector de Tipo de Cliente -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Cliente *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button type="button" *ngIf="tipoCliente==='Persona'" [class]="tipoCliente === 'Persona' ? 
+                            'border-2 border-yellow-500 bg-yellow-50 text-yellow-700' : 
+                            'border-2 border-gray-300 bg-white text-gray-700 hover:border-gray-400'"
+                        class="p-3 rounded-lg text-left transition duration-200">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                <i class="ph ph-user text-yellow-600 text-base"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-sm">Persona Natural</p>
+                                <p class="text-xs opacity-75">Cliente individual</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button type="button" *ngIf="tipoCliente==='Empresa'" [class]="tipoCliente === 'Empresa' ? 
+                            'border-2 border-yellow-500 bg-yellow-50 text-yellow-700' : 
+                            'border-2 border-gray-300 bg-white text-gray-700 hover:border-gray-400'"
+                        class="p-3 rounded-lg text-left transition duration-200">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                <i class="ph ph-buildings text-yellow-600 text-base"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-sm">Empresa</p>
+                                <p class="text-xs opacity-75">Cliente corporativo</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulario para Persona Natural -->
+            <div *ngIf="tipoCliente === 'Persona'" class="space-y-4">
+                <h3 class="text-md font-semibold text-gray-900 border-b pb-2">Información Personal</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cédula de Identidad *</label>
+                        <input type="text" formControlName="ci"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: 1234567 LP"
+                            [class.border-red-500]="clienteForm.get('ci')?.invalid && clienteForm.get('ci')?.touched">
+                        <div *ngIf="clienteForm.get('ci')?.invalid && clienteForm.get('ci')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('ci') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombres *</label>
+                        <input type="text" formControlName="name_people"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: Juan Carlos"
+                            [class.border-red-500]="clienteForm.get('name_people')?.invalid && clienteForm.get('name_people')?.touched">
+                        <div *ngIf="clienteForm.get('name_people')?.invalid && clienteForm.get('name_people')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('name_people') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno *</label>
+                        <input type="text" formControlName="ap"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: Pérez"
+                            [class.border-red-500]="clienteForm.get('ap')?.invalid && clienteForm.get('ap')?.touched">
+                        <div *ngIf="clienteForm.get('ap')?.invalid && clienteForm.get('ap')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('ap') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
+                        <input type="text" formControlName="am"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: González"
+                            [class.border-red-500]="clienteForm.get('am')?.invalid && clienteForm.get('am')?.touched">
+                        <div *ngIf="clienteForm.get('am')?.invalid && clienteForm.get('am')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('am') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono/Celular *</label>
+                        <input type="tel" formControlName="phone_number"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: 71234567"
+                            [class.border-red-500]="clienteForm.get('phone_number')?.invalid && clienteForm.get('phone_number')?.touched">
+                        <div *ngIf="clienteForm.get('phone_number')?.invalid && clienteForm.get('phone_number')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('phone_number') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                        <input type="email" formControlName="correo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: juan@email.com"
+                            [class.border-red-500]="clienteForm.get('correo')?.invalid && clienteForm.get('correo')?.touched">
+                        <div *ngIf="clienteForm.get('correo')?.invalid && clienteForm.get('correo')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('correo') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para Empresa -->
+            <div *ngIf="tipoCliente === 'Empresa'" class="space-y-4">
+                <h3 class="text-md font-semibold text-gray-900 border-b pb-2">Información de la Empresa</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Razón Social *</label>
+                        <input type="text" formControlName="razon_social"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: Mi Empresa S.A."
+                            [class.border-red-500]="clienteForm.get('razon_social')?.invalid && clienteForm.get('razon_social')?.touched">
+                        <div *ngIf="clienteForm.get('razon_social')?.invalid && clienteForm.get('razon_social')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('razon_social') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">NIT *</label>
+                        <input type="text" formControlName="nit"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: 123456789"
+                            [class.border-red-500]="clienteForm.get('nit')?.invalid && clienteForm.get('nit')?.touched">
+                        <div *ngIf="clienteForm.get('nit')?.invalid && clienteForm.get('nit')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('nit') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+                        <input type="tel" formControlName="telefono_empresa"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: 22765432"
+                            [class.border-red-500]="clienteForm.get('telefono_empresa')?.invalid && clienteForm.get('telefono_empresa')?.touched">
+                        <div *ngIf="clienteForm.get('telefono_empresa')?.invalid && clienteForm.get('telefono_empresa')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('telefono_empresa') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                        <input type="email" formControlName="correo_empresa"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Ej: contacto@empresa.com"
+                            [class.border-red-500]="clienteForm.get('correo_empresa')?.invalid && clienteForm.get('correo_empresa')?.touched">
+                        <div *ngIf="clienteForm.get('correo_empresa')?.invalid && clienteForm.get('correo_empresa')?.touched"
+                            class="text-red-500 text-xs mt-1">
+                            {{ getErrorMessage('correo_empresa') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                    <textarea formControlName="direccion" rows="2"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        placeholder="Dirección completa de la empresa"></textarea>
+                </div>
+            </div>
+
+            <!-- Tipo de Cliente -->
+            <div class="border-t pt-4 mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Cliente</label>
+                <div class="flex space-x-6">
+                    <label class="flex items-center">
+                        <input type="radio" formControlName="tipo_cliente" value="normal"
+                            class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                        <span class="ml-2 text-gray-700">Cliente Normal</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" formControlName="tipo_cliente" value="destacado"
+                            class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
+                        <span class="ml-2 text-gray-700">Cliente Destacado</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Mensajes de Error -->
+            <div *ngIf="mostrarErrores && clienteForm.invalid"
+                class="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                <div class="flex items-center">
+                    <i class="ph ph-warning-circle text-red-400 text-lg mr-2"></i>
+                    <span class="text-red-700 font-medium">Complete todos los campos requeridos correctamente</span>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+                <button type="button" (click)="closeModal()"
+                    class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200 text-sm">
+                    Cancelar
+                </button>
+                                <button type="submit" [disabled]="isLoading || isProcessing || clienteForm.invalid"
+                    class="px-4 py-2 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm">
+                    {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div *ngIf="isConfirmModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-lg p-6 shadow-lg w-96 animate-fade-in-modal">
+
+        <!-- Título dinámico -->
+        <h2 class="text-lg font-bold mb-4 text-gray-800">
+            {{ confirmTitle }}
+        </h2>
+
+        <!-- Mensaje -->
+        <p class="text-gray-600 mb-6">
+            {{ confirmMessage }}
+        </p>
+
+        <!-- Acciones -->
+        <div class="flex justify-end space-x-3">
+            <button (click)="closeConfirmModal()" [disabled]="isProcessing" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                Cancelar
+            </button>
+            <button (click)="confirm()" [disabled]="isProcessing" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>

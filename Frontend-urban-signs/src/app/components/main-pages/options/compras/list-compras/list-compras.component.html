@@ -1,0 +1,682 @@
+<div class="min-w-0">
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="mb-3 flex justify-end">
+            <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Área de Compras</h1>
+        </div>
+    </section>
+
+    <div class="bg-white p-4 border-b border-gray-200">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+            <div class="relative flex-1 lg:flex-[2]">
+                <input type="text"
+                    class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                    placeholder="Buscar compra...">
+                <button *hasPermission="'COMPRA_CREAR'"
+                    class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                    Buscar
+                </button>
+            </div>
+            <div class="w-full lg:w-auto">
+                <button
+                    class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+                    routerLink="/home/registrar-compras">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="flex border-b border-gray-200 mb-4">
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'PENDIENTE', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'PENDIENTE'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('PENDIENTE')">
+                Compras Pendientes
+            </button>
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'CANCELADA', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'CANCELADA'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('CANCELADA')">
+                Compras Anuladas
+            </button>
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'COMPLETADA', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'COMPLETADA'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('COMPLETADA')">
+                Compras Completadas
+            </button>
+        </div>
+    </section>
+
+    <app-responsive-data-view [items]="compras" [mode]="viewMode" [loading]="isLoading" loadingLabel="Cargando compras" emptyTitle="No hay compras registradas" emptyMessage="No existen compras para el estado seleccionado." tableMinWidth="58rem" [columns]="5">
+        <ng-template appDataHeader><div class="grid grid-cols-[10rem_minmax(16rem,1fr)_12rem_10rem_15rem] gap-4 items-center px-6 py-3"><span>Código compra</span><span>Proveedor</span><span>Fecha de compra</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+        <ng-template appDataRow let-compra><div class="grid grid-cols-[10rem_minmax(16rem,1fr)_12rem_10rem_15rem] gap-4 items-center px-6 py-4"><span class="font-medium text-gray-900">Comp-{{ compra.idCompra }}</span><span class="min-w-0 truncate text-sm text-gray-600">{{ compra.proveedor }}</span><span class="text-sm text-gray-600">{{ compra.fecha }}</span><span class="justify-self-start px-2.5 py-1 rounded-full text-xs font-semibold" [ngClass]="{'bg-yellow-100 text-yellow-800': compra.estado === 'PENDIENTE','bg-green-100 text-green-800': compra.estado === 'COMPLETADA','bg-red-100 text-red-800': compra.estado === 'CANCELADA'}">{{ compra.estado }}</span><div class="flex justify-end gap-2"><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="modalMod(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_VER'" label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="abrirModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Anular" icon="ph ph-x-circle" variant="danger" (action)="openDeleteModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Confirmar" icon="ph ph-check-circle" variant="success" (action)="openConfirmModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_VER'" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirCompra(compra)"></app-action-icon-button></div></div></ng-template>
+        <ng-template appDataCard let-compra><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100 flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-gray-900">Comp-{{ compra.idCompra }}</h3><p class="mt-1 text-sm text-gray-600 break-words">{{ compra.proveedor }}</p></div><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" [ngClass]="{'bg-yellow-100 text-yellow-800': compra.estado === 'PENDIENTE','bg-green-100 text-green-800': compra.estado === 'COMPLETADA','bg-red-100 text-red-800': compra.estado === 'CANCELADA'}">{{ compra.estado }}</span></div><div class="p-4 flex-1"><div class="flex justify-between gap-3 text-sm"><span class="text-gray-500">Fecha de compra</span><span class="text-gray-800 text-right break-words">{{ compra.fecha }}</span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="modalMod(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_VER'" label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="abrirModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Anular" icon="ph ph-x-circle" variant="danger" (action)="openDeleteModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_EDITAR'" label="Confirmar" icon="ph ph-check-circle" variant="success" (action)="openConfirmModal(compra)"></app-action-icon-button><app-action-icon-button *hasPermission="'COMPRA_VER'" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirCompra(compra)"></app-action-icon-button></footer></article></ng-template>
+        <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> compras</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+    </app-responsive-data-view>
+
+    <app-loading *ngIf="false" variant="table" [columns]="6" label="Cargando compras"></app-loading>
+    <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Código Compra</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Proveedor</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Fecha de Compra</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngIf="compras.length === 0">
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">
+                            No hay compras registradas
+                        </td>
+                    </tr>
+                    <tr *ngFor="let compra of compras" class="hover:bg-gray-50">
+                        <td data-label="Código compra" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            Comp-{{ compra.idCompra }}
+                        </td>
+                        <td data-label="Proveedor" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ compra.proveedor}}
+                        </td>
+                        <td data-label="Fecha de compra" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ compra.fecha }}
+                        </td>
+                        <td data-label="Estado" class="px-6 py-4 whitespace-nowrap text-sm text-gray-800" [ngClass]="{
+      'bg-yellow-100 text-yellow-800': compra.estado === 'PENDIENTE',
+      'bg-green-100 text-green-800': compra.estado === 'COMPLETADA',
+      'bg-red-100 text-red-800': compra.estado === 'CANCELADA'
+    }">
+                            <strong>{{ compra.estado }}</strong>
+                        </td>
+                        <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                            <!-- Editar -->
+                            <button title="Editar" (click)="modalMod(compra)" *hasPermission="'COMPRA_EDITAR'"
+                                class="text-blue-500 hover:text-blue-700 text-2xl">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button>
+                            <!-- Ver Detalles -->
+                            <button (click)="abrirModal(compra)" title="Ver Detalles" *hasPermission="'COMPRA_VER'"
+                                class="text-gray-500 hover:text-gray-700 text-2xl">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                            <!-- Anular -->
+                            <button title="Eliminar" (click)="openDeleteModal(compra)" *hasPermission="'COMPRA_EDITAR'"
+                                class="text-red-500 hover:text-red-700 text-2xl">
+                                <i class="ph ph-x-circle"></i>
+                            </button>
+                            <!-- Confirmar -->
+                            <button title="Confirmar" (click)="openConfirmModal(compra)" *hasPermission="'COMPRA_EDITAR'"
+                                class="text-green-500 hover:text-green-700 text-2xl">
+                                <i class="ph ph-check-circle"></i>
+                            </button>
+                            <!-- Imprimir -->
+                            <button (click)="imprimirCompra(compra)" title="Imprimir" *hasPermission="'COMPRA_VER'"
+                                class="text-purple-500 hover:text-purple-700 text-2xl">
+                                <i class="ph ph-printer"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex items-center justify-between w-full">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Mostrando
+                        <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                        a
+                        <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                        de
+                        <span class="font-medium">{{totalItems}}</span>
+                        categorías
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button (click)="previousPage()" [disabled]="currentPage === 1"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="sr-only">Anterior</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                            [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                            {{page}}
+                        </button>
+                        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="sr-only">Siguiente</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div *ngIf="det" class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">
+                Detalles de Compra - Comp-{{ compraSeleccionada.idCompra }}
+            </h2>
+            <button (click)="cerrarModal()"
+                class="text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+        </div>
+
+        <!-- Info del proveedor y compra -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-gray-50 p-3 rounded shadow-sm">
+                <p class="text-gray-500 text-sm">Proveedor</p>
+                <p class="font-semibold text-gray-800">{{ compraSeleccionada.proveedor.people.name_people }} {{
+                    compraSeleccionada.proveedor.people.ap }} {{ compraSeleccionada.proveedor.people.am }}</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded shadow-sm">
+                <p class="text-gray-500 text-sm">Fecha</p>
+                <p class="font-semibold text-gray-800">{{ compraSeleccionada.fecha | date:'short' }}</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded shadow-sm" [ngClass]="{
+             'bg-yellow-100 text-yellow-800': compraSeleccionada.estado === 'PENDIENTE',
+             'bg-green-100 text-green-800': compraSeleccionada.estado === 'COMPLETADO'
+           }">
+                <p class="text-gray-500 text-sm">Estado</p>
+                <p class="font-semibold">{{ compraSeleccionada.estado }}</p>
+            </div>
+        </div>
+
+        <!-- Tabla de detalles -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 uppercase">Producto</th>
+                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-600 uppercase">Cantidad</th>
+                        <th class="px-4 py-2 text-center text-sm font-medium text-gray-600 uppercase">Precio Unitario
+                        </th>
+                        <th class="px-4 py-2 text-right text-sm font-medium text-gray-600 uppercase">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr *ngFor="let detalle of compraSeleccionada.detalles" class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-2 text-gray-800 font-medium">{{ obtenerNombreProducto(detalle.idMaterial) }}
+                        </td>
+                        <td class="px-4 py-2 text-center text-gray-600">{{ detalle.cantidad }}</td>
+                        <td class="px-4 py-2 text-center text-gray-600">{{ detalle.precioUnitario | number:'1.2-2' }} Bs
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-800 font-semibold">{{ detalle.subtotal |
+                            number:'1.2-2' }} Bs</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-100">
+                        <td colspan="3" class="px-4 py-2 text-right font-bold text-gray-700">Total Compra</td>
+                        <td class="px-4 py-2 text-right font-bold text-green-700">{{ compraSeleccionada.total |
+                            number:'1.2-2' }} Bs</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end mt-6">
+            <button (click)="cerrarModal()"
+                class="px-5 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Registro/Modificación de Compra -->
+<div *ngIf="isCompraModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-xl p-6 shadow-lg w-[900px] max-h-[95vh] overflow-y-auto animate-fade-in-modal">
+
+        <!-- Título dinámico -->
+        <h2 class="text-2xl font-bold text-black mb-6">
+            Modificar compra
+        </h2>
+
+        <!-- Formulario -->
+        <form (ngSubmit)="modificarCompra()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Proveedor -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Proveedor</label>
+                    <select [(ngModel)]="proveedor" name="proveedor" required
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                        <option disabled [ngValue]="null">Seleccione un proveedor</option>
+                        <option *ngFor="let p of listProveedores" [ngValue]="p.idSupplier">
+                            {{ p.people.name_people }} {{ p.people.ap }} {{ p.people.am }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Fecha compra -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Fecha de compra</label>
+                    <input type="date" [(ngModel)]="fechaCompra" name="fechaCompra" required disabled
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                </div>
+            </div>
+
+            <!-- Detalles de la compra -->
+            <div class="md:col-span-2 mt-6">
+                <h3 class="text-lg font-bold text-black mb-2">Productos a comprar</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <!-- Producto -->
+                    <div>
+                        <label class="block text-sm font-medium text-black mb-2">Producto</label>
+                        <select [(ngModel)]="productoSeleccionadoId" (change)="onSeleccionarProductoModal()"
+                            [ngModelOptions]="{standalone: true}"
+                            class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                            <option disabled [ngValue]="null">Seleccione producto</option>
+                            <option *ngFor="let prod of listMateriales" [ngValue]="prod.idMaterial">
+                                {{ prod.nombre }} {{ prod.caracteristica }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div>
+                        <label class="block text-sm font-medium text-black mb-2">Cantidad</label>
+                        <input type="number" min="1" [(ngModel)]="cantidad" [ngModelOptions]="{standalone: true}"
+                            class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                    </div>
+
+                    <!-- Unidad (solo lectura) -->
+                    <div>
+                        <label class="block text-sm font-medium text-black mb-2">Unidad</label>
+                        <input type="text" [value]="unidadSeleccionadaModal" readonly
+                            class="w-full px-4 py-2 border-b-2 border-gray-300 bg-gray-100 cursor-not-allowed" />
+                    </div>
+
+                    <!-- Tipo de control (solo lectura) -->
+                    <div>
+                        <label class="block text-sm font-medium text-black mb-2">Tipo de control</label>
+                        <input type="text" [value]="tipoControlSeleccionadoModal" readonly
+                            class="w-full px-4 py-2 border-b-2 border-gray-300 bg-gray-100 cursor-not-allowed" />
+                    </div>
+
+                    <!-- Precio unitario -->
+                    <div>
+                        <label class="block text-sm font-medium text-black mb-2">Precio unitario</label>
+                        <input type="number" min="0" step="0.01" [(ngModel)]="precioUnitario"
+                            [ngModelOptions]="{standalone: true}"
+                            class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                    </div>
+
+                    <!-- Botón agregar -->
+                    <div>
+                        <button type="button" (click)="agregarProductoModal()"
+                            class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium">
+                            + Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla productos -->
+                <div class="mt-4 overflow-x-auto">
+                    <table class="min-w-full border border-gray-300">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 border text-left">#</th>
+                                <th class="px-4 py-2 border text-left">Producto</th>
+                                <th class="px-4 py-2 border text-right">Cantidad</th>
+                                <th class="px-4 py-2 border text-left">Unidad</th>
+                                <th class="px-4 py-2 border text-left">Tipo</th>
+                                <th class="px-4 py-2 border text-right">Precio Unit.</th>
+                                <th class="px-4 py-2 border text-right">Subtotal</th>
+                                <th class="px-4 py-2 border text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let det of detalles; let i = index" class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border">{{ i + 1 }}</td>
+                                <td class="px-4 py-2 border">{{ det.nombreProducto }}</td>
+                                <td class="px-4 py-2 border text-right">
+                                    <input type="number" min="0.001" step="0.001" [(ngModel)]="det.cantidad"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="det.total = det.cantidad * det.precioUnitario"
+                                        class="w-20 px-2 py-1 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent text-right" />
+                                </td>
+                                <td class="px-4 py-2 border">{{ det.unidadMedida }}</td>
+                                <td class="px-4 py-2 border">{{ det.tipoControl }}</td>
+                                <td class="px-4 py-2 border text-right">
+                                    <input type="number" min="0" step="0.01" [(ngModel)]="det.precioUnitario"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (ngModelChange)="det.total = det.cantidad * det.precioUnitario"
+                                        class="w-24 px-2 py-1 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent text-right" />
+                                </td>
+                                <td class="px-4 py-2 border text-right font-semibold">{{ det.subtotal | number:'1.2-2'
+                                    }}
+                                    Bs</td>
+                                <td class="px-4 py-2 border text-center">
+                                    <button type="button" (click)="eliminarProducto(i)"
+                                        class="text-red-500 hover:text-red-700 font-medium">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="detalles.length === 0">
+                                <td colspan="8" class="px-4 py-8 text-center text-gray-500">No hay productos agregados
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot *ngIf="detalles.length > 0" class="bg-gray-100 font-semibold">
+                            <tr>
+                                <td colspan="6" class="px-4 py-3 border text-right">TOTAL:</td>
+                                <td class="px-4 py-3 border text-right text-lg">{{ totalDetalles | number:'1.2-2' }} Bs
+                                </td>
+                                <td class="border"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <small *ngIf="detalles.length === 0" class="text-gray-500 block mt-2">No hay productos
+                        agregados</small>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-8 flex justify-end space-x-4">
+                <button type="button" (click)="closeCompraModal()"
+                    class="px-6 py-2 border border-black text-black rounded-lg hover:bg-gray-100 transition font-medium">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-6 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium"
+                    [disabled]="!proveedor || detalles.length === 0 || isProcessing">
+                    Guardar Compra
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Modal Eliminar Orden de Compra -->
+<div *ngIf="isDeleteModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-lg p-6 shadow-lg w-96 animate-fade-in-modal">
+
+        <!-- Título -->
+        <h2 class="text-lg font-bold mb-4 text-gray-800">
+            Eliminar Orden de Compra
+        </h2>
+
+        <!-- Mensaje -->
+        <p class="text-gray-600 mb-6">
+            ¿Estás seguro de que deseas eliminar la orden de compra
+            <span class="font-semibold text-black">#{{ ordenSeleccionada?.idCompra }}</span>?
+            Esta acción no se puede deshacer.
+        </p>
+
+        <!-- Acciones -->
+        <div class="flex justify-end space-x-3">
+            <button (click)="closeDeleteModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                Cancelar
+            </button>
+            <button (click)="onCancelarCompra()" [disabled]="isProcessing" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Modal de confirmación de compra -->
+<div *ngIf="isConfirmModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+
+        <!-- Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        Confirmar Compra #{{ compraSeleccionada?.idCompra }}
+                    </h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Revise y edite los productos antes de confirmar. El inventario se actualizará automáticamente.
+                    </p>
+                </div>
+                <button (click)="closeConfirmModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    ✕
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="p-6 space-y-6">
+
+            <!-- Información general -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                <p class="text-sm text-blue-800 flex items-start">
+                    <span class="mr-2">ℹ️</span>
+                    <span>
+                        Al confirmar se crearán <strong>lotes automáticos</strong>,
+                        se registrarán las <strong>entradas</strong>, se actualizará el <strong>stock</strong>
+                        y se guardará el historial en <strong>movimientos</strong>.
+                    </span>
+                </p>
+            </div>
+
+            <!-- Datos del proveedor y compra -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Proveedor</p>
+                    <p class="font-semibold text-gray-800">
+                        {{ compraSeleccionada?.proveedor}}
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Fecha</p>
+                    <p class="font-semibold text-gray-800">
+                        {{ compraSeleccionada?.fecha | date:'dd/MM/yyyy HH:mm' }}
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Estado Actual</p>
+                    <span
+                        class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
+                        {{ compraSeleccionada?.estado }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div *ngIf="compraSeleccionada?.observaciones" class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Observaciones</p>
+                <p class="text-gray-700">{{ compraSeleccionada.observaciones }}</p>
+            </div>
+
+            <!-- Tabla de productos -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    #</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Material</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tipo</th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Cantidad</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    U.M.</th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Precio</th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Subtotal</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    📍 Ubicación</th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr *ngFor="let det of compraSeleccionada?.detalles; let i = index"
+                                [ngClass]="{'bg-red-50 opacity-60': det.eliminado, 'hover:bg-gray-50': !det.eliminado}">
+
+                                <!-- Número -->
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {{ i + 1 }}
+                                </td>
+
+                                <!-- Material -->
+                                <td class="px-4 py-3 text-sm">
+                                    <span [ngClass]="{'line-through text-gray-400': det.eliminado}">
+                                        {{ det.nombreMaterial }}
+                                    </span>
+                                </td>
+
+                                <!-- Tipo de control -->
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-medium rounded" [ngClass]="{
+                                            'bg-purple-100 text-purple-800': det.tipoControl === 'ROLLO',
+                                            'bg-green-100 text-green-800': det.tipoControl === 'PLANCHA',
+                                            'bg-orange-100 text-orange-800': det.tipoControl === 'PESO',
+                                            'bg-blue-100 text-blue-800': det.tipoControl === 'LINEAL',
+                                            'bg-gray-100 text-gray-800': det.tipoControl === 'UNIDAD'
+                                          }">
+                                        {{ det.tipoControl }}
+                                    </span>
+                                </td>
+
+                                <!-- Cantidad EDITABLE -->
+                                <td class="px-4 py-3 text-right">
+                                    <input *ngIf="!det.eliminado" type="number" [(ngModel)]="det.cantidadEditada"
+                                        (change)="actualizarDetalle(det)" min="0.001" step="0.001"
+                                        class="w-24 px-2 py-1 text-sm border border-gray-300 rounded text-right focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span *ngIf="det.eliminado" class="line-through text-gray-400">
+                                        {{ det.cantidad }}
+                                    </span>
+                                </td>
+
+                                <!-- Unidad de medida -->
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                    {{ det.unidadMedida }}
+                                </td>
+
+                                <!-- Precio EDITABLE -->
+                                <td class="px-4 py-3 text-right">
+                                    <input *ngIf="!det.eliminado" type="number" [(ngModel)]="det.precioEditado"
+                                        (change)="actualizarDetalle(det)" min="0" step="0.01"
+                                        class="w-28 px-2 py-1 text-sm border border-gray-300 rounded text-right focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span *ngIf="det.eliminado" class="line-through text-gray-400">
+                                        {{ det.precioUnitario | number:'1.2-2' }}
+                                    </span>
+                                    <span *ngIf="!det.eliminado" class="text-gray-600 ml-1">Bs</span>
+                                </td>
+
+                                <!-- Subtotal -->
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <span class="font-semibold"
+                                        [ngClass]="{'line-through text-gray-400': det.eliminado}">
+                                        {{ (det.cantidadEditada * det.precioEditado) | number:'1.2-2' }} Bs
+                                    </span>
+                                </td>
+
+                                <!-- Ubicación EDITABLE -->
+                                <td class="px-4 py-3">
+                                    <input *ngIf="!det.eliminado" type="text" [(ngModel)]="det.ubicacionEditada"
+                                        placeholder="Ej: Estante A3"
+                                        class="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <span *ngIf="det.eliminado" class="line-through text-gray-400 text-sm">
+                                        {{ det.ubicacion }}
+                                    </span>
+                                </td>
+
+                                <!-- Acciones -->
+                                <td class="px-4 py-3 text-center">
+                                    <button *ngIf="!det.eliminado" (click)="marcarComoEliminado(i)"
+                                        class="text-red-500 hover:text-red-700 font-medium text-sm">
+                                        🗑️ Eliminar
+                                    </button>
+                                    <button *ngIf="det.eliminado" (click)="restaurarDetalle(i)"
+                                        class="text-green-500 hover:text-green-700 font-medium text-sm">
+                                        ↩️ Restaurar
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Total -->
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-gray-700">TOTAL A PAGAR:</span>
+                    <span class="text-3xl font-bold text-green-700">
+                        {{ compraSeleccionada?.total | number:'1.2-2' }} Bs
+                    </span>
+                </div>
+            </div>
+
+            <!-- Advertencia -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p class="text-sm text-yellow-800 flex items-start">
+                    <span class="mr-2">⚠️</span>
+                    <span>
+                        Esta acción <strong>NO se puede deshacer</strong>. Se crearán automáticamente los lotes,
+                        entradas y se actualizará el inventario.
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex justify-between items-center">
+            <button (click)="closeConfirmModal()"
+                class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition font-medium">
+                Cancelar
+            </button>
+
+                    <button (click)="confirmarCompra()" [disabled]="!compraSeleccionada || isProcessing"
+                class="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition font-semibold shadow-lg">
+                Confirmar Compra y Actualizar Inventario
+            </button>
+        </div>
+    </div>
+</div>

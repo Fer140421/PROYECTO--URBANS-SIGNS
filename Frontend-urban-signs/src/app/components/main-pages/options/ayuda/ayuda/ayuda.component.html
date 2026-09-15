@@ -1,0 +1,155 @@
+<div class="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-black">Centro de Ayuda</h1>
+        <p class="text-gray-600 mt-1">Encuentra respuestas rápidas a tus preguntas</p>
+    </div>
+
+    <!-- Buscador -->
+    <div class="mb-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="relative">
+                <input type="text" [(ngModel)]="searchQuery" (input)="filterFAQs()" placeholder="Buscar en la ayuda..."
+                    class="w-full px-6 py-4 pl-12 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all">
+                <i
+                    class="ph ph-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-400"></i>
+                <button *ngIf="searchQuery" (click)="clearSearch()"
+                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categorías Rápidas -->
+    <div class="mb-8" *ngIf="!searchQuery">
+        <h2 class="text-xl font-bold text-black mb-4">Categorías Populares</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div *ngFor="let category of categories" (click)="selectCategory(category.id)"
+                [class.border-yellow-400]="selectedCategory === category.id"
+                [class.bg-yellow-50]="selectedCategory === category.id"
+                class="bg-white border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-yellow-400 hover:shadow-lg transition-all duration-200 group">
+                <div class="flex flex-col items-center text-center">
+                    <i
+                        [class]="'ph ' + category.icon + ' text-4xl mb-3 text-gray-600 group-hover:text-yellow-500 transition-colors'"></i>
+                    <h3 class="font-semibold text-black mb-1">{{category.name }}</h3>
+                    <p class="text-xs text-gray-500">{{ category.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preguntas Frecuentes -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-black">
+                {{ searchQuery ? 'Resultados de búsqueda' : 'Preguntas Frecuentes' }}
+            </h2>
+            <button *ngIf="selectedCategory" (click)="clearCategory()"
+                class="text-sm text-yellow-600 hover:text-yellow-700 font-medium">
+                Ver todas
+            </button>
+        </div>
+
+        <div *ngIf="filteredFAQs.length === 0" class="text-center py-12">
+            <i class="ph ph-question text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">No se encontraron resultados para "{{ searchQuery }}"</p>
+        </div>
+
+        <div class="space-y-3">
+            <div *ngFor="let faq of filteredFAQs"
+                class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                <button (click)="toggleFAQ(faq)"
+                    class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start gap-3 flex-1">
+                        <i class="ph ph-question text-xl text-yellow-500 mt-1"></i>
+                        <span class="font-medium text-black">{{ faq.question }}</span>
+                    </div>
+                    <i [class]="faq.expanded ? 'ph ph-caret-up' : 'ph ph-caret-down'"
+                        class="text-xl text-gray-400 transition-transform"></i>
+                </button>
+                <div *ngIf="faq.expanded" class="px-6 py-4 bg-gray-50 border-t border-gray-200 animate-fade-in">
+                    <p class="text-gray-700 leading-relaxed">{{ faq.answer }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recursos Adicionales -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Video Tutoriales -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="ph ph-video text-3xl text-yellow-500"></i>
+                <h3 class="text-lg font-semibold text-black">Video Tutoriales</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Aprende a usar el sistema con nuestros tutoriales en video</p>
+            <button
+                class="w-full bg-black hover:bg-gray-800 text-yellow-400 font-medium px-4 py-2 rounded-lg transition-colors duration-200">
+                Ver Tutoriales
+            </button>
+        </div>
+
+        <!-- Documentación -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="ph ph-book-open text-3xl text-yellow-500"></i>
+                <h3 class="text-lg font-semibold text-black">Documentación</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Consulta la documentación técnica completa del sistema</p>
+            <button
+                class="w-full bg-black hover:bg-gray-800 text-yellow-400 font-medium px-4 py-2 rounded-lg transition-colors duration-200">
+                Ir a Documentación
+            </button>
+        </div>
+    </div>
+
+    <!-- Contacto Soporte -->
+    <div class="bg-gradient-to-r from-black via-yellow-400 to-black rounded-lg p-[2px]">
+        <div class="bg-white rounded-lg p-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <i class="ph ph-headset text-5xl text-yellow-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-black mb-2">¿Necesitas más ayuda?</h2>
+                <p class="text-gray-600 mb-6">Nuestro equipo de soporte está disponible para ayudarte</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                        <i class="ph ph-envelope text-2xl text-yellow-500 mb-2"></i>
+                        <p class="text-sm font-medium text-black">Email</p>
+                        <p class="text-xs text-gray-500">soporteurbansigns.com</p>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                        <i class="ph ph-phone text-2xl text-yellow-500 mb-2"></i>
+                        <p class="text-sm font-medium text-black">Teléfono</p>
+                        <p class="text-xs text-gray-500">+591 123 456 789</p>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                        <i class="ph ph-chat-centered-dots text-2xl text-yellow-500 mb-2"></i>
+                        <p class="text-sm font-medium text-black">Chat en Vivo</p>
+                        <p class="text-xs text-gray-500">Lun - Vie 8:00 - 18:00</p>
+                    </div>
+                </div>
+                <button
+                    class="mt-6 bg-black hover:bg-gray-800 text-yellow-400 font-medium px-8 py-3 rounded-lg transition-colors duration-200">
+                    Contactar Soporte
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500 mb-3">¿Te fue útil esta información?</p>
+        <div class="flex gap-3 justify-center">
+            <button (click)="sendFeedback('positive')"
+                class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
+                <i class="ph ph-thumbs-up text-xl"></i>
+                <span class="text-sm font-medium">Sí</span>
+            </button>
+            <button (click)="sendFeedback('negative')"
+                class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors">
+                <i class="ph ph-thumbs-down text-xl"></i>
+                <span class="text-sm font-medium">No</span>
+            </button>
+        </div>
+    </div>
+</div>

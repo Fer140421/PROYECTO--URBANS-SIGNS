@@ -1,0 +1,31 @@
+:host {
+  display: inline-block;
+}
+
+.view-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.view-toggle-button:hover {
+  color: #111827;
+}
+
+.view-toggle-active {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-toggle-button {
+    transition: none;
+  }
+}

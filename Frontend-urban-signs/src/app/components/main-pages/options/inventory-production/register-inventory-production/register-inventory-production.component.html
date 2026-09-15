@@ -1,0 +1,248 @@
+<div class="w-full max-w-5xl mx-auto">
+  <form [formGroup]="materialForm" (ngSubmit)="registrarMaterial()">
+    <div class="space-y-8">
+
+      <!-- Sección: Información básica del material -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Información del material de producción</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Nombre -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
+            <input type="text" formControlName="nombre" placeholder="Ej: Lona Frontlight 440g"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('nombre')?.invalid && materialForm.get('nombre')?.touched}" />
+            <div *ngIf="materialForm.get('nombre')?.invalid && materialForm.get('nombre')?.touched"
+              class="text-red-500 text-sm mt-1">
+              El nombre es obligatorio.
+            </div>
+          </div>
+
+          <!-- Característica -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Característica*</label>
+            <input type="text" formControlName="caracteristica" placeholder="Ej: 440g/m²"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('caracteristica')?.invalid && materialForm.get('caracteristica')?.touched}" />
+            <div *ngIf="materialForm.get('caracteristica')?.invalid && materialForm.get('caracteristica')?.touched"
+              class="text-red-500 text-sm mt-1">
+              La característica es obligatoria.
+            </div>
+          </div>
+
+          <!-- Color -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Color*</label>
+            <input type="text" formControlName="color" placeholder="Ej: Blanco"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('color')?.invalid && materialForm.get('color')?.touched}" />
+            <div *ngIf="materialForm.get('color')?.invalid && materialForm.get('color')?.touched"
+              class="text-red-500 text-sm mt-1">
+              El color es obligatorio.
+            </div>
+          </div>
+
+          <!-- ✨ NUEVO: Tipo de Control -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Control*</label>
+            <select formControlName="tipo_control" (change)="onTipoControlChange()"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('tipo_control')?.invalid && materialForm.get('tipo_control')?.touched}">
+              <option value="">Seleccionar tipo</option>
+              <option value="ROLLO">Rollo (Lonas, vinilos)</option>
+              <option value="PLANCHA">Plancha (Acrílico, PVC)</option>
+              <option value="PESO">Peso (Alambre, pegamento)</option>
+              <option value="LINEAL">Lineal (Perfiles, tubos)</option>
+              <option value="UNIDAD">Unidad (Insumos generales)</option>
+            </select>
+            <div *ngIf="materialForm.get('tipo_control')?.invalid && materialForm.get('tipo_control')?.touched"
+              class="text-red-500 text-sm mt-1">
+              Seleccione un tipo de control.
+            </div>
+          </div>
+
+          <!-- Categoría -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Categoría*</label>
+            <select formControlName="id_categoria"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('id_categoria')?.invalid && materialForm.get('id_categoria')?.touched}">
+              <option value="">Seleccionar categoría</option>
+              <option *ngFor="let data of listCategories" [value]="data.idCategoria">{{data.nombre}}</option>
+            </select>
+            <div *ngIf="materialForm.get('id_categoria')?.invalid && materialForm.get('id_categoria')?.touched"
+              class="text-red-500 text-sm mt-1">
+              Seleccione una categoría válida.
+            </div>
+          </div>
+
+          <!-- Unidad de medida -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Unidad de medida*</label>
+            <select formControlName="id_unidad"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('id_unidad')?.invalid && materialForm.get('id_unidad')?.touched}">
+              <option value="">Seleccionar unidad</option>
+              <option [value]="data.idUnidad" *ngFor="let data of listUnidades">{{data.nombre}} - {{data.abreviatura}}
+              </option>
+            </select>
+            <div *ngIf="materialForm.get('id_unidad')?.invalid && materialForm.get('id_unidad')?.touched"
+              class="text-red-500 text-sm mt-1">
+              Seleccione una unidad válida.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✨ NUEVO: Sección de dimensiones dinámicas según tipo -->
+      <div class="bg-white rounded-lg shadow p-6" *ngIf="mostrarDimensiones">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">
+          <span *ngIf="tipoControlSeleccionado === 'ROLLO'">Dimensiones del Rollo</span>
+          <span *ngIf="tipoControlSeleccionado === 'PLANCHA'">Dimensiones de la Plancha</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Para ROLLO -->
+          <ng-container *ngIf="tipoControlSeleccionado === 'ROLLO'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ancho del rollo (m)*</label>
+              <input type="number" formControlName="ancho_rollo" placeholder="Ej: 1.37" step="0.001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('ancho_rollo')?.invalid && materialForm.get('ancho_rollo')?.touched}" />
+              <span class="text-xs text-gray-500">En metros. Ejemplo: 1.37</span>
+              <div *ngIf="materialForm.get('ancho_rollo')?.invalid && materialForm.get('ancho_rollo')?.touched"
+                class="text-red-500 text-sm mt-1">
+                El ancho del rollo es obligatorio.
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Largo de rollo nuevo (m)</label>
+              <input type="number" formControlName="largo_rollo_nuevo" placeholder="Ej: 50" step="0.01"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black" />
+              <span class="text-xs text-gray-500">Largo del rollo completo. Ejemplo: 50</span>
+            </div>
+          </ng-container>
+
+          <!-- Para PLANCHA -->
+          <ng-container *ngIf="tipoControlSeleccionado === 'PLANCHA'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ancho de plancha (m)*</label>
+              <input type="number" formControlName="ancho_plancha" placeholder="Ej: 1.22" step="0.001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('ancho_plancha')?.invalid && materialForm.get('ancho_plancha')?.touched}" />
+              <span class="text-xs text-gray-500">En metros. Ejemplo: 1.22</span>
+              <div *ngIf="materialForm.get('ancho_plancha')?.invalid && materialForm.get('ancho_plancha')?.touched"
+                class="text-red-500 text-sm mt-1">
+                El ancho de la plancha es obligatorio.
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Alto de plancha (m)*</label>
+              <input type="number" formControlName="alto_plancha" placeholder="Ej: 2.44" step="0.001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('alto_plancha')?.invalid && materialForm.get('alto_plancha')?.touched}" />
+              <span class="text-xs text-gray-500">En metros. Ejemplo: 2.44</span>
+              <div *ngIf="materialForm.get('alto_plancha')?.invalid && materialForm.get('alto_plancha')?.touched"
+                class="text-red-500 text-sm mt-1">
+                El alto de la plancha es obligatorio.
+              </div>
+            </div>
+            <!-- Cálculo automático de m² -->
+            <div class="md:col-span-2">
+              <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <p class="text-sm text-blue-800">
+                  <strong>M² por plancha:</strong> 
+                  <span class="text-lg font-semibold ml-2">{{ calcularM2PorPlancha() | number:'1.4-4' }} m²</span>
+                </p>
+              </div>
+            </div>
+          </ng-container>
+
+        </div>
+      </div>
+
+      <!-- ✨ NUEVO: Sección de configuración de stock -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Configuración de Stock</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- Stock inicial -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Stock inicial*</label>
+            <input type="number" formControlName="cantidad_inicial" placeholder="0" step="0.001"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+              [ngClass]="{'border-red-500': materialForm.get('cantidad_inicial')?.invalid && materialForm.get('cantidad_inicial')?.touched}" />
+            <span class="text-xs text-gray-500">Cantidad inicial en inventario</span>
+            <div *ngIf="materialForm.get('cantidad_inicial')?.invalid && materialForm.get('cantidad_inicial')?.touched"
+              class="text-red-500 text-sm mt-1">
+              La cantidad inicial es obligatoria.
+            </div>
+          </div>
+
+          <!-- Stock mínimo -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Stock mínimo</label>
+            <input type="number" formControlName="stock_minimo" placeholder="0" step="0.001"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black" />
+            <span class="text-xs text-gray-500">Alerta cuando llegue a este nivel</span>
+          </div>
+
+          <!-- Porcentaje de desperdicio -->
+          <!--<div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Desperdicio (%)</label>
+            <input type="number" formControlName="porcentaje_desperdicio" placeholder="10" step="0.01" min="0" max="100"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black" />
+            <span class="text-xs text-gray-500">Porcentaje de desperdicio estimado</span>
+          </div>-->
+
+          <!-- Ubicación -->
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación en almacén</label>
+            <input type="text" formControlName="ubicacion" placeholder="Ej: Estante A3"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black" />
+            <span class="text-xs text-gray-500">Dónde se guardará físicamente el material</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foto del material -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">📸 Foto del material</h2>
+        <div class="relative">
+          <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            id="materialPhoto" (change)="onFileSelected($event)">
+          <label for="materialPhoto"
+            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#FFD000] rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+            <ng-container *ngIf="!imagePreview">
+              <span class="text-gray-500 text-lg"> + Subir imagen</span>
+              <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG (Max. 5MB)</span>
+            </ng-container>
+            <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa"
+              class="h-full w-full object-contain rounded-lg" />
+          </label>
+        </div>
+        <button type="button" (click)="removeImage()" *ngIf="imagePreview"
+          class="mt-2 text-sm text-red-500 hover:text-red-700">
+          Eliminar imagen
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Acciones -->
+    <div class="bg-white rounded-lg shadow p-6 mt-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button type="submit" 
+      [disabled]="materialForm.invalid || !selectedFile || isProcessing"
+          class="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed">
+          Registrar material
+        </button>
+        <button type="button" (click)="cancelar()"
+          class="border border-red-500 text-red-600 px-6 py-2 rounded-md hover:bg-red-50 transition font-medium">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

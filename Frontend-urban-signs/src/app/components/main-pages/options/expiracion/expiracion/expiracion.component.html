@@ -1,0 +1,10 @@
+@if (sessionMonitor.sessionExpired()) {
+<div class="app-modal-overlay modal-overlay">
+    <div class="app-modal-panel modal-content">
+        <div class="modal-icon">⏰</div>
+        <h2>Sesión Expirada</h2>
+        <p>Tu sesión ha expirado por inactividad.</p>
+        <p class="redirect-message">Serás redirigido al login...</p>
+    </div>
+</div>
+}

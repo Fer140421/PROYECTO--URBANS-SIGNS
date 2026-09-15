@@ -1,0 +1,250 @@
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="mostrar">
+    <div
+        class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-black/5"></div>
+            <div class="flex justify-between items-center relative z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Detalles de Pedido #{{pedido?.idPedido}}</h2>
+                    <p class="text-gray-800 text-sm mt-1 font-medium">
+                        Código Cotización: {{pedido?.cotizacion?.codCotizacion}}
+                    </p>
+                </div>
+                <button (click)="cerrarModal()"
+                    class="text-gray-900 hover:text-gray-700 transition-colors p-2 hover:bg-black/10 rounded-lg">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
+            <!-- Información Principal del Pedido -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <!-- Estado del Pedido -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-info text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Estado</h3>
+                    </div>
+                    <span [ngClass]="{
+                        'bg-yellow-100 text-yellow-800 border-yellow-400': pedido?.estadoPedido === 'PENDIENTE',
+                        'bg-blue-100 text-blue-800 border-blue-400': pedido?.estadoPedido === 'EN_PROCESO',
+                        'bg-green-100 text-green-800 border-green-400': pedido?.estadoPedido === 'COMPLETADO',
+                        'bg-red-100 text-red-800 border-red-400': pedido?.estadoPedido === 'CANCELADO'
+                    }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
+                        {{ pedido?.estadoPedido }}
+                    </span>
+                </div>
+
+                <!-- Fecha de Emisión -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-calendar-check text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Fecha Emisión</h3>
+                    </div>
+                    <p class="text-gray-700 text-lg font-medium">{{ formatearFecha(pedido?.cotizacion?.fechaEmision) }}</p>
+                </div>
+
+                <!-- Estado de Cotización -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-file-text text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Estado Cotización</h3>
+                    </div>
+                    <span class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2 bg-green-100 text-green-800 border-green-400">
+                        {{ pedido?.cotizacion?.estado }}
+                    </span>
+                </div>
+
+                <!-- Total de Trabajos -->
+                <div
+                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-hammer text-gray-900 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Total Trabajos</h3>
+                    </div>
+                    <p class="text-gray-700 text-2xl font-bold">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</p>
+                </div>
+            </div>
+
+            <!-- Información de Progreso -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm">
+                <h3 class="font-bold text-gray-900 mb-5 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                        <i class="ph ph-trend-up text-gray-900 text-xl"></i>
+                    </div>
+                    Progreso del Pedido
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Anticipo -->
+                    <div class="bg-green-50 rounded-lg p-4 border-2 border-green-200">
+                        <label class="block text-sm font-semibold text-green-700 mb-2">Anticipo</label>
+                        <p class="text-green-900 text-2xl font-bold">Confirmado</p>
+                        <p class="text-xs text-green-600 mt-1">Pago inicial realizado</p>
+                    </div>
+
+                    <!-- Saldo Pendiente -->
+                    <div class="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+                        <label class="block text-sm font-semibold text-blue-700 mb-2">Progreso Actual</label>
+                        <p class="text-blue-900 text-2xl font-bold">{{ pedido?.estadoPedido }}</p>
+                        <p class="text-xs text-blue-600 mt-1">Estado del trabajo</p>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
+                        <label class="block text-sm font-semibold text-yellow-700 mb-2">Pedido</label>
+                        <p class="text-yellow-900 text-2xl font-bold">Activo</p>
+                        <p class="text-xs text-yellow-600 mt-1">En seguimiento</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Trabajos -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center mb-6 border-b-2 border-yellow-400 pb-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                        <i class="ph ph-hammer text-gray-900 text-xl"></i>
+                    </div>
+                    Trabajos de la Cotización
+                    <span class="ml-auto text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                        {{ pedido?.cotizacion?.trabajos?.length || 0 }} trabajo(s)
+                    </span>
+                </h3>
+
+                <!-- Lista de Trabajos -->
+                <div class="space-y-5">
+                    <div *ngFor="let trabajo of pedido?.cotizacion?.trabajos; let i = index"
+                        class="border-2 border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-yellow-400 transition-all">
+
+                        <!-- Header del Trabajo -->
+                        <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-yellow-400">
+                            <h4 class="font-bold text-gray-900 text-lg flex items-center">
+                                <span
+                                    class="bg-yellow-400 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">{{i + 1}}</span>
+                                Trabajo #{{ trabajo.idCotizacionTrabajo }}
+                            </h4>
+                            <span class="text-sm text-white bg-green-500 px-4 py-2 rounded-lg font-bold shadow-sm">
+                                {{ trabajo.detalles?.length || 0 }} Material(es)
+                            </span>
+                        </div>
+
+                        <!-- Información del Trabajo -->
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <!-- Resumen del Trabajo -->
+                            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-5 border-2 border-yellow-400">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Detalles del Trabajo</label>
+                                        <p class="text-gray-900 text-lg font-bold">Trabajo registrado</p>
+                                        <p class="text-sm text-gray-600 mt-1">{{ trabajo.detalles?.length || 0 }} materiales asignados</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                        <i class="ph ph-checklist text-gray-900 text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Materiales (Detalles) -->
+                        <div class="mt-5" *ngIf="trabajo.detalles && trabajo.detalles.length > 0">
+                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+                                <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                    <i class="ph ph-package text-blue-600 mr-2 text-xl"></i>
+                                    Materiales Utilizados
+                                    <span class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
+                                        {{ trabajo.detalles.length }}
+                                    </span>
+                                </h5>
+                                <div class="space-y-2">
+                                    <div *ngFor="let detalle of trabajo.detalles"
+                                        class="bg-white rounded-lg p-4 flex justify-between items-center border border-blue-200 hover:border-blue-400 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <i class="ph ph-cube text-blue-600 text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-gray-900">{{ detalle.nombreMaterial }}</p>
+                                                <p class="text-xs text-gray-500">ID Material: {{ detalle.idMaterial }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                                Detalle #{{ detalle.idDetalleCotizacion }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sin materiales -->
+                        <div *ngIf="!trabajo.detalles || trabajo.detalles.length === 0"
+                            class="mt-5 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <i class="ph ph-package text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-gray-500 font-medium">No hay materiales asignados a este trabajo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje cuando no hay trabajos -->
+                <div *ngIf="!pedido?.cotizacion?.trabajos || pedido.cotizacion.trabajos.length === 0"
+                    class="text-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                    <i class="ph ph-hammer text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500 text-lg font-medium">No hay trabajos registrados en este pedido</p>
+                </div>
+            </div>
+
+            <!-- Resumen Final -->
+            <div class="mt-8 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                    <i class="ph ph-clipboard-text text-gray-900 text-2xl mr-2"></i>
+                    Resumen del Pedido
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total de Trabajos</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</p>
+                    </div>
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total Materiales</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ getTotalMateriales() }}</p>
+                    </div>
+                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
+                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Anticipo</p>
+                        <p class="text-3xl font-bold text-green-600">Confirmado</p>
+                        <p class="text-xs text-gray-500 mt-1">Pago inicial</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-5 text-center shadow-lg">
+                        <p class="text-xs text-yellow-400 font-semibold mb-2 uppercase tracking-wide">Estado</p>
+                        <p class="text-3xl font-bold text-yellow-400">{{ pedido?.estadoPedido }}</p>
+                        <p class="text-xs text-yellow-300 mt-1">Actual</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex justify-end gap-3 pt-8">
+                <button (click)="cerrarModal()"
+                    class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105">
+                    <i class="ph ph-x text-xl"></i>
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

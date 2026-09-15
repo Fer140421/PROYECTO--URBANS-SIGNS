@@ -1,0 +1,5 @@
+json-server --watch db.json
+npm install jspdf jspdf-autotable
+npm install browser-image-compression
+npm install browser-image-compression --legacy-peer-deps
+npx json-server --watch db.json --port 3000

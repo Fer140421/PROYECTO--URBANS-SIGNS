@@ -1,0 +1,380 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-8 px-4">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header con estado prominente -->
+    <div class="mb-8">
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <i class="ph ph-file-text text-2xl text-yellow-600"></i>
+              </div>
+              <div>
+                <h1 class="text-3xl font-bold text-slate-900">Confirmar Cotización</h1>
+                <p class="text-slate-600 text-sm mt-1">Código: {{confirmacionPedido?.cotizacion?.codigo}}</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-100 border-2 border-yellow-300">
+              <i class="ph ph-clock text-yellow-700"></i>
+              <span class="font-bold text-yellow-800">{{getEstadoTexto()}}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Válida hasta: {{confirmacionPedido?.cotizacion?.fechaCaducidad |
+              date:'dd/MM/yyyy'}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="mb-4" *ngIf="mensajeExito || mensajeError">
+      <div *ngIf="mensajeExito" class="bg-green-50 border-2 border-green-300 rounded-xl p-4 shadow-md">
+        <div class="flex items-center">
+          <i class="ph ph-check-circle text-2xl text-green-500 mr-3"></i>
+          <p class="text-sm font-medium text-green-800">{{mensajeExito}}</p>
+        </div>
+      </div>
+      <div *ngIf="mensajeError" class="bg-red-50 border-2 border-red-300 rounded-xl p-4 shadow-md">
+        <div class="flex items-center">
+          <i class="ph ph-x-circle text-2xl text-red-500 mr-3"></i>
+          <p class="text-sm font-medium text-red-800">{{mensajeError}}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Columna principal - Información y datos de pago -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Información del cliente - Compacta -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 p-5">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Información del Cliente</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="ph ph-user text-xl text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500">Cliente</p>
+                <p class="font-semibold text-slate-900">{{confirmacionPedido?.cliente?.nombre}}</p>
+                <p class="text-xs text-slate-600">{{confirmacionPedido?.cliente?.tipoClientePersonaEmpresa}}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="ph ph-envelope text-xl text-green-600"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-500">Correo</p>
+                <p class="font-medium text-slate-900 text-sm">{{confirmacionPedido?.cliente?.correo}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 p-5">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Trabajos Incluidos</h3>
+          <div class="space-y-2">
+            <div *ngFor="let trabajo of confirmacionPedido?.trabajos"
+              class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <div>
+                <p class="font-semibold text-slate-900 text-sm">{{trabajo.nombre}}</p>
+                <p class="text-xs text-slate-600">{{trabajo.cantidad}} × Bs.{{trabajo.costoUnitario | number:'1.2-2'}}
+                </p>
+              </div>
+              <span class="font-bold text-slate-900">Bs.{{trabajo.subtotal | number:'1.2-2'}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN DESTACADA: Método de Pago -->
+        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-xl border-2 border-indigo-200 p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center">
+              <i class="ph ph-credit-card text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Método de Pago</h2>
+              <p class="text-sm text-slate-600">Selecciona cómo realizarás el pago *</p>
+            </div>
+          </div>
+
+          <form [formGroup]="pagoForm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <!-- Opción QR -->
+              <div (click)="pagoForm.patchValue({metodo_pago: 'QR'})"
+                class="relative p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer"
+                [class.border-indigo-500]="pagoForm.get('metodo_pago')?.value === 'QR'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value === 'QR'"
+                [class.shadow-lg]="pagoForm.get('metodo_pago')?.value === 'QR'"
+                [class.scale-105]="pagoForm.get('metodo_pago')?.value === 'QR'"
+                [class.border-slate-200]="pagoForm.get('metodo_pago')?.value !== 'QR'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value !== 'QR'">
+
+                <div *ngIf="pagoForm.get('metodo_pago')?.value === 'QR'"
+                  class="absolute -top-2 -right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="ph ph-check text-white font-bold"></i>
+                </div>
+
+                <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-3">
+                  <i class="ph ph-qr-code text-2xl text-white"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 mb-1">Pago por QR</h3>
+                <p class="text-xs text-slate-600">Escanea y paga al instante</p>
+              </div>
+
+              <!-- Opción Efectivo -->
+              <div (click)="pagoForm.patchValue({metodo_pago: 'EFECTIVO'})"
+                class="relative p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer"
+                [class.border-indigo-500]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                [class.shadow-lg]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                [class.scale-105]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                [class.border-slate-200]="pagoForm.get('metodo_pago')?.value !== 'EFECTIVO'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value !== 'EFECTIVO'">
+
+                <div *ngIf="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                  class="absolute -top-2 -right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="ph ph-check text-white font-bold"></i>
+                </div>
+
+                <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-3">
+                  <i class="ph ph-money text-2xl text-white"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 mb-1">Efectivo</h3>
+                <p class="text-xs text-slate-600">Pago en caja</p>
+              </div>
+
+              <!-- Opción Transferencia -->
+              <div (click)="pagoForm.patchValue({metodo_pago: 'TRANSFERENCIA'})"
+                class="relative p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer"
+                [class.border-indigo-500]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                [class.shadow-lg]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                [class.scale-105]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                [class.border-slate-200]="pagoForm.get('metodo_pago')?.value !== 'TRANSFERENCIA'"
+                [class.bg-white]="pagoForm.get('metodo_pago')?.value !== 'TRANSFERENCIA'">
+
+                <div *ngIf="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                  class="absolute -top-2 -right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                  <i class="ph ph-check text-white font-bold"></i>
+                </div>
+
+                <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-3">
+                  <i class="ph ph-bank text-2xl text-white"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 mb-1">Transferencia</h3>
+                <p class="text-xs text-slate-600">Transferencia bancaria</p>
+              </div>
+            </div>
+
+            <!-- Error de validación -->
+            <p *ngIf="campoEsInvalido(pagoForm, 'metodo_pago')" class="text-xs text-red-600 mt-2 font-medium">
+              {{obtenerErrorCampo(pagoForm, 'metodo_pago')}}
+            </p>
+
+            <!-- Sección de datos bancarios - COMENTADA POR AHORA -->
+            <!--
+            <div *ngIf="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+              class="mt-5 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <h4 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                <i class="ph ph-info text-xl"></i>
+                Datos Bancarios
+              </h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-blue-700 font-medium">Banco:</span>
+                  <span class="text-blue-900 font-semibold">Banco Nacional</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-blue-700 font-medium">Cuenta:</span>
+                  <span class="text-blue-900 font-semibold">123-456-789-00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-blue-700 font-medium">Beneficiario:</span>
+                  <span class="text-blue-900 font-semibold">URBAN SIGNS</span>
+                </div>
+              </div>
+            </div>
+            -->
+
+            <!-- Sección de QR - COMENTADA POR AHORA -->
+            <!--
+            <div *ngIf="pagoForm.get('metodo_pago')?.value === 'QR'"
+              class="mt-5 bg-purple-50 border-2 border-purple-200 rounded-xl p-4 text-center">
+              <div
+                class="w-32 h-32 bg-white border-2 border-purple-300 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                <i class="ph ph-qr-code text-8xl text-purple-400"></i>
+              </div>
+              <p class="text-sm font-medium text-purple-900">Escanea el código QR para pagar</p>
+            </div>
+            -->
+          </form>
+        </div>
+
+        <!-- SECCIÓN DESTACADA: Monto de Adelanto -->
+        <div
+          class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl shadow-xl border-2 border-emerald-200 p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+              <i class="ph ph-coins text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Adelanto / Anticipo</h2>
+              <p class="text-sm text-slate-600">Mínimo 30% del total *</p>
+            </div>
+          </div>
+
+          <form [formGroup]="pagoForm">
+            <div class="space-y-4">
+              <div>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-lg">Bs.</span>
+                  <input type="number" formControlName="monto_adelanto" min="0" step="0.01"
+                    [max]="confirmacionPedido?.cotizacion?.costoTotal ?? 0"
+                    class="w-full pl-14 pr-4 py-4 text-2xl font-bold border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-200 focus:border-emerald-500 bg-white"
+                    [class.border-emerald-300]="!campoEsInvalido(pagoForm, 'monto_adelanto')"
+                    [class.border-red-500]="campoEsInvalido(pagoForm, 'monto_adelanto')" />
+                </div>
+                <div class="flex justify-between text-xs text-slate-600 mt-2 px-1">
+                  <span>Mín: Bs.{{calcularMinimoAdelanto() | number:'1.2-2'}}</span>
+                  <span>Máx: Bs.{{confirmacionPedido?.cotizacion?.costoTotal | number:'1.2-2'}}</span>
+                </div>
+                <p *ngIf="campoEsInvalido(pagoForm, 'monto_adelanto')" class="text-xs text-red-600 mt-2 font-medium">
+                  {{obtenerErrorCampo(pagoForm, 'monto_adelanto')}}
+                </p>
+              </div>
+
+              <!-- Indicador de porcentaje -->
+              <div class="bg-white rounded-xl p-4 border-2 border-emerald-200">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-slate-700">Porcentaje del Total</span>
+                  <span class="text-3xl font-bold text-emerald-600">{{calcularPorcentajeAdelanto()}}%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-300"
+                    [style.width.%]="calcularPorcentajeAdelanto()">
+                  </div>
+                </div>
+                <p class="text-center text-xs font-medium text-slate-600 mt-2">
+                  {{ calcularPorcentajeAdelanto() >= 50 ? '✓ Excelente adelanto' :
+                  calcularPorcentajeAdelanto() >= 30 ? '✓ Adelanto aceptable' : '⚠ Adelanto insuficiente' }}
+                </p>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+              <i class="ph ph-package text-xl text-amber-600"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900">Observaciones de Producción</h3>
+              <p class="text-xs text-slate-600">Instrucciones especiales (opcional)</p>
+            </div>
+          </div>
+          <form [formGroup]="produccionForm">
+            <textarea formControlName="observaciones" maxlength="500" rows="3"
+              class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 resize-none"
+              [class.border-red-500]="campoEsInvalido(produccionForm, 'observaciones')"
+              placeholder="Ej: Entregar antes del mediodía, empaquetar con cuidado extra...">
+            </textarea>
+            <div class="flex justify-between items-center mt-1">
+              <p *ngIf="campoEsInvalido(produccionForm, 'observaciones')" class="text-xs text-red-600">
+                {{obtenerErrorCampo(produccionForm, 'observaciones')}}
+              </p>
+              <span class="text-xs text-slate-500 ml-auto">
+                {{produccionForm.get('observaciones')?.value?.length || 0}}/500 caracteres
+              </span>
+            </div>
+          </form>
+        </div>
+
+        <!-- Trabajos cotizados - Compacto -->
+
+
+      </div>
+
+      <!-- Columna derecha - Resumen y acciones -->
+      <div class="lg:col-span-1 space-y-6">
+
+        <!-- Resumen financiero destacado -->
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 text-white sticky top-6">
+          <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+            <div class="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center">
+              <i class="ph ph-file-text text-slate-900"></i>
+            </div>
+            Resumen del Pedido
+          </h2>
+
+          <div class="space-y-4 mb-6">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-700">
+              <span class="text-slate-300">Total Cotización</span>
+              <span class="text-2xl font-bold">Bs.{{confirmacionPedido?.cotizacion?.costoTotal | number:'1.2-2'}}</span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-slate-700">
+              <span class="text-slate-300">Adelanto</span>
+              <span class="text-xl font-bold text-emerald-400">Bs.{{pagoForm.get('monto_adelanto')?.value || 0 |
+                number:'1.2-2'}}</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">Saldo Pendiente</span>
+              <span class="text-xl font-bold text-amber-400">Bs.{{calcularSaldoPendiente() | number:'1.2-2'}}</span>
+            </div>
+          </div>
+
+          <!-- Fecha de pago - Solo visual -->
+          <div class="bg-slate-700 rounded-xl p-4 mb-6">
+            <div class="flex items-center gap-3">
+              <i class="ph ph-calendar text-xl text-blue-400"></i>
+              <div>
+                <p class="text-xs text-slate-400">Fecha de Pago</p>
+                <p class="font-semibold text-white">{{pagoForm.get('fecha_pago')?.value | date:'dd/MM/yyyy'}}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="space-y-3">
+            <button (click)="confirmarYEnviarProduccion()" [disabled]="isLoading"
+              class="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+              <i class="ph ph-check-circle text-xl"></i>
+              {{isLoading ? 'Procesando...' : 'Confirmar y Enviar'}}
+              <i class="ph ph-arrow-right text-xl"></i>
+            </button>
+
+            <button (click)="cancelar()" [disabled]="isLoading"
+              class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 border-2 border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed">
+              Cancelar
+            </button>
+          </div>
+
+          <!--<div class="mt-6 pt-6 border-t border-slate-700">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-400">Estado</span>
+              <span class="font-bold text-sm px-3 py-1 rounded-full"
+                [class.bg-emerald-500]="calcularPorcentajeAdelanto() >= 50"
+                [class.bg-yellow-500]="calcularPorcentajeAdelanto() >= 30 && calcularPorcentajeAdelanto() < 50"
+                [class.bg-red-500]="calcularPorcentajeAdelanto() < 30">
+                {{getEstadoTexto()}}
+              </span>
+            </div>
+          </div>-->
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

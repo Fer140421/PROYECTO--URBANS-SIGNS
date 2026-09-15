@@ -1,0 +1,255 @@
+<header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Listado de Proveedores</h1>
+    </div>
+</header>
+
+<!-- Filters -->
+<!-- Filters -->
+<div class="bg-white p-4 border-b border-gray-200">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+        <!-- Campo de búsqueda - Más ancho en pantallas grandes -->
+        <div class="relative flex-1 lg:flex-[2]">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                class="block w-full pl-10 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                placeholder="Buscar proveedor">
+            <button (click)="loadSuppliers(0)"
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                Buscar
+            </button>
+        </div>
+
+        <!-- Select de filtro por estado -->
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="status" (change)="onStatusChange()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option>Ordenar por</option>
+                <option value="true">Activos</option>
+                <option value="false">Eliminados</option>
+                <option value="all">Todos</option>
+            </select>
+        </div>
+
+        <!-- Botón de nuevo proveedor -->
+        <div class="w-full lg:w-auto">
+            <button
+                class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 whitespace-nowrap"
+                routerLink="/home/register-suppliers">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo proveedor
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="flex justify-end bg-white px-4 py-3">
+    <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+</div>
+<app-responsive-data-view [items]="filteredSuppliers" [mode]="viewMode" [loading]="isLoading" loadingLabel="Cargando proveedores" emptyTitle="No hay proveedores" emptyMessage="No se encontraron proveedores con los filtros seleccionados." tableMinWidth="64rem" [columns]="6">
+    <ng-template appDataHeader><div class="grid grid-cols-[8rem_minmax(16rem,1fr)_10rem_minmax(14rem,1fr)_8rem_10rem] gap-4 items-center px-6 py-3"><span>Código</span><span>Proveedor</span><span>Contacto</span><span>Ubicación</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+    <ng-template appDataRow let-supplier><div class="grid grid-cols-[8rem_minmax(16rem,1fr)_10rem_minmax(14rem,1fr)_8rem_10rem] gap-4 items-center px-6 py-4">
+        <span class="font-medium text-gray-900 truncate">{{ supplier.ci }}</span><div class="min-w-0 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-600 font-medium uppercase">{{ supplier.name?.charAt(0) }}{{ supplier.ap?.charAt(0) }}</div><span class="font-medium text-gray-900 truncate">{{ supplier.name }} {{ supplier.ap }} {{ supplier.am }}</span></div><span class="text-sm text-gray-600 truncate">{{ supplier.phone }}</span><span class="text-sm text-gray-600 truncate">{{ supplier.address }}<span *ngIf="supplier.city">, {{ supplier.city }}</span></span><span class="justify-self-start px-2.5 py-1 text-xs font-medium rounded-full" [ngClass]="supplier.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">{{ supplier.status ? 'Activo' : 'Eliminado' }}</span><div class="flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openEditModal(supplier)"></app-action-icon-button><app-action-icon-button [label]="supplier.status ? 'Anular' : 'Activar'" [icon]="supplier.status ? 'ph ph-x-circle' : 'ph ph-check-circle'" [variant]="supplier.status ? 'danger' : 'success'" (action)="openDeleteModal(supplier)"></app-action-icon-button></div>
+    </div></ng-template>
+    <ng-template appDataCard let-supplier><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 flex items-center gap-3 border-b border-gray-100"><div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-600 font-semibold uppercase">{{ supplier.name?.charAt(0) }}{{ supplier.ap?.charAt(0) }}</div><div class="min-w-0 flex-1"><h3 class="font-semibold text-gray-900 break-words">{{ supplier.name }} {{ supplier.ap }} {{ supplier.am }}</h3><p class="text-xs text-gray-500 mt-1 break-all">Código: {{ supplier.ci }}</p></div><span class="px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap" [ngClass]="supplier.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">{{ supplier.status ? 'Activo' : 'Eliminado' }}</span></div><div class="p-4 space-y-3 flex-1 text-sm min-w-0"><div class="flex gap-2"><i class="ph ph-phone text-gray-400"></i><span class="break-all">{{ supplier.phone }}</span></div><div class="flex gap-2 min-w-0"><i class="ph ph-map-pin text-gray-400 flex-shrink-0"></i><span class="break-words min-w-0">{{ supplier.address }}<span *ngIf="supplier.city">, {{ supplier.city }}</span></span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openEditModal(supplier)"></app-action-icon-button><app-action-icon-button [label]="supplier.status ? 'Anular' : 'Activar'" [icon]="supplier.status ? 'ph ph-x-circle' : 'ph ph-check-circle'" [variant]="supplier.status ? 'danger' : 'success'" (action)="openDeleteModal(supplier)"></app-action-icon-button></footer></article></ng-template>
+    <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : currentPage * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> proveedores</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="loadSuppliers(currentPage - 1)" [disabled]="currentPage === 0" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of [].constructor(totalPages); let i = index" (click)="loadSuppliers(i)" [ngClass]="currentPage === i ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ i + 1 }}</button><button (click)="loadSuppliers(currentPage + 1)" [disabled]="currentPage >= totalPages - 1" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+</app-responsive-data-view>
+
+<app-loading *ngIf="false" variant="table" [columns]="5" label="Cargando proveedores"></app-loading>
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Código</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Proveedor</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Contacto</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ubicación</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado</th>
+                    <th scope="col"
+                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <!-- Supplier 1 -->
+                <tr class="hover:bg-gray-50" *ngFor="let supplier of filteredSuppliers">
+                    <td data-label="CI" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{supplier.ci}}</td>
+                    <td data-label="Proveedor" class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-600 font-medium">AM</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{supplier.name}}
+                                    {{supplier.ap}}</div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td data-label="Contacto" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="text-gray-500">{{supplier.phone}}</div>
+                    </td>
+                    <td data-label="Ubicación" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{supplier.address}}</td>
+                    <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                        <span [ngClass]="supplier.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                            class="px-2 py-1 text-xs font-medium rounded-full">
+                            {{ supplier.status ? 'Activo' : 'Eliminado' }}
+                        </span>
+                    </td>
+                    <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                        <button title="Editar" (click)="openEditModal(supplier)"
+                            class="text-blue-500 hover:text-blue-700 text-2xl">
+                            <i class="ph ph-pencil-simple"></i>
+                        </button>
+                        <button title="Ver Detalles" class="text-gray-500 hover:text-gray-700 text-2xl">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                        <button (click)="openDeleteModal(supplier)" [title]="supplier.status ? 'Anular' : 'Confirmar'"
+                            [ngClass]="supplier.status ? 'text-red-500 hover:text-red-700 text-2xl' : 'text-green-500 hover:text-green-700 text-2xl'">
+                            <i [ngClass]="supplier.status ? 'ph ph-x-circle' : 'ph ph-check-circle'"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Mostrando
+                    <span class="font-medium">{{ currentPage * pageSize + 1 }}</span>
+                    a
+                    <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalItems) }}</span>
+                    de
+                    <span class="font-medium">{{ totalItems }}</span>
+                    proveedores
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <!-- Anterior -->
+                    <button (click)="loadSuppliers(currentPage - 1)" [disabled]="currentPage === 0"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Anterior</span>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Números de página -->
+                    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+                        <button (click)="loadSuppliers(i)" [ngClass]="{
+                    'z-10 bg-black border-black text-white': currentPage === i,
+                    'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': currentPage !== i
+                    }" class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            {{ i + 1 }}
+                        </button>
+                    </ng-container>
+
+                    <!-- Siguiente -->
+                    <button (click)="loadSuppliers(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="sr-only">Siguiente</span>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="isEditModalOpen">
+    <div
+        class="bg-white rounded-lg shadow-2xl w-96 p-6 relative transform transition-all duration-300 ease-out opacity-0 scale-95 animate-fade-in-modal">
+        <h2 class="text-xl font-bold mb-4">Editar Proveedor</h2>
+
+        <form (ngSubmit)="updateSupplier()">
+            <!-- Nombre -->
+            <label class="block mb-2 font-medium">Nombre</label>
+            <input type="text" [(ngModel)]="selectedSupplier.name" name="name_people" required
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- Apellido Paterno -->
+            <label class="block mb-2 font-medium">Apellido Paterno</label>
+            <input type="text" [(ngModel)]="selectedSupplier.ap" name="ap"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- Apellido Materno -->
+            <label class="block mb-2 font-medium">Apellido Materno</label>
+            <input type="text" [(ngModel)]="selectedSupplier.am" name="am"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- CI -->
+            <label class="block mb-2 font-medium">Codigo de proveedor</label>
+            <input type="text" [(ngModel)]="selectedSupplier.ci" name="ci"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" disabled />
+
+            <!-- Teléfono -->
+            <label class="block mb-2 font-medium">Teléfono</label>
+            <input type="text" [(ngModel)]="selectedSupplier.phone" name="phone_number"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- Dirección -->
+            <label class="block mb-2 font-medium">Dirección</label>
+            <input type="text" [(ngModel)]="selectedSupplier.address" name="addres"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- Ciudad -->
+            <label class="block mb-2 font-medium">Ciudad</label>
+            <input type="text" [(ngModel)]="selectedSupplier.city" name="city"
+                class="w-full mb-4 border border-gray-300 rounded px-3 py-2" />
+
+            <!-- Botones -->
+            <div class="flex justify-end space-x-3">
+                <button type="button" (click)="closeEditModal()"
+                    class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100">Cancelar</button>
+            <button type="submit" [disabled]="isProcessing" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-50">{{ isProcessing ? 'Guardando...' : 'Guardar' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+
+<div *ngIf="isDeleteModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+    <div class="bg-white rounded-lg p-6 shadow-lg w-96 animate-fade-in-modal">
+        <h2 class="text-lg font-bold mb-4 text-gray-800"> {{ confirmTitle }}</h2>
+        <p class="text-gray-600 mb-6"> {{ confirmMessage }}</p>
+
+        <div class="flex justify-end space-x-3">
+            <button (click)="closeConfirmModal()" [disabled]="isProcessing"
+                class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancelar</button>
+            <button (click)="confirm()" [disabled]="isProcessing"
+                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Confirmar</button>
+        </div>
+    </div>
+</div>

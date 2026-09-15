@@ -1,0 +1,129 @@
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+  <h2 class="text-2xl font-bold text-black mb-6">Registro de Préstamo de Herramientas</h2>
+  <form (ngSubmit)="onSubmit()" class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Selección de empleado -->
+      <div>
+        <label class="block text-sm font-medium text-black mb-2">Trabajador</label>
+        <select [(ngModel)]="idEmpleado" name="idEmpleado" required
+          class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+          <option disabled [ngValue]="null">Seleccione el trabajador</option>
+          <option *ngFor="let data of ListEmpleadosActivos" [value]="data.idEmployee">
+            {{ data.fullName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Fecha de préstamo -->
+      <div>
+        <label class="block text-sm font-medium text-black mb-2">Fecha de préstamo</label>
+        <input type="datetime-local" [(ngModel)]="fechaPrestamo" name="fechaPrestamo" disabled
+          class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-black mb-2">Tipo de prestamo</label>
+        <select [(ngModel)]="tipoPrestamo" name="tipoPrestamo" required
+          class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+          <option value="DIARIO">
+            DIARIO
+          </option>
+          <option value="PROYECTO">
+            PROYECTO
+          </option>
+          <option value="INDEFINIDO">
+            INDEFINIDO
+          </option>
+        </select>
+      </div>
+
+      <!-- Selección de Pedido (Opcional) -->
+      <div>
+        <label class="block text-sm font-medium text-black mb-2">Pedido / Trabajo Asociado (Opcional)</label>
+        <select [(ngModel)]="idPedido" name="idPedido"
+          class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+          <option [ngValue]="null">-- Ninguno / Préstamo General --</option>
+          <option *ngFor="let p of pedidosPendientes" [value]="p.idPedido">
+            Pedido #{{ p.idPedido }} - {{ p.cliente }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Observación -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-black mb-2">Observaciones del Préstamo (Opcional)</label>
+        <input type="text" [(ngModel)]="observacion" name="observacion" placeholder="Detalle sobre el uso de herramientas, obra o taller..."
+          class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+      </div>
+
+      <!-- Selección de herramientas -->
+      <div class="md:col-span-2">
+        <h3 class="text-lg font-bold text-black mt-4 mb-2">Herramientas a prestar</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+          <div>
+            <label class="block text-sm font-medium text-black mb-2">Herramienta</label>
+            <select [(ngModel)]="selectedHerramientaId" [ngModelOptions]="{standalone: true}"
+              class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+              <option disabled [ngValue]="null">Seleccione herramienta</option>
+              <option [ngValue]="data.idHerramienta" *ngFor="let data of ListHerramientasActivas">
+                {{ data.nombre }}-{{ data.codigo }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <button type="button" (click)="agregarHerramienta()"
+              class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium">
+              + Agregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla de herramientas seleccionadas -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="min-w-full border border-gray-300">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 border">#</th>
+                <th class="px-4 py-2 border">Foto</th>
+                <th class="px-4 py-2 border">Herramienta</th>
+                <th class="px-4 py-2 border">Codigo</th>
+                <th class="px-4 py-2 border">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of HerramientasSeleccionadas; let i = index">
+                <td class="px-4 py-2 border">{{ i + 1 }}</td>
+                <td class="px-4 py-2 border text-center">
+                  <img *ngIf="h.foto" [src]="h.foto" alt="{{ h.nombre }}"
+                    class="h-10 w-10 object-cover mx-auto rounded" />
+                  <span *ngIf="!h.foto">Sin imagen</span>
+                </td>
+                <td class="px-4 py-2 border">{{ h.nombre }}</td>
+                <td class="px-4 py-2 border">{{ h.codigo }}</td>
+                <td class="px-4 py-2 border text-center">
+                  <button type="button" (click)="eliminarHerramienta(i)"
+                    class="text-red-500 hover:underline">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <small *ngIf="HerramientasSeleccionadas.length === 0" class="text-gray-500 block mt-2">
+            No hay herramientas agregadas
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="mt-8 flex justify-end space-x-4">
+      <button type="button" (click)="resetForm()"
+        class="px-6 py-2 border border-black text-black rounded-lg hover:bg-gray-100 transition font-medium">
+        Cancelar
+      </button>
+      <button type="submit"
+        class="px-6 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium"
+            [disabled]="!idEmpleado || HerramientasSeleccionadas.length === 0 || isProcessing">
+        Guardar Préstamo
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,157 @@
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE y Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Conserva el mismo aspecto del hover en la opción correspondiente a la ruta actual. */
+#sidebar nav a.sidebar-item-active {
+  background-color: #FFD000;
+  color: #000;
+}
+
+.sidebar-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 360ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 220ms ease,
+    visibility 0s linear 360ms;
+}
+
+.sidebar-submenu--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 360ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 300ms ease 50ms,
+    visibility 0s linear 0s;
+}
+
+.sidebar-submenu__content {
+  min-height: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+  transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-submenu--open .sidebar-submenu__content {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-submenu,
+  .sidebar-submenu--open,
+  .sidebar-submenu__content {
+    transition-duration: 0.01ms;
+    transition-delay: 0s;
+  }
+}
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* En móvil el menú lateral debe cubrir al header cuando se abre. */
+@media (max-width: 767px) {
+  #sidebar {
+    z-index: 60;
+  }
+}
+
+@media (min-width: 768px) {
+  #sidebar.sidebar-collapsed {
+    width: 5rem;
+  }
+
+  #sidebar.sidebar-collapsed .sidebar-brand-text,
+  #sidebar.sidebar-collapsed nav > div > button,
+  #sidebar.sidebar-collapsed nav > a {
+    font-size: 0;
+  }
+
+  #sidebar.sidebar-collapsed .sidebar-brand-text {
+    display: none;
+  }
+
+  #sidebar.sidebar-collapsed .sidebar-link,
+  #sidebar.sidebar-collapsed nav > div > button {
+    justify-content: center;
+  }
+
+  #sidebar.sidebar-collapsed nav > div > button > span,
+  #sidebar.sidebar-collapsed nav > div > button > i.ph-caret-down {
+    font-size: 0;
+  }
+
+  #sidebar.sidebar-collapsed nav > div > button > span > i,
+  #sidebar.sidebar-collapsed nav > a > i {
+    font-size: 1.25rem;
+  }
+
+  #sidebar.sidebar-collapsed nav > div > div {
+    display: none;
+  }
+
+  #sidebar.sidebar-collapsed .sidebar-brand-text + * {
+    display: none;
+  }
+
+  #sidebar.sidebar-collapsed .flex.items-center.gap-2 {
+    justify-content: center;
+  }
+
+  #sidebar.sidebar-collapsed img {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+    /* Animación de aparición del menú */
+    .user-menu {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-10px) scale(0.96);
+      transform-origin: top right;
+      transition:
+        opacity 220ms ease,
+        transform 280ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 280ms;
+    }
+
+    .user-menu--open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      transition:
+        opacity 260ms ease 30ms,
+        transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 0s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .user-menu,
+      .user-menu--open {
+        transition-duration: 0.01ms;
+        transition-delay: 0s;
+      }
+    }
+
+    /* Sombra suave para el menú */
+    .shadow-xl {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }

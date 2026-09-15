@@ -1,0 +1,249 @@
+<!-- Modal de Modificación -->
+<div class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="mostrar">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal">
+
+        <!-- Header del Modal -->
+        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Modificar Solicitud</h2>
+                    <p class="text-yellow-100 text-sm mt-1">Código: {{solicitud?.codSolicitud}}</p>
+                </div>
+                <button (click)="cerrar.emit()" class="text-white hover:text-yellow-200 transition-colors">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <form [formGroup]="modificacionForm" (ngSubmit)="onGuardar()" class="space-y-6">
+
+                <!-- Información del Cliente (Solo lectura) -->
+                <!-- Información del Cliente -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                    <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="ph ph-user-circle text-yellow-600 mr-2"></i>
+                        Información del Cliente
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Tipo de cliente -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Cliente</label>
+                            <p class="text-gray-900">{{ solicitud?.cliente?.tipoClientePersonaEmpresa }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo</label>
+                            <p class="text-gray-900">{{ solicitud?.cliente?.correo }}</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- Si es Persona -->
+                    <div *ngIf="solicitud?.cliente?.tipoClientePersonaEmpresa === 'Persona'; else empresaInfo">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                <p class="text-gray-900 font-medium">
+                                    {{ solicitud?.cliente?.persona?.name_people }} {{ solicitud?.cliente?.persona?.ap }}
+                                    {{ solicitud?.cliente?.persona?.am }}
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CI</label>
+                                <p class="text-gray-900">{{ solicitud?.cliente?.persona?.ci }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <p class="text-gray-900">{{ solicitud?.cliente?.persona?.phone_number }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Si es Empresa -->
+                    <ng-template #empresaInfo>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
+                                <p class="text-gray-900 font-medium">{{ solicitud?.cliente?.empresa?.razonSocial }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">NIT</label>
+                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.nit }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.telefono }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.direccion }}</p>
+                            </div>
+                        </div>
+                    </ng-template>
+                </div>
+
+                <!-- Estado de la Solicitud -->
+                <!-- Estado de la Solicitud Mejorado -->
+                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <label class="block text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <i class="ph ph-flag text-yellow-600 text-lg"></i>
+                        Estado de la Solicitud *
+                    </label>
+
+                    <div class="px-4 py-3 rounded-lg text-center font-bold text-sm tracking-wide border transition-all duration-200"
+                        [ngClass]="{
+            'bg-yellow-50 text-yellow-800 border-yellow-300': modificacionForm.get('estado')?.value === 'PENDIENTE',
+            'bg-blue-50 text-blue-800 border-blue-300': modificacionForm.get('estado')?.value === 'REVISION',
+            'bg-green-50 text-green-800 border-green-300': modificacionForm.get('estado')?.value === 'COTIZADA',
+            'bg-red-50 text-red-800 border-red-300': modificacionForm.get('estado')?.value === 'CANCELADA'
+        }">
+
+                        <span class="text-base font-semibold">
+                            {{ modificacionForm.get('estado')?.value }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Observaciones y Notas
+                    </label>
+                    <textarea formControlName="observaciones" rows="4"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        placeholder="Agregue observaciones, instrucciones especiales o cambios requeridos..."></textarea>
+                </div>
+
+                <!-- Sección de Trabajos -->
+                <div class="border-t pt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <i class="ph ph-hammer text-yellow-600 mr-2"></i>
+                            Trabajos Solicitados
+                        </h3>
+                        <button type="button" (click)="agregarTrabajo()"
+                            class="bg-yellow-500 text-black font-medium py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 flex items-center gap-2 text-sm">
+                            <i class="ph ph-plus"></i>
+                            Agregar Trabajo
+                        </button>
+                    </div>
+
+                    <!-- Lista de Trabajos -->
+                    <div formArrayName="trabajos" class="space-y-4">
+                        <div *ngFor="let trabajo of trabajos.controls; let i = index" [formGroupName]="i"
+                            class="border border-gray-200 rounded-lg p-4 bg-white">
+
+                            <!-- Header del Trabajo -->
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-medium text-gray-900">Trabajo {{i + 1}}</h4>
+                                <button type="button" (click)="removerTrabajo(i)" *ngIf="trabajos.length > 1"
+                                    class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Campos del Trabajo -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <!-- Tipo de Trabajo -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
+                                    <select formControlName="id_trabajo"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
+                                        <option value="">Seleccione trabajo</option>
+                                        <option *ngFor="let trabajo of listTrabajos" [value]="trabajo.id">
+                                            {{ trabajo.nombre }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Cantidad -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad *</label>
+                                    <input type="number" formControlName="cantidad" min="1"
+                                        (input)="calcularAreaTrabajo(i)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
+                                </div>
+
+                                <!-- Base -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Base (m) *</label>
+                                    <input type="number" step="0.01" formControlName="base" min="0.1"
+                                        (input)="calcularAreaTrabajo(i)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
+                                </div>
+
+                                <!-- Altura -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Altura (m) *</label>
+                                    <input type="number" step="0.01" formControlName="altura" min="0.1"
+                                        (input)="calcularAreaTrabajo(i)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Descripción Adicional -->
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                                <textarea formControlName="descripcion" rows="2"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
+                                    placeholder="Descripción detallada del trabajo..."></textarea>
+                            </div>
+
+                            <!-- Información Calculada -->
+                            <!-- Área Total Mejorado -->
+                            <div class="mt-5 bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                <h5 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="ph ph-ruler text-yellow-600 text-lg"></i>
+                                    Área Total del Trabajo
+                                </h5>
+
+                                <div
+                                    class="flex items-center justify-center bg-yellow-50 border border-yellow-200 rounded-lg py-4">
+                                    <span class="text-2xl font-bold text-gray-900">
+                                        {{ trabajo.get('area_total')?.value || 0 }}
+                                    </span>
+                                    <span class="ml-1 text-lg text-gray-700 font-medium">m²</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje cuando no hay trabajos -->
+                    <div *ngIf="trabajos.length === 0"
+                        class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <i class="ph ph-hammer text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-500">No hay trabajos agregados</p>
+                        <p class="text-sm text-gray-400 mt-1">Agregue al menos un trabajo a la solicitud</p>
+                    </div>
+                </div>
+
+                <!-- Mensajes de Error/Éxito -->
+                <div *ngIf="mensajeError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="ph ph-warning-circle text-red-400 mr-3"></i>
+                        <p class="text-sm text-red-700">{{mensajeError}}</p>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end gap-3 pt-6 border-t">
+                    <button type="button" (click)="cerrar.emit()" [disabled]="guardando"
+                        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" [disabled]="guardando || modificacionForm.invalid"
+                        class="px-6 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2">
+                        <i class="ph ph-floppy-disk" [class.animate-pulse]="guardando"></i>
+                        {{guardando ? 'Guardando...' : 'Guardar Cambios'}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

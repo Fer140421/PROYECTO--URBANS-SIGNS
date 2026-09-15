@@ -1,0 +1,572 @@
+<!-- urban-signs.component.html -->
+<div class="min-h-screen bg-black text-white font-sans overflow-x-hidden">
+  <!-- Header Modernizado -->
+  <header class="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-xl border-b border-gray-800/50">
+    <nav class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-tight">
+          <span class="text-[#FFD000]">URBAN</span> SIGNS
+        </div>
+
+        <!-- Menú Desktop Mejorado -->
+        <div class="hidden md:flex space-x-1 bg-black/50 rounded-2xl p-1 border border-gray-800/50">
+          <a (click)="scrollTo('inicio')"
+            class="px-6 py-3 rounded-xl hover:bg-[#FFD000]/10 hover:text-[#FFD000] transition-all duration-300 cursor-pointer font-medium">
+            Inicio
+          </a>
+          <a (click)="scrollTo('servicios')"
+            class="px-6 py-3 rounded-xl hover:bg-[#FFD000]/10 hover:text-[#FFD000] transition-all duration-300 cursor-pointer font-medium">
+            Servicios
+          </a>
+          <a (click)="scrollTo('portafolio')"
+            class="px-6 py-3 rounded-xl hover:bg-[#FFD000]/10 hover:text-[#FFD000] transition-all duration-300 cursor-pointer font-medium">
+            Portafolio
+          </a>
+          <!-- <a (click)="scrollTo('cotizacion')"
+            class="px-6 py-3 rounded-xl hover:bg-[#FFD000]/10 hover:text-[#FFD000] transition-all duration-300 cursor-pointer font-medium">
+            Cotización
+          </a>-->
+          <!--<a (click)="scrollTo('contacto')"
+            class="px-6 py-3 rounded-xl hover:bg-[#FFD000]/10 hover:text-[#FFD000] transition-all duration-300 cursor-pointer font-medium">
+            Contacto
+          </a>-->
+        </div>
+
+        <!-- Botón Mobile Mejorado -->
+        <button
+          class="md:hidden p-2 rounded-lg bg-[#FFD000]/10 text-[#FFD000] hover:bg-[#FFD000]/20 transition-all duration-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section Ultra Moderna -->
+  <section id="inicio" class="relative h-screen flex items-center justify-center overflow-hidden">
+    <!-- Efectos de Partículas 3D -->
+    <div class="absolute inset-0">
+      <!-- Partículas flotantes -->
+      <div class="absolute top-1/4 left-1/4 w-4 h-4 bg-[#FFD000] rounded-full animate-float opacity-60"></div>
+      <div class="absolute top-3/4 right-1/3 w-3 h-3 bg-[#FFD000] rounded-full animate-float"
+        style="animation-delay: 1s; animation-duration: 8s;"></div>
+      <div class="absolute bottom-1/3 left-1/3 w-2 h-2 bg-[#FFD000] rounded-full animate-float"
+        style="animation-delay: 2s; animation-duration: 6s;"></div>
+
+      <!-- Gradientes animados -->
+      <div
+        class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#FFD000]/20 to-transparent rounded-full blur-3xl animate-pulse">
+      </div>
+      <div
+        class="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#FFD000]/10 to-transparent rounded-full blur-3xl animate-pulse"
+        style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Grid 3D Interactivo -->
+    <div class="absolute inset-0 opacity-[0.03]">
+      <div class="w-full h-full transform-3d" style="
+        background-image: 
+          linear-gradient(rgba(255, 208, 0, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 208, 0, 0.3) 1px, transparent 1px);
+        background-size: 60px 60px;
+        transform: perspective(1000px) rotateX(65deg) translateZ(0);
+      "></div>
+    </div>
+
+    <div class="relative z-10 text-center px-4 max-w-6xl">
+      <!-- Logo Principal con Efecto Neon -->
+      <div class="relative mb-8 perspective-3d">
+        <div class="text-7xl md:text-9xl font-black tracking-tighter leading-none transform-3d">
+          <span class="text-[#FFD000] drop-shadow-[0_0_30px_rgba(255,208,0,0.5)]">URBAN</span>
+          <span class="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] block md:inline">SIGNS</span>
+        </div>
+        <!-- Efecto de resplandor -->
+        <div
+          class="absolute -inset-8 bg-gradient-to-r from-[#FFD000] to-transparent opacity-10 blur-3xl rounded-full -z-10 animate-glow">
+        </div>
+      </div>
+
+      <p class="text-2xl md:text-3xl mb-12 opacity-90 font-light max-w-3xl mx-auto leading-relaxed">
+        Transformamos <span class="text-[#FFD000] font-semibold">ideas creativas</span> en experiencias visuales
+        impactantes desde 2010
+      </p>
+
+      <!-- Stats en Tiempo Real -->
+      <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">13+</div>
+          <div class="text-sm opacity-80">Años de Experiencia</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">500+</div>
+          <div class="text-sm opacity-80">Proyectos Completados</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">98%</div>
+          <div class="text-sm opacity-80">Clientes Satisfechos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll Indicator Mejorado -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+      <div class="flex flex-col items-center gap-2">
+        <span class="text-sm text-[#FFD000] opacity-80">Desplazar</span>
+        <div class="w-6 h-10 border-2 border-[#FFD000] rounded-full flex justify-center relative">
+          <div class="w-1 h-3 bg-[#FFD000] rounded-full mt-2 animate-bounce absolute"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section Ultra Moderna -->
+  <section id="nosotros" class="py-24 px-4 max-w-7xl mx-auto relative">
+    <!-- Fondo Decorativo -->
+    <div
+      class="absolute top-1/2 left-0 w-96 h-96 bg-[#FFD000]/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2">
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-16 items-center relative z-10">
+      <div class="space-y-8">
+        <div>
+          <h2 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <span class="text-[#FFD000]">13+ años</span> de<br>excelencia gráfica
+          </h2>
+          <p class="text-xl opacity-90 mb-8 leading-relaxed">
+            En <span class="text-[#FFD000] font-semibold">Urban Signs</span>, hemos estado transformando las calles de
+            Tarija con soluciones visuales impactantes desde 2010. Nuestra pasión por el diseño y la calidad nos ha
+            convertido en líderes de la industria gráfica en Bolivia.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div class="bg-gray-900/50 rounded-2xl p-6 border border-gray-800 hover-lift">
+            <div class="text-3xl font-bold text-[#FFD000] mb-2">500+</div>
+            <div class="opacity-80">Proyectos Completados</div>
+          </div>
+          <div class="bg-gray-900/50 rounded-2xl p-6 border border-gray-800 hover-lift">
+            <div class="text-3xl font-bold text-[#FFD000] mb-2">50+</div>
+            <div class="opacity-80">Clientes Activos</div>
+          </div>
+        </div>
+
+        <ul class="space-y-4">
+          <li class="flex items-center text-lg">
+            <div class="w-8 h-8 bg-[#FFD000] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            Materiales de la más alta calidad certificada
+          </li>
+          <li class="flex items-center text-lg">
+            <div class="w-8 h-8 bg-[#FFD000] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            Diseño personalizado para cada cliente
+          </li>
+          <li class="flex items-center text-lg">
+            <div class="w-8 h-8 bg-[#FFD000] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            Entrega puntual y servicio post-venta
+          </li>
+        </ul>
+      </div>
+
+      <!-- Gallery Grid Mejorada -->
+      <div class="grid grid-cols-2 gap-4 lg:gap-6">
+        <div class="space-y-4 lg:space-y-6">
+          <div class="aspect-[4/5] rounded-2xl overflow-hidden hover-lift group">
+            <img src="img-landing/1.jpg" alt="Proyecto 1"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden hover-lift group">
+            <img src="img-landing/2.jpg" alt="Proyecto 2"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+        </div>
+        <div class="space-y-4 lg:space-y-6 mt-8">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden hover-lift group">
+            <img src="img-landing/3.jpg" alt="Proyecto 3"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div class="aspect-[4/5] rounded-2xl overflow-hidden hover-lift group">
+            <img src="img-landing/4.jpg" alt="Proyecto 4"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section Ultra Moderna -->
+  <section id="servicios" class="py-24 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+    <!-- Efectos de fondo -->
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black to-transparent"></div>
+    <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+      <div class="text-center mb-20">
+        <h2 class="text-5xl md:text-6xl font-bold mb-6">
+          Nuestros <span class="text-[#FFD000]">Servicios</span>
+        </h2>
+        <p class="text-xl opacity-90 max-w-3xl mx-auto">
+          Soluciones integrales en diseño gráfico y señalización para potenciar tu marca
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Service 1 - BTL -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">BTL & Eventos</h3>
+          <p class="opacity-90 leading-relaxed">Stands para ferias, armados, juegos publicitarios y asesoría integral
+            para eventos.</p>
+        </div>
+
+        <!-- Service 2 - Letreros -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Letreros</h3>
+          <p class="opacity-90 leading-relaxed">Letreros luminosos, bastidores, letras INOX, acrílicos, metálicas y
+            trupan.</p>
+        </div>
+
+        <!-- Service 3 - Impresión Digital -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Impresión Digital</h3>
+          <p class="opacity-90 leading-relaxed">Banners, rollers, pasacalles, adhesivos, esmerilados y gigantografías.
+          </p>
+        </div>
+
+        <!-- Service 4 - Rotulación -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Rotulación</h3>
+          <p class="opacity-90 leading-relaxed">Camiones, autos, motos, laptops y todo tipo de superficies vehiculares.
+          </p>
+        </div>
+
+        <!-- Service 5 - Señalización -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Señalización</h3>
+          <p class="opacity-90 leading-relaxed">Horizontal, vertical, vial, de seguridad e informativa para espacios
+            públicos y privados.</p>
+        </div>
+
+        <!-- Service 6 - Display -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Display</h3>
+          <p class="opacity-90 leading-relaxed">Banderolas, porta folletos, mesas publicitarias, pop ups y toldos.</p>
+        </div>
+
+        <!-- Service 7 - Diseño Gráfico -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Diseño Gráfico</h3>
+          <p class="opacity-90 leading-relaxed">Imagen institucional, logotipos, arte para web y redes sociales.</p>
+        </div>
+
+        <!-- Service 8 - Consultoría -->
+        <div
+          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Consultoría</h3>
+          <p class="opacity-90 leading-relaxed">Asesoramiento profesional para optimizar tu estrategia visual y de
+            marketing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Section Ultra Moderna -->
+  <section id="portafolio" class="py-24 px-4 relative">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20">
+        <h2 class="text-5xl md:text-6xl font-bold mb-6">
+          Nuestro <span class="text-[#FFD000]">Portafolio</span>
+        </h2>
+        <p class="text-xl opacity-90 max-w-3xl mx-auto">
+          Descubre algunos de nuestros proyectos más destacados que han marcado la diferencia en Tarija y Bolivia
+        </p>
+      </div>
+
+      <!-- Filtros de Portfolio -->
+      <div class="flex flex-wrap justify-center gap-4 mb-12">
+        <button
+          class="px-6 py-3 rounded-full bg-[#FFD000] text-black font-semibold transition-all duration-300 hover:scale-105">
+          Todos
+        </button>
+        <button
+          class="px-6 py-3 rounded-full bg-gray-800 text-white font-semibold transition-all duration-300 hover:bg-[#FFD000] hover:text-black hover:scale-105">
+          BTL
+        </button>
+        <button
+          class="px-6 py-3 rounded-full bg-gray-800 text-white font-semibold transition-all duration-300 hover:bg-[#FFD000] hover:text-black hover:scale-105">
+          Letreros
+        </button>
+        <button
+          class="px-6 py-3 rounded-full bg-gray-800 text-white font-semibold transition-all duration-300 hover:bg-[#FFD000] hover:text-black hover:scale-105">
+          Impresión
+        </button>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Project 1 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/2.jpg" alt="Banner Festival Tarija"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Banner Festival Internacional</h3>
+            <p class="opacity-90 mb-4">Gran banner promocional para el Festival Internacional de Tarija</p>
+            <span class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">Impresión
+              Digital</span>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/5.jpg" alt="Gigantografía Comercial"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Gigantografía Comercial</h3>
+            <p class="opacity-90 mb-4">Impresión a gran escala para centro comercial premium</p>
+            <span
+              class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">Gigantografía</span>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/3.jpg" alt="Letrero Iluminado"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Letrero Iluminado</h3>
+            <p class="opacity-90 mb-4">Diseño e instalación para restaurante gourmet premium</p>
+            <span
+              class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">Letreros</span>
+          </div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/7.jpg" alt="Stand Corporativo"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Stand Corporativo</h3>
+            <p class="opacity-90 mb-4">Stand modular para feria empresarial internacional</p>
+            <span class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">BTL</span>
+          </div>
+        </div>
+
+        <!-- Project 5 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/13.jpg" alt="Rotulación Vehicular"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Rotulación Vehicular</h3>
+            <p class="opacity-90 mb-4">Rotulación completa para flota de transporte empresarial</p>
+            <span
+              class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">Rotulación</span>
+          </div>
+        </div>
+
+        <!-- Project 6 -->
+        <div class="group relative overflow-hidden rounded-3xl hover-lift">
+          <div class="aspect-[4/5] overflow-hidden">
+            <img src="img-landing/11.jpg" alt="Señalización Integral"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+          </div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          </div>
+          <div
+            class="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <h3 class="text-2xl font-bold mb-2">Señalización Integral</h3>
+            <p class="opacity-90 mb-4">Sistema completo de señalización para complejo comercial</p>
+            <span
+              class="inline-block px-4 py-2 bg-[#FFD000] text-black rounded-full text-sm font-semibold">Señalización</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Ver Más -->
+      <div class="text-center mt-12">
+        <button
+          class="px-8 py-4 bg-[#FFD000] text-black font-bold rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FFD000]/30">
+          Ver Más Proyectos
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Mejorado -->
+  <footer class="py-16 bg-gradient-to-b from-black to-gray-900 border-t border-gray-800/50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid md:grid-cols-4 gap-8 mb-12">
+        <!-- Logo y Descripción -->
+        <div class="md:col-span-2">
+          <h2 class="text-3xl font-bold mb-4">
+            <span class="text-[#FFD000]">URBAN</span> SIGNS
+          </h2>
+          <p class="opacity-80 mb-6 max-w-md leading-relaxed">
+            Líderes en soluciones gráficas y señalización en Tarija. Transformamos tus ideas en experiencias visuales
+            impactantes desde 2010.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#"
+              class="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center hover:bg-[#FFD000] hover:text-black transition-all duration-300">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
+              </svg>
+            </a>
+            <a href="#"
+              class="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center hover:bg-[#FFD000] hover:text-black transition-all duration-300">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Enlaces Rápidos -->
+        <div>
+          <h3 class="font-bold text-lg mb-4 text-[#FFD000]">Enlaces Rápidos</h3>
+          <ul class="space-y-3">
+            <li><a (click)="scrollTo('inicio')"
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Inicio</a></li>
+            <li><a (click)="scrollTo('servicios')"
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Servicios</a></li>
+            <li><a (click)="scrollTo('portafolio')"
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Portafolio</a>
+            </li>
+            <li><a (click)="scrollTo('cotizacion')"
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Cotización</a>
+            </li>
+            <li><a (click)="scrollTo('contacto')"
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Contacto</a></li>
+          </ul>
+        </div>
+
+        <!-- Servicios -->
+        <div>
+          <h3 class="font-bold text-lg mb-4 text-[#FFD000]">Servicios</h3>
+          <ul class="space-y-3">
+            <li><a class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">BTL &
+                Eventos</a></li>
+            <li><a class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Letreros</a>
+            </li>
+            <li><a class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Impresión
+                Digital</a></li>
+            <li><a class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Rotulación</a>
+            </li>
+            <li><a
+                class="opacity-80 hover:text-[#FFD000] transition-colors duration-300 cursor-pointer">Señalización</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-8 text-center opacity-80">
+        <p>&copy; 2025 Urban Signs. Todos los derechos reservados. Diseñado y desarrollado por <span
+            class="text-[#FFD000]">BitFusion</span></p>
+      </div>
+    </div>
+  </footer>
+</div>

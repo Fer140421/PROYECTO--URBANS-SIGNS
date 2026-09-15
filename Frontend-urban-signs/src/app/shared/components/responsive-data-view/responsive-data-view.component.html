@@ -1,0 +1,33 @@
+<app-loading *ngIf="loading" [variant]="mode === 'list' ? 'table' : 'cards'" [columns]="columns"
+  [label]="loadingLabel"></app-loading>
+
+<section *ngIf="!loading" class="data-view bg-white rounded-lg shadow-sm overflow-hidden">
+  <div *ngIf="items.length > 0 && mode === 'list'" class="data-view__table-wrap">
+    <table class="data-view__table min-w-full divide-y divide-gray-200" [style.min-width]="tableMinWidth">
+      <thead class="bg-gray-50">
+        <ng-container *ngTemplateOutlet="header?.template ?? null"></ng-container>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <ng-container *ngFor="let item of items; let index = index"
+          [ngTemplateOutlet]="row?.template ?? null"
+          [ngTemplateOutletContext]="{ $implicit: item, index: index }"></ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="items.length > 0 && mode === 'cards'" class="data-view__card-grid">
+    <ng-container *ngFor="let item of items; let index = index"
+      [ngTemplateOutlet]="card?.template ?? null"
+      [ngTemplateOutletContext]="{ $implicit: item, index: index }"></ng-container>
+  </div>
+
+  <div *ngIf="items.length === 0" class="data-view__empty px-4 py-12 text-center">
+    <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+      <i class="ph ph-folder-open text-3xl text-gray-400"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ emptyTitle }}</h3>
+    <p *ngIf="emptyMessage" class="text-gray-600">{{ emptyMessage }}</p>
+  </div>
+
+  <ng-content select="[dataViewFooter]"></ng-content>
+</section>

@@ -1,0 +1,327 @@
+<div class="flex h-screen h-dvh max-h-screen max-h-dvh overflow-hidden overscroll-none bg-gray-100">
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        [class.sidebar-collapsed]="sidebarCollapsed"
+        [class.translate-x-0]="sidebarMobileOpen"
+        [class.-translate-x-full]="!sidebarMobileOpen"
+        class="fixed md:relative z-50 w-80 bg-black text-[#FFD000] flex flex-col p-4 overflow-y-auto no-scrollbar transform -translate-x-full md:translate-x-0 transition-[width,transform] duration-300 ease-in-out h-full">
+
+        <!-- Encabezado del sidebar -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-2">
+                <img src="/img-logos/foto.png" alt="Urban Signs Logo" class="w-20 h-20" />
+                <span class="text-xl font-bold sidebar-brand-text">Urban Works</span>
+            </div>
+            <button (click)="closeSidebar()" class="md:hidden text-[#FFD000] text-2xl focus:outline-none"
+                aria-label="Cerrar menú lateral">
+                &times;
+            </button>
+        </div>
+
+        <nav (click)="closeSidebarOnMobile()" class="space-y-4" aria-label="Navegación principal">
+            <!-- ✅ SECCIÓN PERSONAL - Solo Administrador -->
+            <div *ngIf="canAccessPersonal()">
+                <button (click)="$event.stopPropagation(); toggleSubmenu('personal')"
+                    [attr.aria-expanded]="!!submenuAbierto['personal']"
+                    class="flex items-center justify-between w-full gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded focus:outline-none">
+                    <span><i class="ph ph-user-gear"></i> Personal</span>
+                    <i class="ph ph-caret-down text-lg transition-transform"
+                        [ngClass]="{'rotate-180': submenuAbierto['personal']}"></i>
+                </button>
+
+                <div class="sidebar-submenu" [class.sidebar-submenu--open]="submenuAbierto['personal']"
+                    [attr.aria-hidden]="!submenuAbierto['personal']">
+                  <div class="sidebar-submenu__content ml-4 mt-2 flex flex-col gap-1">
+                    <a routerLink="list-staff" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'EMPLEADO_VER'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-identification-card"></i>Lista de empleados
+                    </a>
+                    <a routerLink="list-users" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasRole="'Gerente'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-user-list"></i>Lista de usuarios
+                    </a>
+                    <a routerLink="roles" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasRole="'Gerente'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-identification-card"></i>Asignación de roles
+                    </a>
+                    <a routerLink="permisos-por-rol" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasRole="'Gerente'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-shield-check"></i>Permisos por rol
+                    </a>
+                    <a routerLink="accesos" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasRole="'Gerente'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-identification-card"></i>Accesos
+                    </a>
+                  </div>
+                </div>
+            </div>
+
+            <!-- ✅ SECCIÓN COTIZACIONES - Administrador y Vendedor -->
+            <div *hasPermission="['SOLICITUD_COTIZACION_VER', 'SOLICITUD_COTIZACION_CREAR', 'SOLICITUD_COTIZACION_EDITAR', 'COTIZACION_VER', 'COTIZACION_CREAR', 'COTIZACION_EDITAR']">
+                <button (click)="$event.stopPropagation(); toggleSubmenu('cotizacion')"
+                    [attr.aria-expanded]="!!submenuAbierto['cotizacion']"
+                    class="flex items-center justify-between w-full gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded focus:outline-none">
+                    <span><i class="ph ph-file-text"></i> Cotizaciones</span>
+                    <i class="ph ph-caret-down text-lg transition-transform"
+                        [ngClass]="{'rotate-180': submenuAbierto['cotizacion']}"></i>
+                </button>
+
+                <div class="sidebar-submenu" [class.sidebar-submenu--open]="submenuAbierto['cotizacion']"
+                    [attr.aria-hidden]="!submenuAbierto['cotizacion']">
+                  <div class="sidebar-submenu__content ml-4 mt-2 flex flex-col gap-1">
+                    <a routerLink="list-solicitudes" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="['SOLICITUD_COTIZACION_VER', 'SOLICITUD_COTIZACION_CREAR', 'SOLICITUD_COTIZACION_EDITAR']"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-file-plus"></i> Lista de solicitudes
+                    </a>
+                    <a routerLink="list-cotizaciones" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="['COTIZACION_VER', 'COTIZACION_CREAR', 'COTIZACION_EDITAR']"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-files"></i> Lista de cotizaciones
+                    </a>
+                  </div>
+                </div>
+            </div>
+
+            <div *hasPermission="'ORDEN_IMPRESION_VER'">
+                <button (click)="$event.stopPropagation(); toggleSubmenu('orden-impresion')"
+                    [attr.aria-expanded]="!!submenuAbierto['orden-impresion']"
+                    class="flex items-center justify-between w-full gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded focus:outline-none">
+                    <span><i class="ph ph-file-text"></i> Orden de Impresion</span>
+                    <i class="ph ph-caret-down text-lg transition-transform"
+                        [ngClass]="{'rotate-180': submenuAbierto['orden-impresion']}"></i>
+                </button>
+
+                <div class="sidebar-submenu" [class.sidebar-submenu--open]="submenuAbierto['orden-impresion']"
+                    [attr.aria-hidden]="!submenuAbierto['orden-impresion']">
+                  <div class="sidebar-submenu__content ml-4 mt-2 flex flex-col gap-1">
+                    <a routerLink="emision-ordenes-impresion" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-file-plus"></i> Emision de orden de impresion
+                    </a>
+                    <a routerLink="recepcion-ordenes-impresion" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-files"></i> Recepcion de orden de impresion
+                    </a>
+                  </div>
+                </div>
+            </div>
+
+            <!-- 🚫 MÓDULO INVENTARIOS OCULTO (Materiales, Stock, Categorías) -->
+            <!--
+            <div *hasPermission="['MATERIAL_VER', 'HERRAMIENTA_VER', 'LOTE_VER', 'CATEGORIA_VER']">
+                <button (click)="$event.stopPropagation(); toggleSubmenu('inventarios')"
+                    [attr.aria-expanded]="!!submenuAbierto['inventarios']"
+                    class="flex items-center justify-between w-full gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded focus:outline-none">
+                    <span><i class="ph ph-package"></i> Inventarios</span>
+                    <i class="ph ph-caret-down text-lg transition-transform"
+                        [ngClass]="{'rotate-180': submenuAbierto['inventarios']}"></i>
+                </button>
+
+                <div class="sidebar-submenu" [class.sidebar-submenu--open]="submenuAbierto['inventarios']"
+                    [attr.aria-hidden]="!submenuAbierto['inventarios']">
+                  <div class="sidebar-submenu__content ml-4 mt-2 flex flex-col gap-1">
+                    <a routerLink="list-inventory-production" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'MATERIAL_VER'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-package"></i>Materiales de produccion
+                    </a>
+                    <a routerLink="list-inventory-materials" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'HERRAMIENTA_VER'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-archive-box"></i>Herramientas de trabajo
+                    </a>
+                    <a routerLink="list-stock" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="['MATERIAL_VER', 'LOTE_VER']"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-package"></i>Stock de materiales
+                    </a>
+                    <a routerLink="list-category" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'CATEGORIA_VER'"
+                        class="flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 rounded text-sm transition">
+                        <i class="ph ph-clipboard-text"></i> Categorías de materiales
+                    </a>
+                  </div>
+                </div>
+            </div>
+            -->
+
+            <!-- ✅ HERRAMIENTAS DE TRABAJO - Se mantiene accesible para el flujo de préstamos -->
+            <a routerLink="list-inventory-materials" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'HERRAMIENTA_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-wrench"></i> Herramientas de trabajo
+            </a>
+
+            <a routerLink="list-pedidos" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'PEDIDO_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-user-list"></i> Pedidos
+            </a>
+
+            <!-- ✅ CLIENTES - Administrador y Vendedor -->
+            <a routerLink="list-clients" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'CLIENTE_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-users-three"></i> Clientes
+            </a>
+
+            <!-- 🚫 PROVEEDORES OCULTO TEMPORALMENTE -->
+            <!--
+            <a routerLink="list-suppliers" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'PROVEEDOR_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-truck"></i> Proveedores
+            </a>
+            -->
+
+            <!-- 🚫 COMPRAS OCULTO TEMPORALMENTE -->
+            <!--
+            <a routerLink="list-compras" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="['COMPRA_VER', 'COMPRA_CREAR', 'COMPRA_EDITAR']"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-package"></i> Compras
+            </a>
+            -->
+
+
+
+            <!-- ✅ SERVICIOS - Administrador -->
+            <a routerLink="list-trabajos" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'TRABAJO_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-clipboard-text"></i> Servicios
+            </a>
+
+            <!-- ✅ SEGUIMIENTO - Administrador, Vendedor y Almacen -->
+            <a routerLink="seguimiento" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'PLANIFICACION_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-clipboard-text"></i> Seguimiento de trabajos
+            </a>
+
+            <!-- ✅ PRÉSTAMOS - Administrador y Almacen -->
+            <a routerLink="list-prestamos" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'PRESTAMO_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-archive-box"></i> Préstamos de materiales
+            </a>
+
+            <!-- ✅ UNIDADES - Solo Administrador -->
+            <!--<a routerLink="list-unidades" *hasRole="'ROLE_Gerente'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-archive-box"></i> Unidades de medida
+            </a>-->
+
+            <!-- ✅ ORDEN DE TRABAJO - Administrador -->
+            <a routerLink="list-ordenes-trabajo" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'COTIZACION_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-clipboard-text"></i> Órdenes de trabajo
+            </a>
+
+            <!-- <a routerLink="list-facturacion" *hasRole="['ROLE_Administrador', 'ROLE_Vendedor']"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-user-list"></i> Facturación
+            </a>-->
+
+            <!-- ✅ REPORTES - Solo Administrador -->
+            <a routerLink="dashboard" routerLinkActive="sidebar-item-active" ariaCurrentWhenActive="page" *hasPermission="'DASHBOARD_VER'"
+                class="sidebar-link flex items-center gap-2 hover:bg-[#FFD000] hover:text-black p-2 text-lg rounded">
+                <i class="ph ph-chart-bar"></i> Reportes
+            </a>
+        </nav>
+    </aside>
+
+    <div *ngIf="sidebarMobileOpen" (click)="closeSidebar()"
+        class="fixed inset-0 bg-black/30 z-40 md:hidden transition-opacity duration-300" aria-hidden="true">
+    </div>
+
+    <main class="flex-1 min-w-0 min-h-0 h-full p-2 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-gray-100">
+        <header class="sticky top-0 z-50 flex justify-between p-3 mb-2 bg-black rounded-md shadow-lg">
+            <div class="flex items-center gap-4">
+                <button (click)="openSidebarOnMobile()" class="md:hidden text-[#FFD000] focus:outline-none"
+                    aria-label="Abrir menú lateral">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <button (click)="toggleSidebar()"
+                    class="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-lg text-[#FFD000] hover:bg-[#FFD000] hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-[#FFD000]"
+                    [attr.aria-label]="sidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'"
+                    [attr.title]="sidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'">
+                    <i class="ph text-xl" [ngClass]="sidebarCollapsed ? 'ph-sidebar-simple' : 'ph-sidebar'"
+                        aria-hidden="true"></i>
+                </button>
+                <h1 class="text-2xl font-bold text-[#FFD000]">URBAN SIGNS SRL</h1>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Notificación -->
+                <div class="flex items-center rounded-lg border border-[#FFD000]/50 p-0.5" aria-label="Seleccionar tema">
+                    <button type="button" (click)="setTheme('light')"
+                        [class.bg-[#FFD000]]="themeService.currentTheme() === 'light'"
+                        [class.text-black]="themeService.currentTheme() === 'light'"
+                        [class.text-[#FFD000]]="themeService.currentTheme() !== 'light'"
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-[#FFD000] hover:text-black transition-colors"
+                        aria-label="Activar modo claro" title="Modo claro">
+                        <i class="ph ph-sun text-lg"></i>
+                    </button>
+                    <button type="button" (click)="setTheme('dark')"
+                        [class.bg-[#FFD000]]="themeService.currentTheme() === 'dark'"
+                        [class.text-black]="themeService.currentTheme() === 'dark'"
+                        [class.text-[#FFD000]]="themeService.currentTheme() !== 'dark'"
+                        class="w-8 h-8 inline-flex items-center justify-center rounded-md hover:bg-[#FFD000] hover:text-black transition-colors"
+                        aria-label="Activar modo oscuro" title="Modo oscuro">
+                        <i class="ph ph-moon text-lg"></i>
+                    </button>
+                </div>
+                <button class="relative text-[#FFD000] hover:text-white transition-colors duration-200 group"
+                    (click)="onNotificationClick()">
+                    <i class="ph ph-bell text-2xl transform group-hover:scale-110 transition-transform duration-200"
+                        [class.animate-bounce]="notificationPulse"></i>
+                    <span
+                        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-semibold shadow-lg">
+                        3
+                    </span>
+                </button>
+
+                <!-- Menú de Usuario -->
+                <div class="relative">
+                    <div (click)="toggleMenu()" [attr.aria-expanded]="menuAbierto" aria-haspopup="menu"
+                        class="w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-[#FFD000] cursor-pointer transform hover:scale-105 transition-all duration-200">
+                        <img [src]="'/perfil.png'" alt="Usuario" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="user-menu absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-10 border border-gray-100"
+                        [class.user-menu--open]="menuAbierto" [attr.aria-hidden]="!menuAbierto" role="menu">
+
+                        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                            <p class="text-sm font-semibold text-gray-900">{{ loginService.getUsername() }}</p>
+                            <p class="text-xs text-gray-500">{{ loginService.getRoles().join(', ') }}</p>
+                        </div>
+
+                        <div class="py-1">
+                            <a routerLink="/home/perfil" (click)="closeMenu()"
+                                class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-yellow-50 hover:text-[#FFD000] transition-all duration-200 group">
+                                <i class="ph ph-user-circle text-xl"></i>
+                                <span class="text-sm font-medium">Mi Perfil</span>
+                            </a>
+
+                            <a routerLink="/home/configuracion" (click)="closeMenu()"
+                                class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-yellow-50 hover:text-[#FFD000] transition-all duration-200 group">
+                                <i class="ph ph-gear text-xl"></i>
+                                <span class="text-sm font-medium">Configuración</span>
+                            </a>
+
+                            <a routerLink="/home/ayuda" (click)="closeMenu()"
+                                class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-yellow-50 hover:text-[#FFD000] transition-all duration-200 group">
+                                <i class="ph ph-question text-xl"></i>
+                                <span class="text-sm font-medium">Ayuda</span>
+                            </a>
+                        </div>
+
+                        <div class="border-t border-gray-100 my-1"></div>
+
+                        <a (click)="logout()"
+                            class="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-all duration-200 cursor-pointer group">
+                            <i class="ph ph-sign-out text-xl"></i>
+                            <span class="text-sm font-medium">Cerrar sesión</span>
+                        </a>
+                    </div>
+
+                    <div *ngIf="menuAbierto" (click)="toggleMenu()" class="fixed inset-0 z-0"></div>
+                </div>
+            </div>
+        </header>
+        <router-outlet></router-outlet>
+    </main>
+</div>
+
+<app-notificaciones *ngIf="showNotifications" (close)="closeNotifications()"></app-notificaciones>

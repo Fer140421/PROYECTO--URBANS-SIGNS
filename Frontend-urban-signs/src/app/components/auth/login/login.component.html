@@ -1,0 +1,132 @@
+<div class="flex flex-col md:flex-row h-dvh w-dvw overflow-hidden">
+  <!-- IZQUIERDA: Logo (header en móvil) -->
+  <div
+    class="w-full md:w-1/2 bg-black flex flex-row md:flex-col justify-between md:justify-center items-center p-3 sm:p-4 md:p-6 text-white">
+    <!-- Versión móvil (header horizontal) -->
+    <div class="flex items-center space-x-3 md:hidden">
+      <img src="/img-logos/foto.png" alt="Urban Signs Logo" class="w-10 sm:w-12 h-auto object-contain" />
+      <h1 class="text-xl sm:text-2xl font-bold italic truncate">URBAN WORKS</h1>
+    </div>
+
+    <!-- Versión desktop -->
+    <div class="hidden md:flex flex-col justify-center items-center w-full px-4">
+      <img src="/img-logos/foto.png" alt="Urban Signs Logo"
+        class="w-[clamp(180px,30vw,500px)] h-auto mb-6 object-contain transition-all duration-300" />
+      <h1 class="text-[clamp(2rem,5vw,4.5rem)] font-bold italic text-center leading-tight transition-all duration-300">
+        URBAN WORKS
+      </h1>
+    </div>
+  </div>
+
+  <!-- DERECHA: Formulario con fondo fijo -->
+  <div
+    class="flex-1 md:w-1/2 flex items-center justify-center bg-yellow-500 relative overflow-auto py-8 sm:py-12 md:py-0 px-4 sm:px-6">
+    <!-- Formulario -->
+    <form [formGroup]="regForm" (ngSubmit)="login()" class="w-full max-w-xs sm:max-w-sm md:max-w-md">
+      <div
+        class="bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 sm:p-8 rounded-3xl w-full shadow-2xl border border-gray-700">
+        <h2
+          class="text-center text-lg sm:text-xl font-bold mb-8 bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent py-2 sm:py-3">
+          INICIAR SESIÓN
+        </h2>
+
+        <!-- Input usuario -->
+        <div class="mb-5 sm:mb-6">
+          <label class="block text-xs sm:text-sm font-semibold mb-2 text-gray-300">Usuario</label>
+          <div class="relative group">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300">
+            </div>
+            <div
+              class="relative flex items-center rounded-2xl px-4 py-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 transition-all duration-300"
+              [ngClass]="{
+              'border-red-500 shadow-lg shadow-red-500/20': fu.usuario.invalid && fu.usuario.touched,
+              'border-yellow-500 shadow-lg shadow-yellow-500/20': fu.usuario.valid && fu.usuario.touched,
+              'hover:border-gray-600': !fu.usuario.touched
+            }">
+              <span class="text-xl mr-3 filter drop-shadow-md">👤</span>
+              <input type="text" data-preserve-case autocomplete="username"
+                class="w-full bg-transparent focus:outline-none text-white placeholder-gray-500 text-sm sm:text-base"
+                placeholder="Ingresa tu usuario" formControlName="usuario" />
+            </div>
+          </div>
+          <div *ngIf="fu.usuario.touched && fu.usuario.invalid"
+            class="text-red-400 text-xs sm:text-sm mt-2 ml-1 flex items-center gap-1">
+            <span class="text-base">⚠</span>
+            <div *ngIf="fu.usuario.hasError('required')">CAMPO OBLIGATORIO</div>
+            <div *ngIf="fu.usuario.hasError('minlength')">MÍNIMO 3 CARACTERES</div>
+          </div>
+        </div>
+
+        <!-- Input contraseña -->
+        <div class="mb-5 sm:mb-6">
+          <label class="block text-xs sm:text-sm font-semibold mb-2 text-gray-300">Clave</label>
+          <div class="relative group">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300">
+            </div>
+            <div
+              class="relative flex items-center rounded-2xl px-4 py-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700 transition-all duration-300"
+              [ngClass]="{
+              'border-red-500 shadow-lg shadow-red-500/20': fu.contrasenia.invalid && fu.contrasenia.touched,
+              'border-yellow-500 shadow-lg shadow-yellow-500/20': fu.contrasenia.valid && fu.contrasenia.touched,
+              'hover:border-gray-600': !fu.contrasenia.touched
+            }">
+              <span class="text-xl mr-3 filter drop-shadow-md">🔒</span>
+              <input [type]="mostrarContrasenia ? 'text' : 'password'" data-preserve-case autocomplete="current-password"
+                class="w-full bg-transparent focus:outline-none text-white placeholder-gray-500 text-sm sm:text-base"
+                placeholder="Ingresa tu clave" formControlName="contrasenia" />
+            </div>
+          </div>
+          <div *ngIf="fu.contrasenia.touched && fu.contrasenia.invalid"
+            class="text-red-400 text-xs sm:text-sm mt-2 ml-1 flex items-center gap-1">
+            <span class="text-base">⚠</span>
+            <div>
+              <div *ngIf="fu.contrasenia.hasError('required')">CAMPO OBLIGATORIO</div>
+              <div *ngIf="fu.contrasenia.hasError('minlength')">MÍNIMO 3 CARACTERES</div>
+              <div *ngIf="fu.contrasenia.hasError('maxlength')">MÁXIMO 200 CARACTERES</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mostrar contraseña -->
+        <div class="mb-6 sm:mb-7 flex items-center space-x-2 ml-1" *ngIf="fu.contrasenia.value">
+          <input type="checkbox" id="showPassword"
+            class="w-4 h-4 sm:w-4 sm:h-4 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-2 cursor-pointer"
+            [checked]="mostrarContrasenia" (change)="mostrarContrasenia = !mostrarContrasenia" />
+          <label for="showPassword"
+            class="text-xs sm:text-sm text-gray-300 cursor-pointer select-none hover:text-white transition">Mostrar
+            contraseña</label>
+        </div>
+
+
+        <!-- Botón -->
+        <button type="submit" [disabled]="isLoading() || isLoginBlocked()"
+          class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold px-4 py-3 sm:px-6 sm:py-3 rounded-2xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 w-full text-sm sm:text-base shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
+          {{ isLoading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+        </button>
+        <div class="mt-4 text-center">
+          <a routerLink="/solicitud-email"
+            class="text-xs sm:text-sm text-gray-400 hover:text-yellow-400 cursor-pointer transition-all duration-300 inline-flex items-center gap-1 group">
+            <span>¿Olvidaste tu contraseña?</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+        </div>
+
+        <!-- Bloqueo temporal: permanece fuera de cualquier control deshabilitado. -->
+        <div *ngIf="isLoginBlocked()"
+          class="text-red-400 text-xs sm:text-sm mt-4 sm:mt-5 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
+          <span class="text-lg">⚠️</span>
+          <span>{{ lockMessage() }} Tiempo restante: {{ formattedLockTime() }}.</span>
+        </div>
+
+        <!-- Error general -->
+        <div *ngIf="errorAutenticacion()"
+          class="text-red-400 text-xs sm:text-sm mt-4 sm:mt-5 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
+          <span class="text-lg">⚠️</span>
+          <span>{{ errorAutenticacion() }}</span>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

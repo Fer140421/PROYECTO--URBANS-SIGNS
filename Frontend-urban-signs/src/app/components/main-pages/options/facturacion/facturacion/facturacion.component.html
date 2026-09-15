@@ -1,0 +1,135 @@
+<!-- facturacion.component.html -->
+<div class="facturacion-container">
+  <div class="header">
+    <h1><i class="fas fa-file-invoice-dollar"></i> Registro de Facturación Electrónica</h1>
+    <p>Complete los datos para registrar una nueva factura electrónica</p>
+  </div>
+
+  <form [formGroup]="facturaForm" (ngSubmit)="onSubmit()" class="factura-form">
+    <div class="form-section">
+      <h2>Información del Pedido</h2>
+      
+      <div class="form-group">
+        <label for="pedidoId">Seleccionar Pedido *</label>
+        <select id="pedidoId" formControlName="pedidoId" (change)="onPedidoSeleccionado($event)" class="form-control">
+          <option value="">-- Seleccione un pedido --</option>
+          <option *ngFor="let pedido of pedidosPendientes" [value]="pedido.id">
+            {{ pedido.codigo }} - {{ pedido.cliente }} - Bs. {{ pedido.monto }}
+          </option>
+        </select>
+        <div *ngIf="facturaForm.get('pedidoId')?.invalid && facturaForm.get('pedidoId')?.touched" class="error-message">
+          Debe seleccionar un pedido
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Datos de la Factura</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoDocumento">Tipo de Documento *</label>
+          <select id="tipoDocumento" formControlName="tipoDocumento" class="form-control">
+            <option value="">-- Seleccione tipo --</option>
+            <option *ngFor="let tipo of tiposDocumento" [value]="tipo.id">{{ tipo.nombre }}</option>
+          </select>
+          <div *ngIf="facturaForm.get('tipoDocumento')?.invalid && facturaForm.get('tipoDocumento')?.touched" class="error-message">
+            Debe seleccionar un tipo de documento
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="numeroFactura">Número de Factura *</label>
+          <input type="text" id="numeroFactura" formControlName="numeroFactura" class="form-control" placeholder="Ej: 12345">
+          <div *ngIf="facturaForm.get('numeroFactura')?.invalid && facturaForm.get('numeroFactura')?.touched" class="error-message">
+            El número de factura es requerido
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="codigoControl">Código de Control *</label>
+          <div class="input-with-button">
+            <input type="text" id="codigoControl" formControlName="codigoControl" class="form-control" placeholder="Código generado por SIN">
+            <button type="button" class="btn-secondary" (click)="generarCodigoControl()">Generar</button>
+          </div>
+          <div *ngIf="facturaForm.get('codigoControl')?.invalid && facturaForm.get('codigoControl')?.touched" class="error-message">
+            El código de control es requerido
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="metodoPago">Método de Pago *</label>
+          <select id="metodoPago" formControlName="metodoPago" class="form-control">
+            <option value="">-- Seleccione método --</option>
+            <option *ngFor="let metodo of metodosPago" [value]="metodo.id">{{ metodo.nombre }}</option>
+          </select>
+          <div *ngIf="facturaForm.get('metodoPago')?.invalid && facturaForm.get('metodoPago')?.touched" class="error-message">
+            Debe seleccionar un método de pago
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fechaEmision">Fecha de Emisión *</label>
+          <input type="date" id="fechaEmision" formControlName="fechaEmision" class="form-control">
+          <div *ngIf="facturaForm.get('fechaEmision')?.invalid && facturaForm.get('fechaEmision')?.touched" class="error-message">
+            La fecha de emisión es requerida
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fechaLimite">Fecha Límite de Emisión *</label>
+          <input type="date" id="fechaLimite" formControlName="fechaLimite" class="form-control">
+          <div *ngIf="facturaForm.get('fechaLimite')?.invalid && facturaForm.get('fechaLimite')?.touched" class="error-message">
+            La fecha límite es requerida
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Datos del Cliente</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nitCliente">NIT/CI del Cliente *</label>
+          <input type="text" id="nitCliente" formControlName="nitCliente" class="form-control" placeholder="Ej: 123456789">
+          <div *ngIf="facturaForm.get('nitCliente')?.invalid && facturaForm.get('nitCliente')?.touched" class="error-message">
+            El NIT/CI es requerido y debe contener solo números
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="nombreCliente">Nombre o Razón Social *</label>
+          <input type="text" id="nombreCliente" formControlName="nombreCliente" class="form-control" placeholder="Nombre completo del cliente">
+          <div *ngIf="facturaForm.get('nombreCliente')?.invalid && facturaForm.get('nombreCliente')?.touched" class="error-message">
+            El nombre del cliente es requerido
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="montoTotal">Monto Total (Bs.) *</label>
+        <input type="number" id="montoTotal" formControlName="montoTotal" class="form-control" step="0.01" min="0">
+        <div *ngIf="facturaForm.get('montoTotal')?.invalid && facturaForm.get('montoTotal')?.touched" class="error-message">
+          El monto total es requerido y debe ser mayor a 0
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion">Descripción del Servicio/Producto</label>
+        <textarea id="descripcion" formControlName="descripcion" class="form-control" rows="3" 
+                  placeholder="Descripción detallada del trabajo gráfico realizado..."></textarea>
+        <div class="char-counter">{{ facturaForm.get('descripcion')?.value?.length || 0 }}/500</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="facturaForm.reset()">Cancelar</button>
+      <button type="submit" class="btn-primary" [disabled]="!facturaForm.valid">Registrar Factura</button>
+    </div>
+  </form>
+</div>

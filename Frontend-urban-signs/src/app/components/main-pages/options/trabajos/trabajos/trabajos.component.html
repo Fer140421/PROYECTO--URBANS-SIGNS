@@ -1,0 +1,415 @@
+<header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Lista de servicios</h1>
+    </div>
+</header>
+
+<!-- Filters -->
+<!-- Filters -->
+<div class="bg-white p-4 border-b border-gray-200">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+
+        <!-- Campo de búsqueda - Más ancho en pantallas grandes -->
+        <div class="relative flex-1 lg:flex-[2]">
+            <input type="text" [(ngModel)]="searchTerm"
+                class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                placeholder="Buscar servicios...">
+            <button (click)="applyFilters()"
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                Buscar
+            </button>
+        </div>
+
+        <!-- Select de filtro por estado -->
+        <div class="w-full lg:w-48">
+            <select [(ngModel)]="filterEstado" (change)="applyFilters()"
+                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                <option [ngValue]="true">Activas</option>
+                <option [ngValue]="false">Inactivas</option>
+            </select>
+        </div>
+
+        <!-- Botón nuevo servicio -->
+        <div class="w-full lg:w-auto">
+            <button
+                class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+                (click)="openCreateModal()" [disabled]="isProcessing"
+                [class.opacity-50]="isProcessing" [class.cursor-not-allowed]="isProcessing">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo servicio
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="flex justify-end bg-white px-4 py-3">
+    <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+</div>
+
+<!-- Listado con Cards -->
+<app-responsive-data-view [items]="trabajos" [mode]="viewMode" [loading]="isLoading"
+    loadingLabel="Cargando servicios" emptyTitle="No hay servicios"
+    emptyMessage="No se encontraron servicios registrados en el sistema." tableMinWidth="52rem" [columns]="5">
+
+    <ng-template appDataHeader>
+        <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+        </tr>
+    </ng-template>
+
+    <ng-template appDataRow let-category>
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ category.idTrabajo }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900">
+                <div class="flex items-center gap-3 min-w-[12rem]">
+                    <img [src]="category.foto" [alt]="category.nombre" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                    <span class="font-semibold">{{ category.nombre }}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600 min-w-[16rem] max-w-xl">{{ category.descripcion }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
+                    [ngClass]="category.estado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    {{ category.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+                <div class="inline-flex items-center justify-end gap-3">
+                    <app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary"
+                        [disabled]="isProcessing" (action)="openEditModal(category)"></app-action-icon-button>
+                    <app-action-icon-button [label]="category.estado ? 'Eliminar' : 'Activar'"
+                        [icon]="category.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'"
+                        [variant]="category.estado ? 'danger' : 'success'"
+                        [disabled]="isProcessing"
+                        (action)="openConfirmModal(category.estado ? 'eliminar' : 'activar', category)"></app-action-icon-button>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template appDataCard let-category>
+        <article class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:border-gray-300 overflow-hidden flex flex-col h-full">
+            <div class="relative">
+                <img [src]="category.foto" [alt]="category.nombre" class="w-full h-48 object-cover">
+                <span [class]="category.estado ? 'bg-green-500' : 'bg-red-500'"
+                    class="absolute top-3 right-3 px-2 py-1 text-xs font-medium text-white rounded-full shadow-sm">
+                    {{ category.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+                <span class="absolute top-3 left-3 bg-black bg-opacity-70 text-white px-2 py-1 text-xs font-medium rounded-full">
+                    #{{ category.idTrabajo }}
+                </span>
+            </div>
+            <div class="p-4 flex flex-col flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">{{ category.nombre }}</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">{{ category.descripcion }}</p>
+                <div class="flex flex-wrap justify-between items-center gap-3 pt-3 border-t border-gray-100">
+                    <app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary"
+                        [disabled]="isProcessing" (action)="openEditModal(category)"></app-action-icon-button>
+                    <app-action-icon-button [label]="category.estado ? 'Eliminar' : 'Activar'"
+                        [icon]="category.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'"
+                        [variant]="category.estado ? 'danger' : 'success'"
+                        [disabled]="isProcessing"
+                        (action)="openConfirmModal(category.estado ? 'eliminar' : 'activar', category)"></app-action-icon-button>
+                </div>
+            </div>
+        </article>
+    </ng-template>
+
+    <div dataViewFooter *ngIf="trabajos.length > 0" class="px-4 sm:px-6 py-4 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+                Mostrando <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> a
+                <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de
+                <span class="font-medium">{{ totalItems }}</span> servicios
+            </div>
+            <nav class="flex items-center gap-1">
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                    class="p-2 rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="ph ph-caret-left"></i><span class="sr-only">Anterior</span>
+                </button>
+                <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                    [ngClass]="page === currentPage ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'"
+                    class="w-10 h-10 rounded-lg border text-sm font-medium">{{ page }}</button>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="ph ph-caret-right"></i><span class="sr-only">Siguiente</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+</app-responsive-data-view>
+
+<!-- Implementación anterior conservada temporalmente durante la aprobación del piloto. -->
+<app-loading *ngIf="false" variant="cards" label="Cargando servicios"></app-loading>
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden">
+    <!-- Vista de lista: una fila por servicio y un atributo por columna. -->
+    <div *ngIf="viewMode === 'list'" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let category of trabajos" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ category.idTrabajo }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        <div class="flex items-center gap-3 min-w-[12rem]">
+                            <img [src]="category.foto" [alt]="category.nombre" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                            <span class="font-semibold">{{ category.nombre }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 min-w-[16rem] max-w-xl">{{ category.descripcion }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
+                            [ngClass]="category.estado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                            {{ category.estado ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <div class="inline-flex items-center justify-end gap-3">
+                            <button (click)="openEditModal(category)" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                <i class="ph ph-pencil-simple text-base"></i> Editar
+                            </button>
+                            <button (click)="openConfirmModal(category.estado ? 'eliminar' : 'activar', category)"
+                                [ngClass]="category.estado ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'"
+                                class="inline-flex items-center gap-2 text-sm font-medium">
+                                <i [ngClass]="category.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'" class="text-base"></i>
+                                {{ category.estado ? 'Eliminar' : 'Activar' }}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Grid de Cards -->
+    <div *ngIf="viewMode === 'cards' || trabajos.length === 0" class="p-3 sm:p-6">
+        <div *ngIf="viewMode === 'cards'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div *ngFor="let category of trabajos"
+                class="view-item bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:border-gray-300">
+
+                <!-- Imagen del servicio -->
+                <div class="relative">
+                    <img [src]="category.foto" alt="{{category.nombre}}"
+                        class="w-full h-48 object-cover rounded-t-xl" />
+
+                    <!-- Badge de estado -->
+                    <div class="absolute top-3 right-3">
+                        <span [class]="category.estado ? 'bg-green-500' : 'bg-red-500'"
+                            class="px-2 py-1 text-xs font-medium text-white rounded-full shadow-sm">
+                            {{category.estado ? 'Activo' : 'Inactivo'}}
+                        </span>
+                    </div>
+
+                    <!-- ID del servicio -->
+                    <div class="absolute top-3 left-3">
+                        <span class="bg-black bg-opacity-70 text-white px-2 py-1 text-xs font-medium rounded-full">
+                            #{{category.idTrabajo}}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">{{category.nombre}}</h3>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{category.descripcion}}</p>
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                        <!-- Editar -->
+                        <button (click)="openEditModal(category)"
+                            class="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
+                            <i class="ph ph-pencil-simple text-base"></i>
+                            Editar
+                        </button>
+
+                        <!-- Eliminar / Activar -->
+                        <button (click)="openConfirmModal(category.estado ? 'eliminar' : 'activar', category)"
+                            [ngClass]="category.estado ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'"
+                            class="flex items-center gap-2 text-sm font-medium transition-colors">
+                            <i [ngClass]="category.estado ? 'ph ph-x-circle' : 'ph ph-check-circle'"
+                                class="text-base"></i>
+                            {{ category.estado ? 'Eliminar' : 'Activar' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div *ngIf="trabajos.length === 0" class="text-center py-12">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <i class="ph ph-folders text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay servicios</h3>
+                <p class="text-gray-600 mb-6">No se encontraron servicios registrados en el sistema.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="trabajos.length>0" class="px-6 py-4 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+                Mostrando
+                <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                a
+                <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                de
+                <span class="font-medium">{{totalItems}}</span>
+                servicios
+            </div>
+
+            <nav class="flex items-center space-x-1">
+                <!-- Botón Anterior -->
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                    class="p-2 rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <i class="ph ph-caret-left text-base"></i>
+                </button>
+
+                <!-- Números de página -->
+                <div class="flex items-center space-x-1">
+                    <button *ngFor="let page of getPages()" (click)="goToPage(page)" [class]="page === currentPage ? 
+                            'bg-black text-white border-black' : 
+                            'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'"
+                        class="w-10 h-10 rounded-lg border text-sm font-medium transition-colors">
+                        {{page}}
+                    </button>
+                </div>
+
+                <!-- Botón Siguiente -->
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <i class="ph ph-caret-right text-base"></i>
+                </button>
+            </nav>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="isModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+    <div
+        class="bg-white rounded-lg shadow-2xl w-96 p-6 relative transform transition-all duration-300 ease-out opacity-0 scale-95 animate-fade-in-modal">
+
+        <h2 class="text-xl font-bold mb-4">{{ isEditing ? 'Editar Servicio' : 'Nuevo Servicio' }}</h2>
+
+        <form [formGroup]="trabajoForm" (ngSubmit)="onSubmit()">
+
+            <div class="md:col-span-2 mb-2">
+                <label class="block mb-2 font-medium">Foto del trabajo</label>
+                <div class="relative">
+                    <input #photoInput type="file" accept="image/*" [disabled]="isProcessing"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        id="materialPhoto" (change)="onFileSelected($event)">
+                    <label for="materialPhoto"
+                        class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#FFD000] rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+                        <ng-container *ngIf="!imagePreview">
+                            <span class="text-gray-500">+ Subir imagen</span>
+                            <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG (Max. 5MB)</span>
+                        </ng-container>
+                        <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa"
+                            class="h-full w-full object-contain rounded-lg" />
+                    </label>
+                </div>
+                <button type="button" (click)="removeImage()" *ngIf="imagePreview" [disabled]="isProcessing"
+                    class="mt-2 text-sm text-red-500 hover:text-red-700">
+                    Eliminar imagen
+                </button>
+            </div>
+            <!-- NOMBRE -->
+            <label class="block mb-2 font-medium">Nombre</label>
+            <input type="text" formControlName="nombre" class="w-full mb-1 border border-gray-300 rounded px-3 py-2" />
+
+            <div *ngIf="trabajoForm.get('nombre')?.touched && trabajoForm.get('nombre')?.invalid"
+                class="text-red-600 text-sm mb-2">
+                <div *ngIf="trabajoForm.get('nombre')?.errors?.['required']">El nombre es obligatorio.</div>
+                <div *ngIf="trabajoForm.get('nombre')?.errors?.['minlength']">El nombre debe tener al menos 3
+                    caracteres.</div>
+                <div *ngIf="trabajoForm.get('nombre')?.errors?.['maxlength']">El nombre no debe exceder 50 caracteres.
+                </div>
+                <div *ngIf="trabajoForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios.</div>
+            </div>
+
+            <!--<div *ngIf="trabajoForm.get('nombre')?.valid" class="text-red-600 text-sm mb-2">
+                Ya existe una categoría con ese nombre.
+            </div>-->
+
+            <!-- DESCRIPCIÓN -->
+            <label class="block mb-2 font-medium mt-4">Descripción</label>
+            <textarea formControlName="descripcion"
+                class="w-full mb-1 border border-gray-300 rounded px-3 py-2"></textarea>
+
+            <div *ngIf="trabajoForm.get('descripcion')?.touched && trabajoForm.get('descripcion')?.invalid"
+                class="text-red-600 text-sm mb-2">
+                <div *ngIf="trabajoForm.get('descripcion')?.errors?.['required']">La descripción es obligatoria.</div>
+                <div *ngIf="trabajoForm.get('descripcion')?.errors?.['minlength']">La descripción debe tener al menos 3
+                    caracteres.</div>
+                <div *ngIf="trabajoForm.get('descripcion')?.errors?.['maxlength']">La descripción no debe exceder 50
+                    caracteres.</div>
+                <div *ngIf="trabajoForm.get('descripcion')?.errors?.['pattern']">Solo se permiten letras y espacios.
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" (click)="closeModal()" [disabled]="isProcessing"
+                    class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100">
+                    Cancelar
+                </button>
+                <button type="submit" [disabled]="trabajoForm.invalid || isProcessing" class="px-4 py-2 rounded text-white 
+          transition-colors duration-200
+          bg-black hover:bg-gray-800
+          disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+                    <i *ngIf="isProcessing" class="ph ph-circle-notch animate-spin mr-2"></i>
+                    {{ isProcessing ? 'Procesando...' : (isEditing ? 'Guardar cambios' : 'Registrar Trabajo') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal de Confirmación -->
+
+<div *ngIf="isConfirmModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-xl p-6 shadow-lg w-96 animate-fade-in-modal">
+        <!-- Título + Ícono -->
+        <div class="flex items-center gap-3 mb-4">
+            <i *ngIf="confirmTitle.includes('Eliminar')" class="ph ph-warning-circle text-red-600 text-2xl"></i>
+            <i *ngIf="confirmTitle.includes('Activar')" class="ph ph-check-circle text-green-600 text-2xl"></i>
+            <h2 class="text-lg font-bold text-gray-800">
+                {{ confirmTitle }}
+            </h2>
+        </div>
+
+        <!-- Mensaje -->
+        <p class="text-gray-600 mb-6">
+            {{ confirmMessage }}
+        </p>
+
+        <!-- Acciones -->
+        <div class="flex justify-end space-x-3">
+            <button (click)="closeConfirmModal()" [disabled]="isProcessing"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors">
+                Cancelar
+            </button>
+            <button (click)="confirm()" [disabled]="isProcessing" [ngClass]="confirmTitle.includes('Eliminar') 
+                ? 'bg-red-600 hover:bg-red-700' 
+                : 'bg-green-600 hover:bg-green-700'" class="px-4 py-2 text-white rounded transition-colors">
+                <i *ngIf="isProcessing" class="ph ph-circle-notch animate-spin mr-2"></i>
+                {{ isProcessing ? 'Procesando...' : 'Confirmar' }}
+            </button>
+        </div>
+    </div>
+</div>

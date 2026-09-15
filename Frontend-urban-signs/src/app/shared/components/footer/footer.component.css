@@ -1,0 +1,39 @@
+.footer {
+  @apply bg-zinc-950 border-t border-zinc-800 py-12;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.footer-content {
+  @apply flex flex-col md:flex-row justify-between items-center gap-8 mb-8;
+}
+
+.footer-brand {
+  @apply text-center md:text-left;
+}
+
+.brand-name {
+  @apply text-3xl font-bold mb-2;
+}
+
+.brand-tagline {
+  @apply text-zinc-400 text-sm;
+}
+
+.social-links {
+  @apply flex gap-4;
+}
+
+.social-link {
+  @apply w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:bg-amber-400 hover:text-black transition-all duration-300 transform hover:scale-110;
+}
+
+.footer-bottom {
+  @apply text-center text-zinc-500 text-sm pt-8 border-t border-zinc-800 space-y-2;
+}
+
+.developer {
+  @apply text-xs;
+}

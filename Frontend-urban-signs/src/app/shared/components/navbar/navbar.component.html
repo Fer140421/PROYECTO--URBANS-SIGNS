@@ -1,0 +1,43 @@
+<nav [class]="isScrolled() ? 'navbar scrolled' : 'navbar'">
+    <div class="container">
+        <div class="nav-content">
+            <!-- Logo -->
+            <div class="logo" (click)="scrollToSection('hero')">
+                <span class="logo-urban">URBAN</span>
+                <span class="logo-signs">SIGNS</span>
+            </div>
+
+            <!-- Desktop Menu -->
+            <ul class="desktop-menu">
+                @for (item of menuItems; track item.section) {
+                <li>
+                    <button (click)="scrollToSection(item.section)" class="nav-link">
+                        {{ item.label }}
+                    </button>
+                </li>
+                }
+            </ul>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        [attr.d]="isMobileMenuOpen() ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        @if (isMobileMenuOpen()) {
+        <ul class="mobile-menu">
+            @for (item of menuItems; track item.section) {
+            <li>
+                <button (click)="scrollToSection(item.section)" class="mobile-nav-link">
+                    {{ item.label }}
+                </button>
+            </li>
+            }
+        </ul>
+        }
+    </div>
+</nav>

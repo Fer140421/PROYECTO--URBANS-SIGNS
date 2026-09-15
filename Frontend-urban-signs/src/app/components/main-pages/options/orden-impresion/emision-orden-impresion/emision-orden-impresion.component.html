@@ -1,0 +1,260 @@
+<header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Gestión de Pedidos y Órdenes de Impresión</h1>
+    </div>
+</header>
+
+<!-- Filters -->
+<div class="bg-white p-4 border-b border-gray-200">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+        <div class="relative flex-1 lg:flex-[2]">
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+                class="block w-full pl-10 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                [placeholder]="estadoSeleccionado === 'PEDIDOS' ? 'Buscar por código de cotización...' : 'Buscar por código de orden...'">
+            <button
+                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                Buscar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<section class="bg-white border-b border-gray-200 p-6">
+    <div class="mb-3 flex justify-end">
+        <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+    </div>
+    <div class="flex border-b border-gray-200 mb-4">
+        <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'PEDIDOS', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'PEDIDOS'}"
+            class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('PEDIDOS')">
+            Pedidos pendientes
+        </button>
+        <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'ORDENES', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'ORDENES'}"
+            class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('ORDENES')">
+            Órdenes de impresión
+        </button>
+    </div>
+</section>
+
+<!-- Tabla de Pedidos -->
+<app-responsive-data-view *ngIf="estadoSeleccionado === 'PEDIDOS'" [items]="pedidosFiltrados" [mode]="viewMode" [loading]="cargando" loadingLabel="Cargando pedidos" emptyTitle="No hay pedidos pendientes" emptyMessage="No existen pedidos disponibles para emitir una orden." tableMinWidth="52rem" [columns]="5">
+    <ng-template appDataHeader><div class="grid grid-cols-[7rem_minmax(17rem,1fr)_13rem_11rem_12rem] gap-5 items-center px-6 py-3"><span>ID</span><span>Cliente</span><span>Cotización</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+    <ng-template appDataRow let-pedido><div class="grid grid-cols-[7rem_minmax(17rem,1fr)_13rem_11rem_12rem] gap-5 items-center px-6 py-4"><span class="font-medium text-gray-900">{{ pedido.idPedido }}</span><span class="min-w-0 truncate text-sm text-gray-700">{{ pedido.nombreCliente }}</span><span class="text-sm text-blue-600 truncate">{{ pedido.codCotizacion }}</span><span class="justify-self-start px-2.5 py-1 text-xs font-medium rounded-full" [ngClass]="pedido.estadoPedido === 'EN_PROCESO' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'">{{ pedido.estadoPedido }}</span><div class="flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="primary" [disabled]="cargandoDetalle" (action)="visualizarModal(pedido)"></app-action-icon-button><app-action-icon-button label="Registrar orden de impresión" icon="ph ph-plus-circle" variant="success" [routerLink]="['/home/registrar-ordenes-impresion']" [queryParams]="{ idCotizacion: pedido.idCotizacion, idPedido: pedido.idPedido }"></app-action-icon-button></div></div></ng-template>
+    <ng-template appDataCard let-pedido><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100 flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-gray-900">Pedido #{{ pedido.idPedido }}</h3><p class="text-sm text-gray-600 mt-1 break-words">{{ pedido.nombreCliente }}</p></div><span class="px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap" [ngClass]="pedido.estadoPedido === 'EN_PROCESO' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'">{{ pedido.estadoPedido }}</span></div><div class="p-4 flex-1 flex justify-between gap-3 text-sm"><span class="text-gray-500">Cotización</span><span class="text-blue-600 break-all">{{ pedido.codCotizacion }}</span></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="primary" [disabled]="cargandoDetalle" (action)="visualizarModal(pedido)"></app-action-icon-button><app-action-icon-button label="Registrar orden de impresión" icon="ph ph-plus-circle" variant="success" [routerLink]="['/home/registrar-ordenes-impresion']" [queryParams]="{ idCotizacion: pedido.idCotizacion, idPedido: pedido.idPedido }"></app-action-icon-button></footer></article></ng-template>
+    <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> pedidos</p><ng-container *ngTemplateOutlet="pagination"></ng-container></div>
+</app-responsive-data-view>
+
+<app-responsive-data-view *ngIf="estadoSeleccionado === 'ORDENES'" [items]="ordenesFiltradas" [mode]="viewMode" [loading]="cargando" loadingLabel="Cargando órdenes" emptyTitle="No hay órdenes de impresión" emptyMessage="No existen órdenes registradas." tableMinWidth="54rem" [columns]="5">
+    <ng-template appDataHeader><div class="grid grid-cols-[14rem_minmax(18rem,1fr)_13rem_11rem_13rem] gap-5 items-center px-6 py-3"><span>Nro. orden</span><span>Responsable de registro</span><span>Fecha emisión</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+    <ng-template appDataRow let-orden><div class="grid grid-cols-[14rem_minmax(18rem,1fr)_13rem_11rem_13rem] gap-5 items-center px-6 py-4"><span class="font-medium text-blue-600 truncate">{{ orden.nroOrden }}</span><span class="text-sm text-gray-700 truncate">{{ orden.usuario?.userAcces }}</span><span class="text-sm text-gray-600">{{ orden.fechaEmision | date:'dd/MM/yyyy' }}</span><span class="justify-self-start px-2.5 py-1 text-xs font-medium rounded-full" [ngClass]="{'bg-yellow-100 text-yellow-800': orden.estado === 'PENDIENTE','bg-green-100 text-green-800': orden.estado === 'RECEPCIONADO','bg-red-100 text-red-800': orden.estado === 'CANCELADO'}">{{ orden.estado }}</span><div class="flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="primary"></app-action-icon-button><app-action-icon-button label="Imprimir orden" icon="ph ph-printer" variant="warning"></app-action-icon-button><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="success" (action)="abrirModalModificar(orden)"></app-action-icon-button></div></div></ng-template>
+    <ng-template appDataCard let-orden><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100 flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-blue-600 break-all">{{ orden.nroOrden }}</h3><p class="text-sm text-gray-600 mt-1 break-all">{{ orden.usuario?.userAcces }}</p></div><span class="px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap" [ngClass]="{'bg-yellow-100 text-yellow-800': orden.estado === 'PENDIENTE','bg-green-100 text-green-800': orden.estado === 'RECEPCIONADO','bg-red-100 text-red-800': orden.estado === 'CANCELADO'}">{{ orden.estado }}</span></div><div class="p-4 flex-1 flex justify-between gap-3 text-sm"><span class="text-gray-500">Emisión</span><span>{{ orden.fechaEmision | date:'dd/MM/yyyy' }}</span></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="primary"></app-action-icon-button><app-action-icon-button label="Imprimir orden" icon="ph ph-printer" variant="warning"></app-action-icon-button><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="success" (action)="abrirModalModificar(orden)"></app-action-icon-button></footer></article></ng-template>
+    <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> órdenes</p><ng-container *ngTemplateOutlet="pagination"></ng-container></div>
+</app-responsive-data-view>
+
+<ng-template #pagination><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></ng-template>
+
+<app-loading *ngIf="false" variant="table" [columns]="5" label="Cargando órdenes"></app-loading>
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cotización</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado
+                    </th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let pedido of listPedidos" class="hover:bg-gray-50">
+                    <td data-label="ID" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{pedido.idPedido}}
+                    </td>
+                    <td data-label="Cliente" class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{pedido.nombreCliente}}
+                    </td>
+                    <td data-label="Cotización" class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                        {{pedido.codCotizacion}}
+                    </td>
+                    <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                        <span
+                            [class]="pedido.estadoPedido === 'EN_PROCESO' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'"
+                            class="px-2 py-1 text-xs font-medium rounded-full">
+                            {{pedido.estadoPedido}}
+                        </span>
+                    </td>
+                    <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                        <button title="Ver detalles" class="text-blue-500 hover:text-blue-700 text-2xl"
+                            (click)="visualizarModal(pedido)">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                        <button title="Registrar Orden de Impresión"
+                            [routerLink]="['/home/registrar-ordenes-impresion']"
+                            [queryParams]="{ idCotizacion: pedido.idCotizacion, idPedido: pedido.idPedido }"
+                            class="text-green-500 hover:text-green-700 text-2xl">
+                            <i class="ph ph-plus-circle"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="listPedidos.length === 0">
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        No hay pedidos pendientes
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Pedidos -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Mostrando
+                    <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                    a
+                    <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                    de
+                    <span class="font-medium">{{totalItems}}</span>
+                    pedidos
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                        [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                        {{page}}
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Órdenes de Impresión -->
+<div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nro.
+                        Orden</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Responsable de registro</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha
+                        Emisión</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado
+                    </th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let orden of ListOrdenImpresion" class="hover:bg-gray-50">
+                    <td data-label="Nro. orden" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                        {{orden.nroOrden}}
+                    </td>
+                    <td data-label="Cliente" class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{orden.usuario.userAcces}}
+                    </td>
+                    <td data-label="Fecha" class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{orden.fechaEmision | date:'dd/MM/yyyy'}}
+                    </td>
+                    <td data-label="Estado" class="px-6 py-4 whitespace-nowrap">
+                        <span [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': orden.estado === 'PENDIENTE',
+                            'bg-green-100 text-green-800': orden.estado === 'RECEPCIONADO',
+                            'bg-red-100 text-red-800': orden.estado === 'CANCELADO'
+                        }" class="px-2 py-1 text-xs font-medium rounded-full">
+                            {{orden.estado}}
+                        </span>
+                    </td>
+                    <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                        <button title="Ver detalles" class="text-blue-500 hover:text-blue-700 text-2xl">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                        <button title="Imprimir orden" class="text-purple-500 hover:text-purple-700 text-2xl">
+                            <i class="ph ph-printer"></i>
+                        </button>
+                        <button title="Editar" (click)="abrirModalModificar(orden)"
+                            class="text-green-500 hover:text-green-700 text-2xl">
+                            <i class="ph ph-pencil-simple"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="ListOrdenImpresion.length === 0">
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        No hay órdenes de impresión registradas
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Órdenes -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Mostrando
+                    <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+                    a
+                    <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+                    de
+                    <span class="font-medium">{{totalItems}}</span>
+                    órdenes
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                        [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                        {{page}}
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-detalles-pedido [mostrar]="mostrarModalVisualizacion" [pedido]="pedidoSeleccionado"
+    (cerrar)="cerrarModalVisualizacion()"> </app-detalles-pedido>
+
+<app-modificar-orden-impresion [mostrar]="mostrarModalModificar" [orden]="ordenSeleccionada"
+    (cerrar)="cerrarModalModificar()" (guardado)="onOrdenModificada()">
+</app-modificar-orden-impresion>

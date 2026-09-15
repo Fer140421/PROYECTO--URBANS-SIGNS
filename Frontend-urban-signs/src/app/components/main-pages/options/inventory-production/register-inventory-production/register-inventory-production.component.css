@@ -1,0 +1,25 @@
+ .primary-bg {
+    background-color: #FFD000;
+ }
+.primary-text {
+    color: #FFD000;
+}
+.primary-border {
+    border-color: #FFD000;
+}
+.btn-primary {
+    background-color: #FFD000;
+    color: #000000;
+    transition: all 0.2s;
+}
+.btn-primary:hover {
+    background-color: #e6bb00;
+}
+.btn-outline {
+    border: 1px solid #000000;
+    color: #000000;
+    transition: all 0.2s;
+}
+.btn-outline:hover {
+    background-color: #f1f1f1;
+}

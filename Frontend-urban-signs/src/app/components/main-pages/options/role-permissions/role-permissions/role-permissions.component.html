@@ -1,0 +1,79 @@
+<div class="permissions-page bg-gray-50 p-4 md:p-6">
+  <div class="permissions-shell max-w-7xl mx-auto">
+    <div class="mb-7">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Permisos por rol</h1>
+      <p class="text-gray-600">Configure los permisos que recibirá cada usuario según su rol en el sistema.</p>
+    </div>
+
+    <div *ngIf="isInitialLoading" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <app-loading variant="list" label="Cargando roles y permisos"></app-loading>
+    </div>
+
+    <div *ngIf="!isInitialLoading && errorMessage" class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 flex items-center justify-between gap-4">
+      <span>{{ errorMessage }}</span>
+      <button type="button" (click)="loadInitialData()" class="font-medium underline">Reintentar</button>
+    </div>
+
+    <div *ngIf="!isInitialLoading" class="permissions-layout">
+      <aside class="role-panel bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-bold text-gray-900">Roles disponibles</h2>
+          <div class="relative mt-4">
+            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input [(ngModel)]="roleSearchTerm" type="search" placeholder="Buscar rol..." class="w-full py-2 pl-9 pr-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">
+          </div>
+        </div>
+        <div class="p-2 role-list">
+          <button *ngFor="let role of filteredRoles" type="button" (click)="selectRole(role.idRole)" [class.role-selected]="selectedRoleId === role.idRole" class="role-item w-full flex items-center justify-between text-left px-3 py-3 rounded-lg text-sm font-medium text-gray-700">
+            <span>{{ role.name_role }}</span><i class="ph ph-caret-right"></i>
+          </button>
+          <p *ngIf="roles.length === 0" class="p-3 text-sm text-gray-500">No hay roles disponibles.</p>
+          <p *ngIf="roles.length > 0 && filteredRoles.length === 0" class="p-3 text-sm text-gray-500">No se encontraron roles.</p>
+        </div>
+      </aside>
+
+      <section class="permissions-panel bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-w-0">
+        <div class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Permisos:</p>
+            <h2 class="text-xl font-bold text-gray-900">{{ selectedRoleName || 'Seleccione un rol' }}</h2>
+            <p *ngIf="selectedRoleId !== null" class="mt-1 text-xs text-gray-600">Seleccione los módulos y acciones permitidas para este rol.</p>
+          </div>
+          <div *ngIf="selectedRoleId !== null" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative"><i class="ph ph-funnel absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i><input [(ngModel)]="permissionSearchTerm" type="search" placeholder="Filtrar permisos..." class="w-full sm:w-56 py-2 pl-9 pr-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedRoleId === null" class="text-center py-16 text-gray-500">Seleccione un rol de la lista para gestionar sus permisos.</div>
+        <div *ngIf="selectedRoleId !== null && isRoleLoading" class="p-6"><app-loading variant="list" label="Cargando permisos del rol"></app-loading></div>
+        <div *ngIf="selectedRoleId !== null && !isRoleLoading && permissionsByModule.length === 0" class="text-center py-16 text-gray-500">No hay permisos disponibles para configurar.</div>
+
+        <div *ngIf="selectedRoleId !== null && !isRoleLoading && permissionsByModule.length > 0" class="p-5 space-y-5 permissions-scroll">
+          <div class="text-sm text-gray-600"><span class="font-semibold text-gray-900">{{ selectedPermissionIds.size }}</span> permisos activos</div>
+          <section *ngFor="let group of filteredPermissionGroups" class="border border-gray-200 rounded-lg overflow-hidden">
+            <h3 class="px-4 py-3 bg-gray-100 border-b border-gray-200 text-xs font-bold tracking-wide text-gray-700"><i class="ph ph-shield-check mr-2 text-yellow-600"></i>{{ group.module }}</h3>
+            <div class="permission-grid">
+              <label *ngFor="let permission of group.permissions" [class.permission-active]="isPermissionSelected(permission.id_permiso)" class="permission-item flex items-start gap-3 p-4 cursor-pointer">
+                <input type="checkbox" [checked]="isPermissionSelected(permission.id_permiso)" (change)="togglePermission(permission.id_permiso, $any($event.target).checked)" class="mt-1 h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500">
+                <span><span class="block text-sm font-medium text-gray-900">{{ permission.nombre || permission.codigo }}</span><span class="block text-[11px] font-medium text-gray-500 mt-1">{{ permission.codigo }}</span></span>
+              </label>
+            </div>
+          </section>
+          <p *ngIf="filteredPermissionGroups.length === 0" class="py-10 text-center text-sm text-gray-500">No se encontraron permisos con ese filtro.</p>
+        </div>
+        <div *ngIf="selectedRoleId !== null && !isRoleLoading && permissionsByModule.length > 0" class="permissions-actions px-5 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+          <button type="button" (click)="cancelChanges()" [disabled]="isSaving" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">Cancelar</button>
+          <button type="button" (click)="requestSave()" [disabled]="isSaving" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">{{ isSaving ? 'Guardando...' : 'Guardar cambios' }}</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showConfirmation" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="confirmation-title">
+  <div class="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden animate-fade-in-modal">
+    <div class="px-6 py-4 border-b border-gray-200 bg-yellow-50"><h2 id="confirmation-title" class="text-lg font-bold text-gray-900">Confirmar actualización</h2></div>
+    <div class="p-6 text-gray-700 space-y-3"><p>Se reemplazará por completo la configuración actual de permisos del rol <strong>{{ selectedRoleName }}</strong>.</p><p class="text-sm text-gray-600">Los usuarios con este rol deben cerrar sesión e iniciar sesión nuevamente para actualizar sus permisos.</p></div>
+    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3"><button type="button" (click)="cancelSave()" [disabled]="isSaving" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 disabled:opacity-50">Cancelar</button><button type="button" (click)="savePermissions()" [disabled]="isSaving" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50">{{ isSaving ? 'Guardando...' : 'Sí, reemplazar permisos' }}</button></div>
+  </div>
+</div>

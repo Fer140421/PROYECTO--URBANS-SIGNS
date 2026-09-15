@@ -1,0 +1,59 @@
+.navbar {
+  @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.navbar.scrolled {
+  @apply shadow-xl;
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.nav-content {
+  @apply flex items-center justify-between h-20;
+}
+
+.logo {
+  @apply text-2xl font-bold cursor-pointer transition-transform duration-300 hover:scale-105;
+}
+
+.logo-urban {
+  @apply text-amber-400;
+}
+
+.logo-signs {
+  @apply text-white ml-2;
+}
+
+.desktop-menu {
+  @apply hidden md:flex items-center space-x-8;
+}
+
+.nav-link {
+  @apply text-white hover:text-amber-400 transition-colors duration-300 font-medium relative;
+}
+
+.nav-link::after {
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-amber-400 transition-all duration-300;
+  content: '';
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+.mobile-menu-btn {
+  @apply md:hidden text-white hover:text-amber-400 transition-colors;
+}
+
+.mobile-menu {
+  @apply md:hidden py-4 space-y-2 animate-fade-in;
+}
+
+.mobile-nav-link {
+  @apply block w-full text-left px-4 py-3 text-white hover:bg-amber-400 hover:text-black transition-all duration-300;
+}

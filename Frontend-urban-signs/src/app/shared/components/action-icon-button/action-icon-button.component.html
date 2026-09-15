@@ -1,0 +1,5 @@
+<button type="button" class="action-icon-button" [ngClass]="'action-icon-button--' + variant"
+  [disabled]="disabled || transactionState.isProcessing()" [title]="label" [attr.aria-label]="label" (click)="action.emit($event)">
+  <i [class]="icon" aria-hidden="true"></i>
+  <span class="sr-only">{{ label }}</span>
+</button>

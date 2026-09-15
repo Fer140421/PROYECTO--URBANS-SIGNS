@@ -1,0 +1,78 @@
+<div class="flex flex-col md:flex-row h-screen w-screen">
+  <!-- IZQUIERDA: Logo -->
+  <div class="w-full md:w-1/2 bg-black flex flex-col justify-center items-center text-white p-6">
+    <img src="/img-logos/foto.png" alt="Urban Signs Logo" class="w-[300px] md:w-[500px] lg:w-[700px] h-auto mb-8" />
+    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold italic text-center">URBAN WORKS</h1>
+  </div>
+
+  <!-- DERECHA: Formulario dentro de diamante -->
+  <div class="w-full md:w-1/2 flex items-center justify-center bg-white relative overflow-hidden p-4">
+    <!-- Diamante amarillo -->
+    <div class="absolute w-[200%] h-[200%] bg-yellow-500 rotate-45 z-0"></div>
+
+    <!-- Formulario -->
+    <form [formGroup]="regForm" (ngSubmit)="login()">
+      <div class="relative z-10 bg-black text-white p-8 rounded-3xl w-full max-w-md shadow-xl">
+        <h2 class="text-center text-xl font-bold mb-6 bg-black rounded-full py-3">
+          INICIAR SESIÓN
+        </h2>
+
+        <!-- Input usuario -->
+        <div class="mb-5">
+          <label class="block text-sm font-semibold mb-1">Usuario</label>
+          <div class="flex items-center rounded-full px-4 py-2 bg-white" [ngClass]="{
+          'border border-red-500': fu.usuario.invalid && fu.usuario.touched,
+          'border border-green-500': fu.usuario.valid && fu.usuario.touched
+        }">
+            <span class="text-gray-500 mr-2">👤</span>
+            <input type="text" class="w-full bg-transparent focus:outline-none text-black"
+              placeholder="Ingresa tu usuario" formControlName="usuario" />
+          </div>
+          <div *ngIf="fu.usuario.touched && fu.usuario.invalid" class="text-red-500 text-sm mt-1">
+            <div *ngIf="fu.usuario.hasError('required')">CAMPO OBLIGATORIO</div>
+            <div *ngIf="fu.usuario.hasError('minlength')">MÍNIMO 3 CARACTERES</div>
+          </div>
+        </div>
+
+        <!-- Input contraseña -->
+        <div class="mb-5">
+          <label class="block text-sm font-semibold mb-1">Clave</label>
+          <div class="flex items-center rounded-full px-4 py-2 bg-white" [ngClass]="{
+          'border border-red-500': fu.contrasenia.invalid && fu.contrasenia.touched,
+          'border border-green-500': fu.contrasenia.valid && fu.contrasenia.touched
+        }">
+            <span class="text-gray-500 mr-2">🔒</span>
+            <input [type]="mostrarContrasenia ? 'text' : 'password'"
+              class="w-full bg-transparent focus:outline-none text-black" placeholder="Ingresa tu clave"
+              formControlName="contrasenia" />
+          </div>
+          <div *ngIf="fu.contrasenia.touched && fu.contrasenia.invalid" class="text-red-500 text-sm mt-1">
+            <div *ngIf="fu.contrasenia.hasError('required')">CAMPO OBLIGATORIO</div>
+            <div *ngIf="fu.contrasenia.hasError('minlength')">MÍNIMO 3 CARACTERES</div>
+            <div *ngIf="fu.contrasenia.hasError('maxlength')">MÁXIMO 200 CARACTERES</div>
+          </div>
+        </div>
+
+        <!-- Mostrar contraseña -->
+        <div class="mb-4 flex items-center space-x-2" *ngIf="fu.contrasenia.value">
+          <input type="checkbox" id="showPassword"
+            class="w-4 h-4 text-yellow-400 bg-gray-100 border-gray-300 rounded focus:ring-yellow-400"
+            [checked]="mostrarContrasenia" (change)="mostrarContrasenia = !mostrarContrasenia" />
+          <label for="showPassword" class="text-sm">Mostrar contraseña</label>
+        </div>
+
+        <!-- Botón -->
+        <button type="submit"
+          class="bg-yellow-400 text-black font-semibold px-6 py-2 rounded-full hover:bg-yellow-300 transition w-full">
+          Iniciar sesión
+        </button>
+
+        <!-- Error general -->
+        <div *ngIf="errorAutenticacion" class="text-red-500 text-sm mt-4">
+          {{ errorAutenticacion }}
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>

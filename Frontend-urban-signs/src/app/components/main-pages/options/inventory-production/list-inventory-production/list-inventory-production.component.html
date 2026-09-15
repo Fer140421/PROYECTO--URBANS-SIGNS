@@ -1,0 +1,429 @@
+<div class="min-w-0">
+  <div class="flex justify-end bg-white px-6 py-3">
+    <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+  </div>
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 p-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-800">Listado de materiales para producción</h1>
+    </div>
+  </header>
+  <!-- Filters -->
+  <div class="bg-white p-4 border-b border-gray-200">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+      <div class="relative flex-1 lg:flex-[2]">
+        <input type="text"
+          class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+          placeholder="Buscar materiales..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()">
+        <button type="button" (click)="searchMaterials()"
+          class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+          Buscar
+        </button>
+      </div>
+      <div class="w-full lg:w-48">
+        <select
+          class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+          <option disabled selected>Todas las categorías</option>
+          <option *ngFor="let data of lisCategorias" [value]="data.idCategoria">{{data.nombre}}</option>
+        </select>
+      </div>
+      <div class="w-full lg:w-auto">
+        <button
+          class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+          routerLink="/home/register-inventory-production">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nuevo material
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="bg-white border-b border-gray-200 p-6">
+    <div class="flex border-b border-gray-200 mb-4">
+      <button [ngClass]="{'tab-active text-black border-b-2 border-black': filterStatus === true, 
+                  'text-gray-500 hover:text-gray-700': filterStatus !== true}"
+        class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado(true)">
+        Materiales activos
+      </button>
+      <button [ngClass]="{'tab-active text-black border-b-2 border-black': filterStatus === false, 
+                  'text-gray-500 hover:text-gray-700': filterStatus !== false}"
+        class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado(false)">
+        Materiales eliminados
+      </button>
+    </div>
+  </section>
+  <div class="p-6">
+    <app-responsive-data-view [items]="materiales" [mode]="viewMode" [loading]="isLoading" loadingLabel="Cargando materiales" emptyTitle="No hay materiales registrados" emptyMessage="No existen materiales con los filtros seleccionados." tableMinWidth="50rem" [columns]="4">
+      <ng-template appDataHeader><div class="grid grid-cols-[7rem_minmax(24rem,1fr)_14rem_10rem] gap-5 items-center px-6 py-3"><span>ID</span><span>Material</span><span>Unidad</span><span class="text-right">Acciones</span></div></ng-template>
+      <ng-template appDataRow let-material><div class="grid grid-cols-[7rem_minmax(24rem,1fr)_14rem_10rem] gap-5 items-center px-6 py-4"><span class="font-medium text-gray-900">{{ material.idMaterial }}</span><div class="min-w-0 flex items-center gap-4"><img [src]="material.foto" [alt]="material.nombre" class="w-12 h-12 rounded-md object-cover flex-shrink-0"><div class="min-w-0"><h3 class="font-medium text-gray-900 truncate">{{ material.nombre }}</h3><p class="text-sm text-gray-500 truncate">{{ material.caracteristica }}</p></div></div><span class="text-sm text-gray-600 truncate">{{ material.unidad.nombre }} - {{ material.unidad.abreviatura }}</span><div class="flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openMaterialModal(material)"></app-action-icon-button><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="openMaterialViewModal(material)"></app-action-icon-button></div></div></ng-template>
+      <ng-template appDataCard let-material><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 flex items-start gap-4 border-b border-gray-100"><img [src]="material.foto" [alt]="material.nombre" class="w-16 h-16 rounded-lg object-cover flex-shrink-0"><div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-2"><h3 class="font-semibold text-gray-900 break-words">{{ material.nombre }}</h3><span class="text-xs text-gray-500 whitespace-nowrap">#{{ material.idMaterial }}</span></div><p class="text-sm text-gray-500 mt-1 break-words">{{ material.caracteristica }}</p></div></div><div class="p-4 flex-1 space-y-3 text-sm"><div class="flex justify-between gap-3"><span class="text-gray-500">Unidad</span><span class="text-gray-800 text-right break-words">{{ material.unidad.nombre }} - {{ material.unidad.abreviatura }}</span></div><div *ngIf="material.categoria" class="flex justify-between gap-3"><span class="text-gray-500">Categoría</span><span class="text-gray-800 text-right break-words">{{ material.categoria.nombre }}</span></div></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Editar" icon="ph ph-pencil-simple" variant="primary" (action)="openMaterialModal(material)"></app-action-icon-button><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="openMaterialViewModal(material)"></app-action-icon-button></footer></article></ng-template>
+      <div dataViewFooter *ngIf="materiales.length > 5" class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> materiales</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="currentPage === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === currentPage ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="currentPage === totalPages" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+    </app-responsive-data-view>
+
+    <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+      <app-loading *ngIf="isLoading" variant="table" [columns]="6" label="Cargando materiales"></app-loading>
+      <table *ngIf="!isLoading" class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              ID</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Material</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Unidad</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngIf="materiales.length === 0">
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">
+              No hay materiales registrados
+            </td>
+          </tr>
+          <!-- Material 1 -->
+          <tr class="hover:bg-gray-50" *ngFor="let material of materiales">
+                <td data-label="Código" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{material.idMaterial}}
+            </td>
+                <td data-label="Material" class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img [src]="material.foto" alt="Foto material" class="h-10 w-10 rounded-md object-cover"
+                      onerror="this.onerror=null;this.src='ruta-por-defecto.png';" />
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{material.nombre}}</div>
+                  <div class="text-sm text-gray-500">{{material.caracteristica}}</div>
+                </div>
+              </div>
+            </td>
+                <td data-label="Unidad" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{material.unidad.nombre}} -
+              {{material.unidad.abreviatura}}</td>
+                <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+              <!-- Editar -->
+              <button title="Editar" (click)="openMaterialModal(material)"
+                class="text-blue-500 hover:text-blue-700 text-2xl">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+              <!-- Ver Detalles -->
+              <button title="Ver Detalles" (click)="openMaterialViewModal(material)"
+                class="text-gray-500 hover:text-gray-700 text-2xl">
+                <i class="ph ph-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+        *ngIf="materiales.length > 5">
+        <div class="flex items-center justify-between w-full">
+          <div>
+            <p class="text-sm text-gray-700">
+              Mostrando
+              <span class="font-medium">{{(currentPage - 1) * pageSize + 1}}</span>
+              a
+              <span class="font-medium">{{Math.min(currentPage * pageSize, totalItems)}}</span>
+              de
+              <span class="font-medium">{{totalItems}}</span>
+              categorías
+            </p>
+
+          </div>
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <button (click)="previousPage()" [disabled]="currentPage === 1"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Anterior</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                [class]="page === currentPage ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                {{page}}
+              </button>
+              <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Siguiente</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Registro/Edición de Material -->
+<div *ngIf="isMaterialModalOpen"
+  class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+  <div class="bg-white rounded-lg p-6 shadow-lg w-5xl max-w-full animate-fade-in-modal overflow-y-auto max-h-[90vh]">
+
+    <!-- Título dinámico -->
+    <h2 class="text-xl font-bold mb-6 text-gray-800">
+      Modificar Material de Producción
+    </h2>
+
+    <!-- Formulario -->
+    <form [formGroup]="materialForm" (ngSubmit)="modificarMaterial()">
+
+      <div class="space-y-8">
+
+        <!-- Sección: Información del material -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-6">Información del material de producción</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Código -->
+
+
+            <!-- Nombre -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
+              <input type="text" formControlName="nombre" placeholder="Ej: Tela algodón"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('nombre')?.invalid && materialForm.get('nombre')?.touched}" />
+              <div *ngIf="materialForm.get('nombre')?.invalid && materialForm.get('nombre')?.touched"
+                class="text-red-500 text-sm mt-1">
+                <span *ngIf="materialForm.get('nombre')?.errors?.['required']">El nombre es obligatorio.</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Caracteristica*</label>
+              <input type="text" formControlName="caracteristica" placeholder="Ej: MAT-001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('caracteristica')?.invalid && materialForm.get('caracteristica')?.touched}" />
+              <div *ngIf="materialForm.get('caracteristica')?.invalid && materialForm.get('caracteristica')?.touched"
+                class="text-red-500 text-sm mt-1">
+                <span *ngIf="materialForm.get('caracteristica')?.errors?.['required']">El código es obligatorio.</span>
+              </div>
+            </div>
+
+            <!-- Detalle -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Color*</label>
+              <input type="text" formControlName="color" placeholder="Ej: MAT-001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('color')?.invalid && materialForm.get('color')?.touched}" />
+              <div *ngIf="materialForm.get('color')?.invalid && materialForm.get('color')?.touched"
+                class="text-red-500 text-sm mt-1">
+                <span *ngIf="materialForm.get('color')?.errors?.['required']">El código es obligatorio.</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Base*</label>
+              <input type="text" formControlName="base" placeholder="Ej: MAT-001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('base')?.invalid && materialForm.get('base')?.touched}" />
+              <div *ngIf="materialForm.get('base')?.invalid && materialForm.get('base')?.touched"
+                class="text-red-500 text-sm mt-1">
+                <span *ngIf="materialForm.get('base')?.errors?.['required']">El código es obligatorio.</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Altura*</label>
+              <input type="text" formControlName="altura" placeholder="Ej: MAT-001"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('altura')?.invalid && materialForm.get('altura')?.touched}" />
+              <div *ngIf="materialForm.get('altura')?.invalid && materialForm.get('altura')?.touched"
+                class="text-red-500 text-sm mt-1">
+                <span *ngIf="materialForm.get('altura')?.errors?.['required']">El código es obligatorio.</span>
+              </div>
+            </div>
+
+            <!-- Categoría -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Categoría*</label>
+              <select formControlName="id_categoria"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('id_categoria')?.invalid && materialForm.get('id_categoria')?.touched}">
+                <option value="" disabled>Seleccionar categoría</option>
+                <option *ngFor="let data of lisCategorias" [value]="data.idCategoria">{{data.nombre}}</option>
+              </select>
+              <div *ngIf="materialForm.get('id_categoria')?.invalid && materialForm.get('id_categoria')?.touched"
+                class="text-red-500 text-sm mt-1">
+                Seleccione una categoría válida.
+              </div>
+            </div>
+
+            <!-- Unidad de medida -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Unidad de medida*</label>
+              <select formControlName="id_unidad"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-black focus:border-black"
+                [ngClass]="{'border-red-500': materialForm.get('id_unidad')?.invalid && materialForm.get('id_unidad')?.touched}">
+                <option value="" disabled>Seleccionar unidad</option>
+                <option [value]="xdat.idUnidad" *ngFor="let xdat of listUnidades"> {{xdat.nombre}} -
+                  {{xdat.abreviatura}}</option>
+
+              </select>
+              <div *ngIf="materialForm.get('id_unidad')?.invalid && materialForm.get('id_unidad')?.touched"
+                class="text-red-500 text-sm mt-1">
+                Seleccione una unidad válida.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Foto -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-black mb-2">Foto del material</label>
+          <div class="relative">
+            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              id="materialPhoto" (change)="onFileSelectedEdit($event)">
+            <label for="materialPhoto"
+              class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#FFD000] rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+              <ng-container *ngIf="!previewImage">
+                <span class="text-gray-500">+ Subir imagen</span>
+                <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG (Max. 5MB)</span>
+              </ng-container>
+              <img *ngIf="previewImage" [src]="previewImage" alt="Vista previa"
+                class="h-full w-full object-contain rounded-lg" />
+            </label>
+          </div>
+          <button type="button" (click)="removeImage()" *ngIf="previewImage"
+            class="mt-2 text-sm text-red-500 hover:text-red-700">
+            Eliminar imagen
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 mt-6">
+        <button type="button" (click)="closeMaterialModal()"
+          class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+          Cancelar
+        </button>
+                <button type="submit" [disabled]="isProcessing" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-50">
+          Modificar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal de Visualización de Material -->
+<div *ngIf="isMaterialViewModalOpen"
+  class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8 relative animate-fade-in-modal">
+
+    <!-- Botón cerrar -->
+    <button (click)="closeMaterialViewModal()"
+      class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition">
+      ✖
+    </button>
+
+    <!-- Header -->
+    <div class="flex items-center gap-4 border-b pb-4 mb-6">
+      <div class="w-20 h-20 rounded-lg border flex items-center justify-center overflow-hidden">
+        <img *ngIf="material?.foto; else placeholder" [src]="material?.foto" alt="Imagen del material"
+          class="w-full h-full object-contain" />
+        <ng-template #placeholder>
+          <span class="text-gray-400 text-sm">Sin imagen</span>
+        </ng-template>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">
+          {{ material?.nombre }}
+        </h2>
+        <p class="text-sm text-gray-500">ID: {{ material?.idMaterial }}</p>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Categoría -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Categoría</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.categoria?.nombre }}
+        </p>
+      </div>
+
+      <!-- Unidad -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Unidad de medida</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.unidad?.nombre }} ({{ material?.unidad?.abreviatura }})
+        </p>
+      </div>
+
+      <!-- Color -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Color</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.color || 'No especificado' }}
+        </p>
+      </div>
+
+      <!-- Característica -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Característica</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.caracteristica || 'N/A' }}
+        </p>
+      </div>
+
+      <!-- Altura -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Altura</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.altura || 'N/A' }}
+        </p>
+      </div>
+
+      <!-- Base -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Base</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.base || 'N/A' }}
+        </p>
+      </div>
+
+      <!-- Descripción -->
+      <div class="md:col-span-2">
+        <p class="text-sm text-gray-500 mb-1">Descripción</p>
+        <p class="text-gray-700">
+          {{ material?.descripcion || 'Sin descripción' }}
+        </p>
+      </div>
+
+      <!-- Estado -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Estado</p>
+        <span [ngClass]="{
+            'bg-green-100 text-green-700': material?.estado,
+            'bg-red-100 text-red-700': !material?.estado
+          }" class="px-3 py-1 rounded-full text-sm font-semibold">
+          {{ material?.estado ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+
+      <!-- Fecha de creación -->
+      <div>
+        <p class="text-sm text-gray-500 mb-1">Fecha de creación</p>
+        <p class="font-medium text-gray-800">
+          {{ material?.fechaCreacion | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>

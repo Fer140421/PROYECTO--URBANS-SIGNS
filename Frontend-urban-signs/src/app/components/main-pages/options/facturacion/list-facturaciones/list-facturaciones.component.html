@@ -1,0 +1,149 @@
+<div class="min-w-0">
+    <!-- Encabezado -->
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="mb-3 flex justify-end">
+            <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Facturas emitidas</h1>
+        </div>
+    </section>
+
+    <!-- Búsqueda -->
+    <div class="bg-white p-4 border-b border-gray-200">
+        <div class="flex items-center space-x-4">
+            <div class="relative flex-1">
+                <input type="text" [(ngModel)]="terminoBusqueda" placeholder="Buscar por código o estado..."
+                    class="block w-full pl-4 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm" />
+                <button (click)="buscar()"
+                    class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                    Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de facturas -->
+    <div class="p-6">
+        <app-responsive-data-view [items]="facturasFiltradas" [mode]="viewMode" [loading]="isLoading" loadingLabel="Cargando facturas" emptyTitle="No hay facturas emitidas" emptyMessage="No se encontraron facturas con los criterios seleccionados." tableMinWidth="58rem" [columns]="5">
+            <ng-template appDataHeader><div class="grid grid-cols-[11rem_13rem_minmax(20rem,1fr)_10rem_10rem] gap-5 items-center px-6 py-3"><span>Código pedido</span><span>Fecha emisión SIAT</span><span>Mensajes / error</span><span>Estado</span><span class="text-right">Acciones</span></div></ng-template>
+            <ng-template appDataRow let-data><div class="grid grid-cols-[11rem_13rem_minmax(20rem,1fr)_10rem_10rem] gap-5 items-center px-6 py-4"><span class="font-medium text-gray-900">{{ data.idPedido }}</span><span class="text-sm text-gray-600">{{ data.fechaEmisionSiat ? (data.fechaEmisionSiat | date:'dd/MM/yyyy') : 'Sin fecha' }}</span><span class="text-sm text-gray-600 line-clamp-2 break-words">{{ data.mensajesError || '-' }}</span><span class="justify-self-start px-2.5 py-1 rounded-full text-xs font-semibold" [ngClass]="{'bg-green-100 text-green-800': data.estado === 'ACEPTADA','bg-red-100 text-red-800': data.estado === 'RECHAZADA' || data.estado === 'ERROR','bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'}">{{ data.estado }}</span><div class="flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="visualizarModal(data)"></app-action-icon-button><app-action-icon-button *ngIf="data.urlQr" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirFactura(data.urlQr)"></app-action-icon-button></div></div></ng-template>
+            <ng-template appDataCard let-data><article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"><div class="p-4 border-b border-gray-100 flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="font-semibold text-gray-900">Pedido #{{ data.idPedido }}</h3><p class="text-sm text-gray-500 mt-1">{{ data.fechaEmisionSiat ? (data.fechaEmisionSiat | date:'dd/MM/yyyy') : 'Sin fecha' }}</p></div><span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': data.estado === 'ACEPTADA','bg-red-100 text-red-800': data.estado === 'RECHAZADA' || data.estado === 'ERROR','bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'}">{{ data.estado }}</span></div><div class="p-4 flex-1 min-w-0"><p class="text-xs font-semibold text-gray-500 uppercase mb-2">Mensajes / error</p><p class="text-sm text-gray-700 break-words">{{ data.mensajesError || '-' }}</p></div><footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end gap-2"><app-action-icon-button label="Ver detalles" icon="ph ph-eye" variant="neutral" (action)="visualizarModal(data)"></app-action-icon-button><app-action-icon-button *ngIf="data.urlQr" label="Imprimir" icon="ph ph-printer" variant="warning" (action)="imprimirFactura(data.urlQr)"></app-action-icon-button></footer></article></ng-template>
+            <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6"><p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalItems === 0 ? 0 : (paginaActual - 1) * pageSize + 1 }}</span> a <span class="font-medium">{{ Math.min(paginaActual * pageSize, totalItems) }}</span> de <span class="font-medium">{{ totalItems }}</span> facturas</p><nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="previousPage()" [disabled]="paginaActual === 1" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPages()" (click)="goToPage(page)" [ngClass]="page === paginaActual ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page }}</button><button (click)="nextPage()" [disabled]="paginaActual === totalPaginas" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav></div>
+        </app-responsive-data-view>
+
+        <app-loading *ngIf="false" variant="table" [columns]="5" label="Cargando facturas"></app-loading>
+        <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden" [class.cards-view]="viewMode === 'cards'">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Código Pedido</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha
+                            Emisión SIAT</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mensajes/Error</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr class="hover:bg-gray-50" *ngFor="let data of facturas">
+                        <!-- Código Pedido -->
+                        <td data-label="Código pedido" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ data.idPedido }}
+                        </td>
+
+                        <!-- Fecha Emisión SIAT -->
+                        <td data-label="Fecha de emisión SIAT" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ data.fechaEmisionSiat ? (data.fechaEmisionSiat | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                        </td>
+
+                        <!-- Mensajes / Error -->
+                        <td data-label="Mensajes / error" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ data.mensajesError || '-' }}
+                        </td>
+
+                        <!-- Estado -->
+                        <td data-label="Estado" class="px-6 py-4 whitespace-nowrap text-sm font-medium" [ngClass]="{
+                'bg-green-100 text-green-800': data.estado === 'ACEPTADA',
+                'bg-red-100 text-red-800': data.estado === 'RECHAZADA' || data.estado === 'ERROR',
+                'bg-yellow-100 text-yellow-800': data.estado === 'PENDIENTE'
+              }">
+                            <strong>{{ data.estado }}</strong>
+                        </td>
+
+                        <!-- Acciones -->
+                        <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                            <button title="Ver Detalles" (click)="visualizarModal(data)"
+                                class="text-gray-500 hover:text-gray-700 text-2xl">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                            <button title="Imprimir" *ngIf="data.urlQr" (click)="imprimirFactura(data.urlQr)"
+                                class="text-purple-500 hover:text-purple-700 text-2xl">
+                                <i class="ph ph-printer"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Mensaje si no hay facturas -->
+            <div *ngIf="facturas.length === 0" class="text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="ph ph-folders text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay facturas emitidas</h3>
+                    <p class="text-gray-600 mb-6">No se encontraron facturas emitidas aún.</p>
+                </div>
+            </div>
+
+            <!-- Paginación -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex items-center justify-between w-full">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">{{(paginaActual - 1) * pageSize + 1}}</span>
+                            a
+                            <span class="font-medium">{{Math.min(paginaActual * pageSize, totalItems)}}</span>
+                            de
+                            <span class="font-medium">{{totalItems}}</span>
+                            facturas
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button (click)="previousPage()" [disabled]="paginaActual === 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Anterior</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button *ngFor="let page of getPages()" (click)="goToPage(page)"
+                                [class]="page === paginaActual ? 'z-10 bg-black border-black text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'">
+                                {{page}}
+                            </button>
+                            <button (click)="nextPage()" [disabled]="paginaActual === totalPaginas"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="sr-only">Siguiente</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

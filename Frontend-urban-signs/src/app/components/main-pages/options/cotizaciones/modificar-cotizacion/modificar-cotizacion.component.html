@@ -1,0 +1,327 @@
+<!-- Modal de Modificación de Cotización -->
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="mostrar">
+    <div
+        class="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+
+        <!-- Header del Modal -->
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-black/5"></div>
+            <div class="flex justify-between items-center relative z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Modificar Cotización</h2>
+                    <p class="text-gray-800 text-sm mt-1 font-medium">
+                        Código: {{cotizacion?.codCotizacion}} | Cliente: {{cotizacion?.clienteNombre}}
+                    </p>
+                </div>
+                <button (click)="cerrarModal()" [disabled]="guardando"
+                    class="text-gray-900 hover:text-gray-700 transition-colors p-2 hover:bg-black/10 rounded-lg disabled:opacity-50">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
+            <form [formGroup]="modificacionForm" (ngSubmit)="onGuardar()">
+
+                <!-- Mensaje de Error -->
+                <div *ngIf="mensajeError"
+                    class="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-lg flex items-start">
+                    <i class="ph ph-warning-circle text-red-500 text-2xl mr-3 mt-0.5"></i>
+                    <div>
+                        <p class="font-semibold text-red-800">Error</p>
+                        <p class="text-red-700 text-sm">{{ mensajeError }}</p>
+                    </div>
+                </div>
+
+                <!-- Información General -->
+                <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-6 shadow-sm">
+                    <h3
+                        class="font-bold text-gray-900 mb-5 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-info text-gray-900 text-xl"></i>
+                        </div>
+                        Información General
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <!-- Estado -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Estado <span class="text-red-500">*</span>
+                            </label>
+                            <select formControlName="estado"
+                                [class.border-red-500]="estado?.invalid && (estado?.dirty || estado?.touched)"
+                                [class.border-green-500]="estado?.valid && estado?.dirty"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all">
+                                <option value="">Seleccione un estado</option>
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="EN_PROCESO">En Proceso</option>
+                                <option value="APROBADO">Aprobado</option>
+                                <option value="RECHAZADO">Rechazado</option>
+                            </select>
+                            <div *ngIf="estado?.invalid && (estado?.dirty || estado?.touched)" class="text-red-500 text-xs mt-1">
+                                <span *ngIf="estado?.errors?.['required']">El estado es requerido</span>
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Emisión -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Fecha de Emisión <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" formControlName="fechaEmision"
+                                [class.border-red-500]="fechaEmision?.invalid && (fechaEmision?.dirty || fechaEmision?.touched)"
+                                [class.border-green-500]="fechaEmision?.valid && fechaEmision?.dirty"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all">
+                            <div *ngIf="fechaEmision?.invalid && (fechaEmision?.dirty || fechaEmision?.touched)" class="text-red-500 text-xs mt-1">
+                                <span *ngIf="fechaEmision?.errors?.['required']">La fecha de emisión es requerida</span>
+                                <span *ngIf="fechaEmision?.errors?.['fechaInvalida']">{{ fechaEmision?.errors?.['fechaInvalida'] }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Caducidad -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Fecha de Caducidad <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" formControlName="fechaCaducado"
+                                [class.border-red-500]="fechaCaducado?.invalid && (fechaCaducado?.dirty || fechaCaducado?.touched)"
+                                [class.border-green-500]="fechaCaducado?.valid && fechaCaducado?.dirty"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all">
+                            <div *ngIf="fechaCaducado?.invalid && (fechaCaducado?.dirty || fechaCaducado?.touched)" class="text-red-500 text-xs mt-1">
+                                <span *ngIf="fechaCaducado?.errors?.['required']">La fecha de caducidad es requerida</span>
+                                <span *ngIf="fechaCaducado?.errors?.['fechaInvalida']">{{ fechaCaducado?.errors?.['fechaInvalida'] }}</span>
+                                <span *ngIf="fechaCaducado?.errors?.['fechaAnterior']">La fecha de caducidad debe ser posterior a la fecha de emisión</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Trabajos -->
+                <div class="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm mb-6">
+                    <div class="flex justify-between items-center mb-6 pb-3 border-b-2 border-yellow-400">
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                                <i class="ph ph-hammer text-gray-900 text-xl"></i>
+                            </div>
+                            Trabajos
+                            <span class="ml-3 text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                                {{ trabajos.length }} trabajo(s)
+                            </span>
+                        </h3>
+                        <button type="button" (click)="agregarTrabajo()"
+                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center gap-2 font-semibold">
+                            <i class="ph ph-plus-circle text-xl"></i>
+                            Agregar Trabajo
+                        </button>
+                    </div>
+
+                    <!-- Lista de Trabajos -->
+                    <div formArrayName="trabajos" class="space-y-6">
+                        <div *ngFor="let trabajo of trabajos.controls; let i = index" [formGroupName]="i"
+                            class="border-2 border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-yellow-400 transition-all"
+                            [class.border-red-300]="esTrabajoInvalido(i)">
+
+                            <!-- Header del Trabajo -->
+                            <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-yellow-400">
+                                <h4 class="font-bold text-gray-900 text-lg flex items-center">
+                                    <span
+                                        class="bg-yellow-400 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">{{i
+                                        + 1}}</span>
+                                    Trabajo {{i + 1}}
+                                </h4>
+                                <button type="button" (click)="removerTrabajo(i)" *ngIf="trabajos.length > 1"
+                                    class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all">
+                                    <i class="ph ph-trash text-xl"></i>
+                                </button>
+                            </div>
+
+                            <!-- Mensaje de error del trabajo -->
+                            <div *ngIf="esTrabajoInvalido(i)" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                                <p class="text-red-700 text-sm font-medium flex items-center">
+                                    <i class="ph ph-warning-circle mr-2"></i>
+                                    Complete todos los campos requeridos del trabajo
+                                </p>
+                            </div>
+
+                            <!-- Datos del Trabajo -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                <!-- Tipo de Trabajo -->
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                                        Tipo de Trabajo <span class="text-red-500">*</span>
+                                    </label>
+                                    <select formControlName="idTrabajo" (change)="onTrabajoChange(i)"
+                                        [class.border-red-500]="getTrabajoControl(i, 'idTrabajo').invalid && (getTrabajoControl(i, 'idTrabajo').dirty || getTrabajoControl(i, 'idTrabajo').touched)"
+                                        [class.border-green-500]="getTrabajoControl(i, 'idTrabajo').valid && getTrabajoControl(i, 'idTrabajo').dirty"
+                                        class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-sm">
+                                        <option value="">Seleccione...</option>
+                                        <option *ngFor="let t of listTrabajos" [value]="t.id">{{ t.nombre }}</option>
+                                    </select>
+                                    <div *ngIf="getTrabajoControl(i, 'idTrabajo').invalid && (getTrabajoControl(i, 'idTrabajo').dirty || getTrabajoControl(i, 'idTrabajo').touched)" 
+                                         class="text-red-500 text-xs mt-1">
+                                        <span *ngIf="getTrabajoControl(i, 'idTrabajo').errors?.['required']">Seleccione un tipo de trabajo</span>
+                                    </div>
+                                </div>
+
+                                <!-- Cantidad -->
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                                        Cantidad <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" formControlName="cantidad" (input)="onCantidadCostoChange(i)"
+                                        min="1" step="1"
+                                        [class.border-red-500]="getTrabajoControl(i, 'cantidad').invalid && (getTrabajoControl(i, 'cantidad').dirty || getTrabajoControl(i, 'cantidad').touched)"
+                                        [class.border-green-500]="getTrabajoControl(i, 'cantidad').valid && getTrabajoControl(i, 'cantidad').dirty"
+                                        class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-sm">
+                                    <div *ngIf="getTrabajoControl(i, 'cantidad').invalid && (getTrabajoControl(i, 'cantidad').dirty || getTrabajoControl(i, 'cantidad').touched)" 
+                                         class="text-red-500 text-xs mt-1">
+                                        <span *ngIf="getTrabajoControl(i, 'cantidad').errors?.['required']">La cantidad es requerida</span>
+                                        <span *ngIf="getTrabajoControl(i, 'cantidad').errors?.['min']">La cantidad mínima es 1</span>
+                                        <span *ngIf="getTrabajoControl(i, 'cantidad').errors?.['pattern']">Solo se permiten números enteros</span>
+                                    </div>
+                                </div>
+
+                                <!-- Costo Unitario -->
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                                        Costo Unitario (Bs) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" formControlName="costoUnitario"
+                                        (input)="onCantidadCostoChange(i)" min="0" step="0.01"
+                                        [class.border-red-500]="getTrabajoControl(i, 'costoUnitario').invalid && (getTrabajoControl(i, 'costoUnitario').dirty || getTrabajoControl(i, 'costoUnitario').touched)"
+                                        [class.border-green-500]="getTrabajoControl(i, 'costoUnitario').valid && getTrabajoControl(i, 'costoUnitario').dirty"
+                                        class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-sm">
+                                    <div *ngIf="getTrabajoControl(i, 'costoUnitario').invalid && (getTrabajoControl(i, 'costoUnitario').dirty || getTrabajoControl(i, 'costoUnitario').touched)" 
+                                         class="text-red-500 text-xs mt-1">
+                                        <span *ngIf="getTrabajoControl(i, 'costoUnitario').errors?.['required']">El costo unitario es requerido</span>
+                                        <span *ngIf="getTrabajoControl(i, 'costoUnitario').errors?.['min']">El costo no puede ser negativo</span>
+                                        <span *ngIf="getTrabajoControl(i, 'costoUnitario').errors?.['pattern']">Formato de precio inválido</span>
+                                    </div>
+                                </div>
+
+                                <!-- Subtotal (solo lectura) -->
+                                <div>
+                                    <label
+                                        class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                                        Subtotal (Bs)
+                                    </label>
+                                    <input type="number" formControlName="subtotal" readonly
+                                        class="w-full px-3 py-2 border-2 border-yellow-400 bg-yellow-50 rounded-lg text-sm font-bold text-gray-900">
+                                </div>
+                            </div>
+
+                            <!-- Sección de Materiales -->
+                            <div class="mt-5 bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h5 class="font-semibold text-gray-900 flex items-center">
+                                        <i class="ph ph-package text-blue-600 mr-2 text-lg"></i>
+                                        Materiales
+                                        <span class="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">
+                                            {{ getMateriales(i).length }}
+                                        </span>
+                                    </h5>
+                                    <button type="button" (click)="agregarMaterial(i)"
+                                        class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-3 py-1 rounded-lg transition-all text-sm font-semibold flex items-center gap-1">
+                                        <i class="ph ph-plus"></i>
+                                        Agregar Material
+                                    </button>
+                                </div>
+
+                                <!-- Lista de Materiales -->
+                                <div formArrayName="materiales" class="space-y-3">
+                                    <div *ngFor="let material of getMateriales(i).controls; let j = index"
+                                        [formGroupName]="j"
+                                        class="bg-white rounded-lg p-3 border border-blue-200 flex items-end gap-3"
+                                        [class.border-red-300]="esMaterialInvalido(i, j)">
+
+                                        <!-- Material -->
+                                        <div class="flex-1">
+                                            <label
+                                                class="block text-xs font-semibold text-gray-600 mb-1">Material <span class="text-red-500">*</span></label>
+                                            <select formControlName="idMaterial" (change)="onMaterialChange(i, j)"
+                                                [class.border-red-500]="getMaterialControl(i, j, 'idMaterial').invalid && (getMaterialControl(i, j, 'idMaterial').dirty || getMaterialControl(i, j, 'idMaterial').touched)"
+                                                class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400">
+                                                <option value="">Seleccione...</option>
+                                                <option *ngFor="let m of listMateriales" [value]="m.idMaterial">{{
+                                                    m.nombre }} {{m.caracteristica}}</option>
+                                            </select>
+                                            <div *ngIf="getMaterialControl(i, j, 'idMaterial').invalid && (getMaterialControl(i, j, 'idMaterial').dirty || getMaterialControl(i, j, 'idMaterial').touched)" 
+                                                 class="text-red-500 text-xs mt-1">
+                                                <span *ngIf="getMaterialControl(i, j, 'idMaterial').errors?.['required']">Seleccione un material</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botón Eliminar -->
+                                        <button type="button" (click)="removerMaterial(i, j)"
+                                            class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-all">
+                                            <i class="ph ph-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Sin materiales -->
+                                    <div *ngIf="getMateriales(i).length === 0"
+                                        class="text-center py-4 text-gray-500 text-sm">
+                                        <i class="ph ph-package text-2xl mb-2"></i>
+                                        <p>No hay materiales agregados</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sin trabajos -->
+                    <div *ngIf="trabajos.length === 0"
+                        class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                        <i class="ph ph-hammer text-5xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500 text-lg mb-4">No hay trabajos agregados</p>
+                        <button type="button" (click)="agregarTrabajo()"
+                            class="px-6 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-500 transition-all font-semibold">
+                            Agregar Primer Trabajo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resumen de Costos -->
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="ph ph-calculator text-gray-900 text-2xl mr-2"></i>
+                        Resumen de Costos
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white/90 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 font-semibold mb-1">Total de Trabajos</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ trabajos.length }}</p>
+                        </div>
+
+                        <div class="bg-gray-900 rounded-lg p-4 text-center">
+                            <p class="text-sm text-yellow-400 font-semibold mb-1">COSTO TOTAL</p>
+                            <p class="text-2xl font-bold text-yellow-400">{{ getCostoTotal() | number:'1.2-2' }} Bs</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end gap-3 pt-8">
+                    <button type="button" (click)="cerrarModal()" [disabled]="guardando"
+                        class="px-8 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="ph ph-x text-xl"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="guardando || !esFormularioValido()"
+                        class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                        <i class="ph ph-floppy-disk text-xl" [class.animate-spin]="guardando"></i>
+                        <span *ngIf="!guardando">Guardar Cambios</span>
+                        <span *ngIf="guardando">Guardando...</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

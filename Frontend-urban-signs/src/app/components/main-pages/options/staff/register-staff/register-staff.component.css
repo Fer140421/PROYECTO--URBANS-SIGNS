@@ -1,0 +1,46 @@
+/* Agrega esto a tu archivo CSS */
+.step-item .step-number {
+  background-color: #f3f4f6; /* bg-gray-200 */
+  color: #4b5563; /* text-gray-600 */
+  border-color: #e5e7eb; /* border-gray-200 */
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-number {
+  background-color: #000; /* bg-black */
+  color: #fff; /* text-white */
+  border-color: #000; /* border-black */
+}
+
+.step-item.completed .step-number {
+  background-color: #FFD000; /* bg-green-500 */
+  color: #fff; /* text-white */
+  border-color: #FFD000; /* border-green-500 */
+}
+
+.step-item .step-title {
+  color: #6b7280; /* text-gray-500 */
+}
+
+.step-item.active .step-title {
+  font-weight: 500; /* font-medium */
+  color: #1f2937; /* text-gray-800 */
+}
+
+.step-item.completed .step-title {
+  font-weight: 500; /* font-medium */
+  color: #FFD000; /* text-green-600 */
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}

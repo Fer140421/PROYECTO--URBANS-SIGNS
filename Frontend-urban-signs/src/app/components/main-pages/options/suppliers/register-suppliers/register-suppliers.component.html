@@ -1,0 +1,165 @@
+<div class="w-full max-w-5xl mx-auto">
+  <form [formGroup]="supplierForm" (ngSubmit)="registerSupplier()">
+    <div class="space-y-8">
+
+      <!-- Sección: Información del proveedor -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Información del proveedor</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Nombre -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre*</label>
+            <input type="text" formControlName="name_people" placeholder="Ej: Juan"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('name_people')?.invalid && supplierForm.get('name_people')?.touched,
+                'border-green-500': supplierForm.get('name_people')?.valid && supplierForm.get('name_people')?.dirty
+              }" />
+            <div *ngIf="supplierForm.get('name_people')?.invalid && supplierForm.get('name_people')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('name_people')?.errors?.['required']">El nombre es obligatorio.</span>
+              <span *ngIf="supplierForm.get('name_people')?.errors?.['pattern']">Solo se permiten letras y
+                espacios.</span>
+              <span *ngIf="supplierForm.get('name_people')?.errors?.['minlength']">Mínimo 2 caracteres.</span>
+              <span *ngIf="supplierForm.get('name_people')?.errors?.['maxlength']">Máximo 50 caracteres.</span>
+            </div>
+          </div>
+
+          <!-- Apellido paterno -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido paterno*</label>
+            <input type="text" formControlName="ap" placeholder="Ej: Pérez"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('ap')?.invalid && supplierForm.get('ap')?.touched,
+                'border-green-500': supplierForm.get('ap')?.valid && supplierForm.get('ap')?.dirty
+              }" />
+            <div *ngIf="supplierForm.get('ap')?.invalid && supplierForm.get('ap')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('ap')?.errors?.['required']">El apellido paterno es obligatorio.</span>
+              <span *ngIf="supplierForm.get('ap')?.errors?.['pattern']">Solo se permiten letras y espacios.</span>
+              <span *ngIf="supplierForm.get('ap')?.errors?.['minlength']">Mínimo 2 caracteres.</span>
+              <span *ngIf="supplierForm.get('ap')?.errors?.['maxlength']">Máximo 50 caracteres.</span>
+            </div>
+          </div>
+
+          <!-- Apellido materno -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido materno</label>
+            <input type="text" formControlName="am" placeholder="Ej: Gómez"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('am')?.invalid && supplierForm.get('am')?.touched,
+                'border-green-500': supplierForm.get('am')?.valid && supplierForm.get('am')?.dirty && supplierForm.get('am')?.value
+              }" />
+            <div *ngIf="supplierForm.get('am')?.invalid && supplierForm.get('am')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('am')?.errors?.['pattern']">Solo se permiten letras y espacios.</span>
+              <span *ngIf="supplierForm.get('am')?.errors?.['minlength']">Mínimo 2 caracteres.</span>
+              <span *ngIf="supplierForm.get('am')?.errors?.['maxlength']">Máximo 50 caracteres.</span>
+            </div>
+          </div>
+
+          <!-- Teléfono -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono*</label>
+            <input type="tel" formControlName="phone_number" placeholder="Ej: 76543210"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('phone_number')?.invalid && supplierForm.get('phone_number')?.touched,
+                'border-green-500': supplierForm.get('phone_number')?.valid && supplierForm.get('phone_number')?.dirty
+              }" />
+            <div *ngIf="supplierForm.get('phone_number')?.invalid && supplierForm.get('phone_number')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('phone_number')?.errors?.['required']">El teléfono es obligatorio.</span>
+              <span *ngIf="supplierForm.get('phone_number')?.errors?.['pattern']">Debe comenzar con 6 o 7 y tener 8
+                dígitos.</span>
+            </div>
+          </div>
+
+          <!-- Dirección -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+            <input type="text" formControlName="addres" placeholder="Ej: Calle Sucre #456, Zona Central"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('addres')?.invalid && supplierForm.get('addres')?.touched,
+                'border-green-500': supplierForm.get('addres')?.valid && supplierForm.get('addres')?.dirty && supplierForm.get('addres')?.value
+              }" />
+            <div *ngIf="supplierForm.get('addres')?.invalid && supplierForm.get('addres')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('addres')?.errors?.['maxlength']">Máximo 200 caracteres.</span>
+              <span *ngIf="supplierForm.get('addres')?.errors?.['pattern']">Solo se permiten letras, números, espacios y
+                los caracteres: #-.,</span>
+            </div>
+            <div class="text-gray-500 text-xs mt-1">
+              {{ supplierForm.get('addres')?.value?.length || 0 }}/200 caracteres
+            </div>
+          </div>
+
+          <!-- Ciudad -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad*</label>
+            <select formControlName="city"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-black focus:border-black transition-colors"
+              [ngClass]="{
+                'border-red-500': supplierForm.get('city')?.invalid && supplierForm.get('city')?.touched,
+                'border-green-500': supplierForm.get('city')?.valid && supplierForm.get('city')?.dirty
+              }">
+              <option value="" disabled selected>Seleccione una ciudad</option>
+              <option value="Tarija">Tarija</option>
+              <option value="La Paz">La Paz</option>
+              <option value="Cochabamba">Cochabamba</option>
+              <option value="Santa Cruz">Santa Cruz</option>
+              <option value="Sucre">Sucre</option>
+              <option value="Oruro">Oruro</option>
+              <option value="Potosí">Potosí</option>
+              <option value="Beni">Beni</option>
+              <option value="Pando">Pando</option>
+            </select>
+            <div *ngIf="supplierForm.get('city')?.invalid && supplierForm.get('city')?.touched"
+              class="text-red-500 text-sm mt-1">
+              <span *ngIf="supplierForm.get('city')?.errors?.['required']">La ciudad es obligatoria.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de validación -->
+      <div *ngIf="supplierForm.invalid && supplierForm.touched" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd" />
+          </svg>
+          <span class="text-red-800 font-medium">Por favor, complete todos los campos requeridos correctamente.</span>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button type="submit" [disabled]="supplierForm.invalid || loading"
+            class="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+              fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            {{ loading ? 'Registrando...' : 'Registrar proveedor' }}
+          </button>
+          <button type="button" (click)="cancel()" [disabled]="loading"
+            class="border border-red-500 text-red-600 px-6 py-3 rounded-md hover:bg-red-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>

@@ -1,0 +1,261 @@
+<div class="min-w-0 bg-gray-50 p-3 sm:p-6">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Historial de Accesos</h1>
+            <p class="text-gray-600">Monitoree las sesiones y accesos de los usuarios al sistema</p>
+        </div>
+
+        <!-- Panel Principal -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Toolbar -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                        <!-- Filtro por estado -->
+                        <select [(ngModel)]="filtroEstado" (change)="filtrarPorEstado()"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-auto">
+                            <option value="ACTIVO" selected>Activos</option>
+                            <option value="CERRADO">Cerrados</option>
+                        </select>
+                        <input type="date" [(ngModel)]="filtroFecha" (change)="filtrarPorFecha()"
+                            class="pl-10 pr-20 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent w-full sm:w-64">
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="ph ph-clock-clockwise text-lg"></i>
+                        <span>{{ totalElementos }} accesos registrados</span>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+                </div>
+            </div>
+
+            <app-responsive-data-view [items]="sesiones" [mode]="viewMode" [loading]="isLoading"
+                loadingLabel="Cargando accesos" emptyTitle="No hay accesos registrados"
+                emptyMessage="No se encontraron sesiones con los criterios seleccionados."
+                tableMinWidth="62rem" [columns]="4">
+                <ng-template appDataHeader>
+                    <div class="grid grid-cols-[minmax(14rem,1fr)_minmax(15rem,1fr)_minmax(17rem,1fr)_12rem] gap-5 items-center px-6 py-3">
+                        <span>Usuario</span><span>Dispositivo e IP</span><span>Fecha y hora</span><span class="text-right">Estado / acciones</span>
+                    </div>
+                </ng-template>
+                <ng-template appDataRow let-sesion>
+                    <div class="grid grid-cols-[minmax(14rem,1fr)_minmax(15rem,1fr)_minmax(17rem,1fr)_12rem] gap-5 items-center px-6 py-4">
+                        <div class="min-w-0 flex items-center gap-4"><div class="w-12 h-12 rounded-full flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">{{ sesion.usuario.userAcces.charAt(0) }}</div><h3 class="font-semibold text-gray-900 truncate">{{ sesion.usuario.userAcces }}</h3></div>
+                        <div class="min-w-0 space-y-1 text-sm"><div class="flex items-center gap-2"><i class="ph ph-browser text-gray-400"></i><span class="truncate">{{ sesion.dispositivo }}</span></div><div class="flex items-center gap-2"><i class="ph ph-globe text-gray-400"></i><span class="truncate text-gray-600">{{ sesion.ipDireccion }}</span></div></div>
+                        <div class="space-y-1 text-sm"><div class="flex items-center gap-2"><i class="ph ph-sign-in text-green-500"></i><span>{{ sesion.loginInicio | date:'dd/MM/yyyy HH:mm' }}</span></div><div *ngIf="sesion.loginFin" class="flex items-center gap-2"><i class="ph ph-sign-out text-red-500"></i><span>{{ sesion.loginFin | date:'dd/MM/yyyy HH:mm' }}</span></div><div *ngIf="!sesion.loginFin" class="flex items-center gap-2 text-blue-600"><i class="ph ph-timer"></i><span>En curso</span></div><p *ngIf="sesion.loginFin" class="text-xs text-gray-500">Duración: {{ calcularDuracion(sesion.loginInicio, sesion.loginFin) }}</p></div>
+                        <div class="flex items-center justify-end gap-3"><span class="inline-flex px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': sesion.estado === 'ACTIVO','bg-gray-100 text-gray-800': sesion.estado === 'CERRADO','bg-yellow-100 text-yellow-800': sesion.estado === 'EXPIRADO'}">{{ sesion.estado }}</span><app-action-icon-button label="Ver detalle de sesión" icon="ph ph-eye" variant="neutral" (action)="abrirDetalleSesion(sesion.idSesion)"></app-action-icon-button></div>
+                    </div>
+                </ng-template>
+                <ng-template appDataCard let-sesion>
+                    <article class="h-full min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-4 flex items-center gap-4 border-b border-gray-100"><div class="w-12 h-12 rounded-full flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">{{ sesion.usuario.userAcces.charAt(0) }}</div><div class="min-w-0 flex-1"><h3 class="font-semibold text-gray-900 break-all">{{ sesion.usuario.userAcces }}</h3><p class="text-xs text-gray-500 mt-1 break-all">{{ sesion.ipDireccion }}</p></div><span class="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap" [ngClass]="{'bg-green-100 text-green-800': sesion.estado === 'ACTIVO','bg-gray-100 text-gray-800': sesion.estado === 'CERRADO','bg-yellow-100 text-yellow-800': sesion.estado === 'EXPIRADO'}">{{ sesion.estado }}</span></div>
+                        <div class="p-4 space-y-3 flex-1 text-sm min-w-0"><div class="flex gap-2 min-w-0"><i class="ph ph-browser text-gray-400 flex-shrink-0"></i><span class="break-words min-w-0">{{ sesion.dispositivo }}</span></div><div class="flex gap-2"><i class="ph ph-sign-in text-green-500"></i><span>{{ sesion.loginInicio | date:'dd/MM/yyyy HH:mm' }}</span></div><div *ngIf="sesion.loginFin" class="flex gap-2"><i class="ph ph-sign-out text-red-500"></i><span>{{ sesion.loginFin | date:'dd/MM/yyyy HH:mm' }}</span></div><div *ngIf="!sesion.loginFin" class="flex gap-2 text-blue-600"><i class="ph ph-timer"></i><span>En curso</span></div><p *ngIf="sesion.loginFin" class="pt-3 border-t border-gray-100 text-xs text-gray-500">Duración: {{ calcularDuracion(sesion.loginInicio, sesion.loginFin) }}</p></div>
+                        <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end"><app-action-icon-button label="Ver detalle de sesión" icon="ph ph-eye" variant="neutral" (action)="abrirDetalleSesion(sesion.idSesion)"></app-action-icon-button></footer>
+                    </article>
+                </ng-template>
+                <div dataViewFooter class="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 sm:px-6">
+                    <p class="text-sm text-gray-700">Mostrando <span class="font-medium">{{ totalElementos === 0 ? 0 : paginaActual * tamanioPagina + 1 }}</span> a <span class="font-medium">{{ Math.min((paginaActual + 1) * tamanioPagina, totalElementos) }}</span> de <span class="font-medium">{{ totalElementos }}</span> accesos</p>
+                    <nav class="inline-flex rounded-md shadow-sm -space-x-px"><button (click)="cargarSesiones(paginaActual - 1)" [disabled]="paginaActual === 0" class="px-3 py-2 border rounded-l-md disabled:opacity-50"><i class="ph ph-caret-left"></i></button><button *ngFor="let page of getPaginas()" (click)="cargarSesiones(page)" [ngClass]="paginaActual === page ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500'" class="px-4 py-2 border text-sm">{{ page + 1 }}</button><button (click)="cargarSesiones(paginaActual + 1)" [disabled]="paginaActual >= getTotalPaginas() - 1" class="px-3 py-2 border rounded-r-md disabled:opacity-50"><i class="ph ph-caret-right"></i></button></nav>
+                </div>
+            </app-responsive-data-view>
+
+            <ng-container *ngIf="false">
+            <!-- Lista de Sesiones -->
+            <app-loading *ngIf="isLoading" variant="list" label="Cargando accesos"></app-loading>
+            <div *ngIf="!isLoading" class="view-surface">
+                <div *ngIf="viewMode === 'list'" class="view-list-header hidden md:grid grid-cols-12 gap-4 items-center px-6 py-3 bg-gray-50 border-b border-gray-200">
+                    <span class="col-span-4">Usuario</span>
+                    <span class="col-span-3">Dispositivo e IP</span>
+                    <span class="col-span-3">Fecha y hora</span>
+                    <span class="col-span-2 text-right">Estado / acciones</span>
+                </div>
+                <div *ngFor="let sesion of sesiones" [class.hidden]="viewMode !== 'list'"
+                    class="p-4 sm:p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                    <div class="grid grid-cols-12 gap-4 items-center">
+                        <!-- Usuario (Columna 1-4) -->
+                        <div class="col-span-12 lg:col-span-4 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                                <div
+                                    class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">
+                                    {{ sesion.usuario.userAcces.charAt(0) }}
+                                </div>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-semibold text-gray-900 truncate">
+                                    {{ sesion.usuario.userAcces }}
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Dispositivo e IP (Columna 5-7) -->
+                        <div class="col-span-12 lg:col-span-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="ph ph-browser text-gray-400"></i>
+                                    <span class="text-gray-700 font-medium">{{ sesion.dispositivo }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="ph ph-globe text-gray-400"></i>
+                                    <span class="text-gray-600">{{ sesion.ipDireccion }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fecha y Hora (Columna 8-10) -->
+                        <div class="col-span-12 lg:col-span-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="ph ph-sign-in text-green-500"></i>
+                                    <span class="text-gray-700">{{ sesion.loginInicio | date:'dd/MM/yyyy HH:mm'
+                                        }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm" *ngIf="sesion.loginFin">
+                                    <i class="ph ph-sign-out text-red-500"></i>
+                                    <span class="text-gray-600">{{ sesion.loginFin | date:'dd/MM/yyyy HH:mm' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm" *ngIf="!sesion.loginFin">
+                                    <i class="ph ph-timer text-blue-500"></i>
+                                    <span class="text-blue-600 font-medium">En curso</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Estado y Acciones (Columna 11-12) -->
+                        <div class="col-span-12 lg:col-span-2 flex items-center justify-start lg:justify-end gap-3">
+                            <!-- Badge de Estado -->
+                            <span
+                                class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                [ngClass]="{
+            'bg-green-100 text-green-800': sesion.estado === 'ACTIVO',
+            'bg-gray-100 text-gray-800': sesion.estado === 'CERRADO',
+            'bg-yellow-100 text-yellow-800': sesion.estado === 'EXPIRADO'
+        }">
+                                <i class="mr-1" [ngClass]="{
+            'ph ph-check-circle text-green-600': sesion.estado === 'ACTIVO',
+            'ph ph-x-circle text-gray-600': sesion.estado === 'CERRADO',
+            'ph ph-warning text-yellow-600': sesion.estado === 'EXPIRADO'
+        }"></i>
+                                {{ sesion.estado }}
+                            </span>
+
+                            <button (click)="abrirDetalleSesion(sesion.idSesion)" title="Ver detalle de sesión"
+                                class="p-2 text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors duration-200">
+                                <i class="ph ph-eye text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div *ngIf="sesion.loginFin" class="mt-3 pl-16 text-xs text-gray-500">
+                        <i class="ph ph-clock"></i>
+                        Duración: {{ calcularDuracion(sesion.loginInicio, sesion.loginFin) }}
+                    </div>
+                </div>
+
+                <!-- Cards independientes y responsivas. -->
+                <div *ngIf="viewMode === 'cards'"
+                    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6 bg-gray-50">
+                    <article *ngFor="let sesion of sesiones"
+                        class="min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+                        <div class="p-4 flex items-center gap-4 border-b border-gray-100">
+                            <div class="w-12 h-12 rounded-full flex-shrink-0 bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-semibold text-lg uppercase">
+                                {{ sesion.usuario.userAcces.charAt(0) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-semibold text-gray-900 break-all">{{ sesion.usuario.userAcces }}</h3>
+                                <p class="text-xs text-gray-500 mt-1 break-all">{{ sesion.ipDireccion }}</p>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                [ngClass]="{
+                                    'bg-green-100 text-green-800': sesion.estado === 'ACTIVO',
+                                    'bg-gray-100 text-gray-800': sesion.estado === 'CERRADO',
+                                    'bg-yellow-100 text-yellow-800': sesion.estado === 'EXPIRADO'
+                                }">
+                                {{ sesion.estado }}
+                            </span>
+                        </div>
+
+                        <div class="p-4 space-y-3 flex-1 text-sm">
+                            <div class="flex items-start gap-2 min-w-0">
+                                <i class="ph ph-browser text-gray-400 mt-0.5 flex-shrink-0"></i>
+                                <span class="text-gray-700 break-words min-w-0">{{ sesion.dispositivo }}</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="ph ph-sign-in text-green-500 mt-0.5 flex-shrink-0"></i>
+                                <span class="text-gray-700">{{ sesion.loginInicio | date:'dd/MM/yyyy HH:mm' }}</span>
+                            </div>
+                            <div *ngIf="sesion.loginFin" class="flex items-start gap-2">
+                                <i class="ph ph-sign-out text-red-500 mt-0.5 flex-shrink-0"></i>
+                                <span class="text-gray-600">{{ sesion.loginFin | date:'dd/MM/yyyy HH:mm' }}</span>
+                            </div>
+                            <div *ngIf="!sesion.loginFin" class="flex items-center gap-2 text-blue-600 font-medium">
+                                <i class="ph ph-timer"></i><span>En curso</span>
+                            </div>
+                            <div *ngIf="sesion.loginFin" class="pt-3 border-t border-gray-100 text-xs text-gray-500">
+                                <i class="ph ph-clock mr-1"></i>
+                                Duración: {{ calcularDuracion(sesion.loginInicio, sesion.loginFin) }}
+                            </div>
+                        </div>
+
+                        <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+                            <button (click)="abrirDetalleSesion(sesion.idSesion)" title="Ver detalle de sesión"
+                                aria-label="Ver detalle de sesión"
+                                class="inline-flex items-center justify-center w-9 h-9 text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors">
+                                <i class="ph ph-eye text-lg"></i>
+                            </button>
+                        </footer>
+                    </article>
+                </div>
+            </div>
+            <div *ngIf="sesiones.length === 0" class="text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="ph ph-clock-clockwise text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay accesos registrados</h3>
+                    <p class="text-gray-600 mb-4">No se encontraron sesiones con los criterios seleccionados.</p>
+                </div>
+            </div>
+            <div class="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-700">
+                        Mostrando
+                        <span class="font-medium">{{ paginaActual * tamanioPagina + 1 }}</span>
+                        a
+                        <span class="font-medium">{{ Math.min((paginaActual + 1) * tamanioPagina, totalElementos)
+                            }}</span>
+                        de
+                        <span class="font-medium">{{ totalElementos }}</span>
+                        accesos
+                    </p>
+                </div>
+
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <button (click)="cargarSesiones(paginaActual - 1)" [disabled]="paginaActual === 0"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="sr-only">Anterior</span>
+                            <i class="ph ph-caret-left"></i>
+                        </button>
+                        <button *ngFor="let page of getPaginas()" (click)="cargarSesiones(page)" [ngClass]="{
+                                'z-10 bg-black border-black text-white': paginaActual === page,
+                                'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': paginaActual !== page
+                            }" class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            {{ page + 1 }}
+                        </button>
+                        <button (click)="cargarSesiones(paginaActual + 1)"
+                            [disabled]="paginaActual >= getTotalPaginas() - 1"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="sr-only">Siguiente</span>
+                            <i class="ph ph-caret-right"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+            </ng-container>
+        </div>
+    </div>
+</div>
+
+<app-detalle-acceso [mostrar]="mostrarModalDetalle" [idSesion]="sesionSeleccionada" (cerrar)="cerrarModalDetalle()">
+</app-detalle-acceso>

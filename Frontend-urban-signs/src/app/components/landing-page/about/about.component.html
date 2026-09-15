@@ -1,0 +1,45 @@
+<section id="about" class="about-section">
+  <div class="container">
+    <div class="about-grid">
+      <!-- Content -->
+      <div class="about-content">
+        <span class="section-tag">Sobre Nosotros</span>
+        <h2 class="section-title">
+          <span class="text-yellow">13+ años</span> de excelencia en la industria gráfica
+        </h2>
+        <p class="section-description">
+          En Urban Signs, transformamos espacios urbanos con soluciones gráficas innovadoras desde 2010. 
+          Somos líderes en Tarija, Bolivia, combinando tecnología de punta con artesanía experta.
+        </p>
+        
+        <div class="features-list">
+          <div *ngFor="let feature of features" class="feature-item">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <div>
+              <h3 class="feature-title">{{ feature.title }}</h3>
+              <p class="feature-description">{{ feature.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="about-images">
+        <div class="image-item">
+          <img src="assets/images/img-landing/1.jpg" alt="Proyecto 1">
+        </div>
+        <div class="image-item offset">
+          <img src="assets/images/img-landing/2.jpg" alt="Proyecto 2">
+        </div>
+        <div class="image-item">
+          <img src="assets/images/img-landing/3.jpg" alt="Proyecto 3">
+        </div>
+        <div class="image-item offset">
+          <img src="assets/images/img-landing/4.jpg" alt="Proyecto 4">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

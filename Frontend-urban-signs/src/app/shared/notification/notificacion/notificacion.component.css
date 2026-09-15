@@ -1,0 +1,214 @@
+/* notification.component.css */
+/* Contenedor principal */
+.notification-container {
+  position: fixed;
+  right: 1.25rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+/* Posicionamiento responsive */
+.notification-container.top {
+  top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .notification-container.top {
+    top: auto;
+    bottom: 1rem;
+  }
+}
+
+/* Notificación individual */
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.4s ease forwards;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.notification:hover {
+  transform: translateX(0) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Contenedor del icono */
+.icon-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.icon-bg svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Contenido de la notificación */
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.notification-title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.025em;
+}
+
+.message {
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* Botón de cierre */
+.close-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.close-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Colores y estilos para cada tipo */
+.notification.success { 
+  background: linear-gradient(135deg, #10b981, #34d399);
+  border-left: 4px solid #059669;
+}
+
+.notification.error { 
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  border-left: 4px solid #dc2626;
+}
+
+.notification.warning { 
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #1a1a1a;
+  border-left: 4px solid #d97706;
+}
+
+.notification.info { 
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  border-left: 4px solid #2563eb;
+}
+
+/* Ajustes específicos para warning (texto oscuro) */
+.notification.warning .close-btn {
+  background: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+.notification.warning .close-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.notification.warning .icon-bg {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateX(100%); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+.notification.hide {
+  animation: slideOut 0.4s ease forwards;
+}
+
+@keyframes slideOut {
+  from { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+  to { 
+    opacity: 0; 
+    transform: translateX(100%); 
+  }
+}
+
+/* Efecto de progreso (opcional) */
+.notification::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scaleX(1);
+  transform-origin: left;
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  to {
+    transform: scaleX(0);
+  }
+}

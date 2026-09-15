@@ -1,0 +1,22 @@
+<section id="services" class="services-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Servicios</span>
+      <h2 class="section-title">
+        Soluciones <span class="text-yellow">integrales</span> para tu marca
+      </h2>
+    </div>
+
+    <div class="services-grid">
+      <div *ngFor="let service of services" class="service-card">
+        <div class="service-icon">
+          <svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="service-title">{{ service.title }}</h3>
+        <p class="service-description">{{ service.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

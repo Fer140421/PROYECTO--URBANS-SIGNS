@@ -1,0 +1,257 @@
+<!-- Overlay del modal -->
+<div *ngIf="mostrar" class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+    <!-- Modal container -->
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        
+        <!-- Header del modal -->
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-900 to-black">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                        <i class="ph ph-pencil-simple text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Modificar Sobrante #{{ residuoId }}</h2>
+                        <p class="text-gray-300 text-sm">Actualice la información del material sobrante</p>
+                    </div>
+                </div>
+                <button (click)="cerrarModal()"
+                        class="p-2 rounded-lg hover:bg-gray-800 transition-colors text-gray-300 hover:text-white">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div *ngIf="isLoading" class="p-6 text-center">
+            <div class="flex flex-col items-center justify-center py-12">
+                <i class="ph ph-circle-notch animate-spin text-3xl text-blue-500 mb-4"></i>
+                <p class="text-gray-600">Cargando datos del residuo...</p>
+            </div>
+        </div>
+
+        <div *ngIf="!isLoading" class="overflow-y-auto max-h-[calc(90vh-80px)]">
+            <form [formGroup]="residuoForm" (ngSubmit)="onSubmit()" class="p-6">
+                <div class="space-y-6">
+                    
+                    <!-- Información del residuo -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-2">Información del Residuo</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <div class="text-xs text-gray-500">ID</div>
+                                <div class="font-mono font-medium text-gray-900">#{{ residuoId }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500">Material</div>
+                                <div class="font-medium text-gray-900">{{ contexto.materialNombre }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500">Código</div>
+                                <div class="font-medium text-gray-900">{{ contexto.materialCodigo }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos del formulario -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- Lote de origen -->
+                        <div>
+                            <label for="loteOrigenId" class="block text-sm font-medium text-gray-700 mb-2">
+                                Lote de origen
+                            </label>
+                            <select id="loteOrigenId" formControlName="loteOrigenId"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none bg-white"
+                                    [class.border-gray-300]="!f['loteOrigenId'].invalid"
+                                    [class.border-red-300]="f['loteOrigenId'].invalid && f['loteOrigenId'].touched">
+                                <option value="">Sin lote asignado</option>
+                                <option *ngFor="let lote of lotesDisponibles" [value]="lote.id">
+                                    {{ lote.codigo }} ({{ lote.cantidadDisponible }} disp.)
+                                </option>
+                            </select>
+                            <div *ngIf="f['loteOrigenId'].invalid && f['loteOrigenId'].touched" 
+                                 class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <i class="ph ph-warning"></i>
+                                <span>Seleccione un lote válido</span>
+                            </div>
+                        </div>
+
+                        <!-- Orden de trabajo -->
+                        <div>
+                            <label for="trabajoId" class="block text-sm font-medium text-gray-700 mb-2">
+                                Orden de trabajo
+                            </label>
+                            <select id="trabajoId" formControlName="trabajoId"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none bg-white"
+                                    [class.border-gray-300]="!f['trabajoId'].invalid"
+                                    [class.border-red-300]="f['trabajoId'].invalid && f['trabajoId'].touched">
+                                <option value="">Sin orden asignada</option>
+                                <option *ngFor="let trabajo of trabajosDisponibles" [value]="trabajo.id">
+                                    OT-{{ trabajo.id }}: {{ trabajo.descripcion }}
+                                </option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Para mejor trazabilidad
+                            </p>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div>
+                            <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">
+                                Cantidad *
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="cantidad" formControlName="cantidad" step="0.01" min="0.01"
+                                       class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none pr-12"
+                                       [class.border-gray-300]="!f['cantidad'].invalid"
+                                       [class.border-red-300]="f['cantidad'].invalid && f['cantidad'].touched"
+                                       placeholder="0.00">
+                                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                    {{ f['unidad'].value || 'unidad' }}
+                                </div>
+                            </div>
+                            <div *ngIf="f['cantidad'].invalid && f['cantidad'].touched" 
+                                 class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <i class="ph ph-warning"></i>
+                                <span *ngIf="f['cantidad'].errors?.['required']">La cantidad es requerida</span>
+                                <span *ngIf="f['cantidad'].errors?.['min']">Debe ser mayor a 0.01</span>
+                                <span *ngIf="f['cantidad'].errors?.['max']">Máximo 10000</span>
+                            </div>
+                        </div>
+
+                        <!-- Unidad -->
+                        <div>
+                            <label for="unidad" class="block text-sm font-medium text-gray-700 mb-2">
+                                Unidad de medida *
+                            </label>
+                            <select id="unidad" formControlName="unidad"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                    [class.border-gray-300]="!f['unidad'].invalid"
+                                    [class.border-red-300]="f['unidad'].invalid && f['unidad'].touched">
+                                <option value="">Seleccionar unidad</option>
+                                <option value="m">Metros lineales (m)</option>
+                                <option value="m²">Metros cuadrados (m²)</option>
+                                <option value="unidad">Unidades</option>
+                                <option value="kg">Kilogramos (kg)</option>
+                                <option value="l">Litros (l)</option>
+                                <option value="rollo">Rollos</option>
+                            </select>
+                            <div *ngIf="f['unidad'].invalid && f['unidad'].touched" 
+                                 class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <i class="ph ph-warning"></i>
+                                <span>La unidad de medida es requerida</span>
+                            </div>
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div>
+                            <label for="ubicacion" class="block text-sm font-medium text-gray-700 mb-2">
+                                Ubicación *
+                            </label>
+                            <input type="text" id="ubicacion" formControlName="ubicacion"
+                                   class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                   [class.border-gray-300]="!f['ubicacion'].invalid"
+                                   [class.border-red-300]="f['ubicacion'].invalid && f['ubicacion'].touched"
+                                   placeholder="Ej: Almacén A, Estante B3">
+                            <div *ngIf="f['ubicacion'].invalid && f['ubicacion'].touched" 
+                                 class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <i class="ph ph-warning"></i>
+                                <span>La ubicación es requerida</span>
+                            </div>
+                        </div>
+
+                        <!-- Estado -->
+                        <div>
+                            <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">
+                                Estado *
+                            </label>
+                            <select id="estado" formControlName="estado"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none bg-white"
+                                    [class.border-gray-300]="!f['estado'].invalid"
+                                    [class.border-red-300]="f['estado'].invalid && f['estado'].touched">
+                                <option value="DISPONIBLE">🟢 DISPONIBLE - Listo para reutilizar</option>
+                                <option value="DESCARTADO">🔴 DESCARTADO - No es reutilizable</option>
+                            </select>
+                            <div *ngIf="f['estado'].invalid && f['estado'].touched" 
+                                 class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <i class="ph ph-warning"></i>
+                                <span>Seleccione un estado</span>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="md:col-span-2">
+                            <label for="observaciones" class="block text-sm font-medium text-gray-700 mb-2">
+                                Observaciones
+                            </label>
+                            <textarea id="observaciones" formControlName="observaciones" rows="3"
+                                      class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-none"
+                                      [class.border-gray-300]="!f['observaciones'].invalid"
+                                      [class.border-red-300]="f['observaciones'].invalid && f['observaciones'].touched"
+                                      placeholder="Describa el residuo, posibles usos, condición, color, etc..."></textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <div>
+                                    <div *ngIf="f['observaciones'].invalid && f['observaciones'].touched" 
+                                         class="text-red-500 text-xs flex items-center gap-1">
+                                        <i class="ph ph-warning"></i>
+                                        <span>Máximo 500 caracteres</span>
+                                    </div>
+                                </div>
+                                <span class="text-xs" 
+                                      [class.text-gray-400]="!f['observaciones'].invalid"
+                                      [class.text-red-400]="f['observaciones'].invalid">
+                                    {{ f['observaciones'].value?.length || 0 }}/500
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <div class="text-blue-600 text-xs">Fecha de registro</div>
+                                <div class="font-medium">{{ fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</div>
+                            </div>
+                            <div>
+                                <div class="text-blue-600 text-xs">Registrado por</div>
+                                <div class="font-medium">{{ usuarioRegistro }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                        <button type="button" (click)="cerrarModal()"
+                                class="px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium flex-1 flex items-center justify-center gap-2">
+                            <i class="ph ph-x"></i>
+                            Cancelar
+                        </button>
+                        
+                        <button type="submit" [disabled]="residuoForm.invalid || isSubmitting"
+                                [class.opacity-50]="residuoForm.invalid || isSubmitting"
+                                [class.cursor-not-allowed]="residuoForm.invalid || isSubmitting"
+                                class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex-1 flex items-center justify-center gap-2">
+                            <i class="ph ph-floppy-disk" *ngIf="!isSubmitting"></i>
+                            <i class="ph ph-circle-notch animate-spin" *ngIf="isSubmitting"></i>
+                            {{ isSubmitting ? 'Guardando...' : 'Guardar Cambios' }}
+                        </button>
+                    </div>
+
+                    <!-- Mensaje de validación general -->
+                    <div *ngIf="residuoForm.invalid && (residuoForm.touched || residuoForm.dirty)" 
+                         class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="ph ph-warning text-yellow-500 mt-0.5"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-yellow-800 mb-1">Revise los campos del formulario</h4>
+                                <p class="text-yellow-700 text-sm">
+                                    Por favor, complete todos los campos obligatorios (*) correctamente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

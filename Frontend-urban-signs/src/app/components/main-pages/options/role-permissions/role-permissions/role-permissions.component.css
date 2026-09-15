@@ -1,0 +1,37 @@
+.permissions-page { height: calc(100dvh - 5.5rem); min-height: 0; }
+.permissions-shell { height: 100%; display: flex; flex-direction: column; }
+.permissions-layout { display: grid; grid-template-columns: minmax(210px, 250px) minmax(0, 1fr); gap: 1rem; min-height: 0; flex: 1; }
+.role-panel, .permissions-panel { min-height: 0; }
+.role-panel { display: flex; flex-direction: column; }
+.role-list { overflow-y: auto; flex: 1; }
+.role-item { transition: background-color .18s ease, color .18s ease; }
+.role-item:hover { background: #fef9c3; color: #111827; }
+.role-selected { background: #111827; color: #facc15; box-shadow: inset 3px 0 #facc15; }
+.role-selected:hover { background: #111827; color: #facc15; }
+.permissions-panel { display: flex; flex-direction: column; }
+.permissions-scroll { overflow-y: auto; flex: 1; min-height: 0; }
+.permission-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.permission-item { border-right: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; transition: background-color .18s ease, box-shadow .18s ease; }
+.permission-item:hover { background: #fefce8; }
+.permission-active { background: #fffbeb; box-shadow: inset 3px 0 #facc15; }
+@keyframes fadeInModal { from { opacity: 0; transform: scale(.95) translateY(-12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.animate-fade-in-modal { animation: fadeInModal .2s ease-out forwards; }
+@media (max-width: 1024px) { .permission-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  .permissions-page { height: calc(100dvh - 5rem); padding: .75rem; }
+  .permissions-shell > .mb-7 { margin-bottom: .75rem; }
+  .permissions-shell > .mb-7 h1 { font-size: 1.25rem; }
+  .permissions-shell > .mb-7 p { font-size: .8rem; }
+  .permissions-layout { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: .75rem; }
+  .role-panel > :first-child { border-bottom: 0; padding: .5rem .75rem 0; }
+  .role-panel h2, .role-panel .relative { display: none; }
+  .role-list { display: flex; gap: .5rem; overflow-x: auto; overflow-y: hidden; padding: .5rem .75rem; }
+  .role-item { width: auto; flex: 0 0 auto; padding: .45rem .9rem; border: 1px solid #d1d5db; border-radius: 9999px; }
+  .role-item i { display: none; }
+  .role-selected { box-shadow: none; border-color: #111827; }
+  .permissions-panel > :first-child { padding: .9rem; }
+  .permission-grid { grid-template-columns: 1fr; }
+  .permissions-scroll { padding: .75rem; }
+  .permissions-actions { padding: .75rem; }
+  .permissions-actions button { flex: 1; }
+}

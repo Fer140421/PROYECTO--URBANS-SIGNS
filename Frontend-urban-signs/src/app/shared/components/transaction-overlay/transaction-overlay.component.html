@@ -1,0 +1,29 @@
+<div
+  *ngIf="transactionState.isProcessing()"
+  class="transaction-overlay"
+  role="status"
+  aria-live="assertive"
+  aria-busy="true"
+  [attr.aria-label]="transactionState.message()">
+
+  <div class="transaction-card">
+    <div class="loader" aria-hidden="true">
+      <span class="loader-ring loader-ring-outer"></span>
+      <span class="loader-ring loader-ring-inner"></span>
+      <span class="loader-mark">U</span>
+    </div>
+
+    <div class="transaction-copy">
+      <p class="transaction-eyebrow">URBAN SIGNS</p>
+      <p class="transaction-message">{{ transactionState.message() }}</p>
+      <p class="transaction-hint">Por favor, espera y no cierres esta ventana.</p>
+      <p *ngIf="transactionState.pendingCount() > 1" class="transaction-count">
+        {{ transactionState.pendingCount() }} operaciones en proceso
+      </p>
+    </div>
+
+    <div class="progress-track" aria-hidden="true">
+      <span class="progress-bar"></span>
+    </div>
+  </div>
+</div>

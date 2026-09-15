@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.data-view,
+.data-view__table-wrap,
+.data-view__card-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.data-view__table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
+
+.data-view,
+.data-view__card-grid,
+.data-view__empty {
+  overflow-y: visible;
+}
+
+.data-view__card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.data-view__card-grid > * {
+  min-width: 0;
+  height: 100%;
+}
+
+.data-view__table {
+  width: 100%;
+  table-layout: auto;
+}
+
+/* La última columna se reserva para acciones y no absorbe el ancho sobrante. */
+.data-view__table :is(th, td):last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .data-view__card-grid {
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}

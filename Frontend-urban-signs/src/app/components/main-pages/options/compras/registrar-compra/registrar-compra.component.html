@@ -1,0 +1,176 @@
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+    <h2 class="text-2xl font-bold text-black mb-6">Registro de Orden de Compra</h2>
+    <form (ngSubmit)="registrarCompra()" class="space-y-6">
+
+        <!-- Información básica -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-black mb-4">Información de la compra</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Proveedor -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Proveedor*</label>
+                    <select [(ngModel)]="proveedorSeleccionadoId" name="proveedor" required
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                        <option disabled [ngValue]="null">Seleccione un proveedor</option>
+                        <option *ngFor="let p of listProveedores" [ngValue]="p.idSupplier">
+                            {{ p.people.name_people }} {{ p.people.ap }} {{ p.people.am }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Fecha compra -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Fecha de compra</label>
+                    <input type="date" [(ngModel)]="fechaCompra" name="fechaCompra" disabled
+                        class="w-full px-4 py-2 border-b-2 border-gray-300 bg-gray-100 text-gray-600 cursor-not-allowed" />
+                    <span class="text-xs text-gray-500">Se registra automáticamente</span>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-black mb-2">Observaciones</label>
+                <textarea [(ngModel)]="observaciones" name="observaciones" rows="3"
+                    placeholder="Escribe aquí alguna observación sobre la compra..."
+                    class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition resize-none"></textarea>
+            </div>
+        </div>
+
+        <!-- Detalles de la compra -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-black mb-4">Productos a comprar</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+
+                <!-- Producto -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Producto*</label>
+                    <select [(ngModel)]="productoSeleccionadoId" (change)="onSeleccionarProducto()"
+                        [ngModelOptions]="{standalone: true}"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                        <option disabled [ngValue]="null">Seleccione producto</option>
+                        <option *ngFor="let prod of productos" [ngValue]="prod.idMaterial">
+                            {{ prod.nombre }} {{ prod.caracteristica }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Cantidad -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Cantidad*</label>
+                    <input type="number" min="0.001" step="0.001" [(ngModel)]="cantidad"
+                        [ngModelOptions]="{standalone: true}"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                </div>
+
+                <!-- Unidad (solo lectura) -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Unidad</label>
+                    <input type="text" [value]="unidadSeleccionada" readonly
+                        class="w-full px-4 py-2 border-b-2 border-gray-300 bg-gray-100 cursor-not-allowed" />
+                </div>
+
+                <!-- Tipo de control (solo lectura) -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Tipo de control</label>
+                    <input type="text" [value]="tipoControlSeleccionado" readonly
+                        class="w-full px-4 py-2 border-b-2 border-gray-300 bg-gray-100 cursor-not-allowed" />
+                </div>
+
+                <!-- Precio unitario -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Precio unitario (Bs)*</label>
+                    <input type="number" min="0" step="0.01" [(ngModel)]="precioUnitario"
+                        [ngModelOptions]="{standalone: true}"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                </div>
+
+                <!-- Ubicación -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Ubicación</label>
+                    <input type="text" [(ngModel)]="ubicacion" [ngModelOptions]="{standalone: true}"
+                        placeholder="Ej: Estante A3"
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                    <span class="text-xs text-gray-500">Dónde se guardará el material</span>
+                </div>
+
+                <!-- Botón agregar -->
+                <div class="flex items-end">
+                    <button type="button" (click)="agregarProducto()"
+                        class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de productos -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-300">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 border text-left">#</th>
+                            <th class="px-4 py-2 border text-left">Producto</th>
+                            <th class="px-4 py-2 border text-right">Cantidad</th>
+                            <th class="px-4 py-2 border text-left">Unidad</th>
+                            <th class="px-4 py-2 border text-left">Tipo</th>
+                            <th class="px-4 py-2 border text-right">Precio Unit.</th>
+                            <th class="px-4 py-2 border text-right">Subtotal</th>
+                            <th class="px-4 py-2 border text-left">Ubicación</th>
+                            <th class="px-4 py-2 border text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let det of detalles; let i = index" class="hover:bg-gray-50">
+                            <td class="px-4 py-2 border">{{ i + 1 }}</td>
+                            <td class="px-4 py-2 border">{{ det.nombreProducto }}</td>
+                            <td class="px-4 py-2 border text-right">{{ det.cantidad }}</td>
+                            <td class="px-4 py-2 border">{{ det.unidadMedida }}</td>
+                            <td class="px-4 py-2 border">{{ det.tipoControl }}</td>
+                            <td class="px-4 py-2 border text-right">{{ det.precioUnitario | number:'1.2-2' }} Bs</td>
+                            <td class="px-4 py-2 border text-right font-semibold">{{ det.total | number:'1.2-2' }} Bs
+                            </td>
+                            <td class="px-4 py-2 border">
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    {{ det.ubicacion }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2 border text-center">
+                                <button type="button" (click)="eliminarProducto(i)"
+                                    class="text-red-500 hover:text-red-700 font-medium">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="detalles.length === 0">
+                            <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                                No hay productos agregados
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot *ngIf="detalles.length > 0" class="bg-gray-100 font-semibold">
+                        <tr>
+                            <td colspan="6" class="px-4 py-3 border text-right">TOTAL:</td>
+                            <td class="px-4 py-3 border text-right text-lg">
+                                {{ calcularTotalCompra() | number:'1.2-2' }} Bs
+                            </td>
+                            <td colspan="2" class="border"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex justify-end space-x-4">
+            <button type="button" (click)="resetForm()"
+                class="px-6 py-2 border border-black text-black rounded-lg hover:bg-gray-100 transition font-medium">
+                Cancelar
+            </button>
+            <button type="submit"
+                class="px-6 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium"
+            [disabled]="!proveedorSeleccionadoId || detalles.length === 0 || isProcessing">
+                Crear Orden de Compra
+            </button>
+        </div>
+    </form>
+</div>

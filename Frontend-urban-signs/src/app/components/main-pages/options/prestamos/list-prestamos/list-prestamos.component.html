@@ -1,0 +1,718 @@
+<div class="min-w-0">
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Préstamo de material de trabajo</h1>
+        </div>
+    </section>
+    <div class="bg-white p-4 border-b border-gray-200">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+            <div class="relative flex-1 lg:flex-[2]">
+                <input type="text"
+                    class="block w-full pl-4 pr-24 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm"
+                    placeholder="Buscar préstamo...">
+                <button
+                    class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors sm:text-sm">
+                    Buscar
+                </button>
+            </div>
+            <div class="w-full lg:w-48">
+                <select [(ngModel)]="tipoPrestamo" (change)="cambiarTipo(tipoPrestamo)"
+                    class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-1 focus:ring-black focus:border-black sm:text-sm rounded-md">
+                    <option value="DIARIO">Diario</option>
+                    <option value="PROYECTO">Proyecto</option>
+                    <option value="INDEFINIDO">Indefinido</option>
+                </select>
+            </div>
+            <div class="w-full lg:w-auto">
+                <button
+                    class="w-full lg:w-auto bg-black text-white hover:bg-gray-900 transition-all duration-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer whitespace-nowrap"
+                    routerLink="/home/register-prestamo">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nuevo préstamo
+                </button>
+            </div>
+        </div>
+    </div>
+    <section class="bg-white border-b border-gray-200 p-6">
+        <div class="flex border-b border-gray-200 mb-4">
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'Prestado', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'Prestado'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('Prestado')">
+                Préstamos pendientes
+            </button>
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'Anulada', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'Anulada'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('Anulada')">
+                Préstamos anulados
+            </button>
+            <button [ngClass]="{'tab-active text-black border-b-2 border-black': estadoSeleccionado === 'Entregado', 
+                  'text-gray-500 hover:text-gray-700': estadoSeleccionado !== 'Entregado'}"
+                class="pb-3 px-4 mr-6 text-sm font-medium" (click)="cambiarEstado('Entregado')">
+                Préstamos completados
+            </button>
+        </div>
+        <div class="flex justify-end">
+            <app-view-toggle [mode]="viewMode" (modeChange)="viewMode = $event"></app-view-toggle>
+        </div>
+    </section>
+    <div class="p-6">
+        <app-responsive-data-view [items]="prestamos" [mode]="viewMode" [loading]="isLoading"
+            loadingLabel="Cargando préstamos" emptyTitle="No hay préstamos registrados"
+            emptyMessage="No se encontraron préstamos con los filtros seleccionados."
+            tableMinWidth="52rem" [columns]="5">
+
+            <ng-template appDataHeader>
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código préstamo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trabajador</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ fechaColumna }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </ng-template>
+
+            <ng-template appDataRow let-prestamo>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div>Prest-{{ prestamo.idPrestamo }}</div>
+                        <span *ngIf="prestamo.idPedido" class="inline-flex items-center gap-1 text-xs text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-200 mt-1">
+                            <i class="ph ph-shopping-bag"></i> Pedido #{{ prestamo.idPedido }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 min-w-[12rem]">{{ prestamo.nombreEmpleado }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ prestamo.fechaPrestamo | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold" [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': prestamo.estado === 'Prestado',
+                            'bg-green-100 text-green-800': prestamo.estado === 'Entregado',
+                            'bg-red-100 text-red-800': prestamo.estado === 'Anulada'
+                        }">{{ prestamo.estado }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <div class="inline-flex items-center justify-end gap-1">
+                            <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Editar"
+                                icon="ph ph-pencil-simple text-lg" variant="primary"
+                                (action)="openEditModal(prestamo)"></app-action-icon-button>
+                            <app-action-icon-button label="Ver detalles" icon="ph ph-eye text-lg"
+                                (action)="openDetailModal(prestamo)"></app-action-icon-button>
+                            <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Anular"
+                                icon="ph ph-x-circle text-lg" variant="danger"
+                                (action)="openAnularModal(prestamo)"></app-action-icon-button>
+                            <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Devolución"
+                                icon="ph ph-check-circle text-lg" variant="success"
+                                (action)="openDevolucionModal(prestamo)"></app-action-icon-button>
+                            <app-action-icon-button label="Imprimir" icon="ph ph-printer text-lg" variant="warning"></app-action-icon-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template appDataCard let-prestamo>
+                <article class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full min-w-0">
+                    <header class="p-4 border-b border-gray-100 flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Préstamo</p>
+                            <h3 class="font-semibold text-gray-900 mt-1">Prest-{{ prestamo.idPrestamo }}</h3>
+                            <span *ngIf="prestamo.idPedido" class="inline-flex items-center gap-1 text-xs text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-200 mt-1">
+                                <i class="ph ph-shopping-bag"></i> Pedido #{{ prestamo.idPedido }}
+                            </span>
+                        </div>
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': prestamo.estado === 'Prestado',
+                            'bg-green-100 text-green-800': prestamo.estado === 'Entregado',
+                            'bg-red-100 text-red-800': prestamo.estado === 'Anulada'
+                        }">{{ prestamo.estado }}</span>
+                    </header>
+
+                    <div class="p-4 space-y-3 flex-1 min-w-0">
+                        <div class="flex items-start gap-2 min-w-0">
+                            <i class="ph ph-user text-gray-400 mt-0.5 flex-shrink-0"></i>
+                            <span class="text-sm text-gray-700 break-words">{{ prestamo.nombreEmpleado }}</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="ph ph-calendar text-gray-400 mt-0.5 flex-shrink-0"></i>
+                            <div class="min-w-0">
+                                <p class="text-xs text-gray-500">{{ fechaColumna }}</p>
+                                <p class="text-sm text-gray-700 mt-0.5">{{ prestamo.fechaPrestamo | date:'dd/MM/yyyy HH:mm' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex flex-wrap items-center justify-end gap-1">
+                        <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Editar"
+                            icon="ph ph-pencil-simple text-lg" variant="primary"
+                            (action)="openEditModal(prestamo)"></app-action-icon-button>
+                        <app-action-icon-button label="Ver detalles" icon="ph ph-eye text-lg"
+                            (action)="openDetailModal(prestamo)"></app-action-icon-button>
+                        <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Anular"
+                            icon="ph ph-x-circle text-lg" variant="danger"
+                            (action)="openAnularModal(prestamo)"></app-action-icon-button>
+                        <app-action-icon-button *ngIf="prestamo.estado === 'Prestado'" label="Devolución"
+                            icon="ph ph-check-circle text-lg" variant="success"
+                            (action)="openDevolucionModal(prestamo)"></app-action-icon-button>
+                        <app-action-icon-button label="Imprimir" icon="ph ph-printer text-lg" variant="warning"></app-action-icon-button>
+                    </footer>
+                </article>
+            </ng-template>
+
+            <div dataViewFooter *ngIf="prestamos.length > 0" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-sm text-gray-700">
+                        Mostrando <span class="font-medium">{{ getRegistroInicio() }}</span> a
+                        <span class="font-medium">{{ getRegistroFin() }}</span> de
+                        <span class="font-medium">{{ totalElementos }}</span> préstamos
+                    </p>
+                    <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Paginación">
+                        <button (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 0"
+                            class="px-2 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                            <i class="ph ph-caret-left"></i><span class="sr-only">Anterior</span>
+                        </button>
+                        <button *ngFor="let pagina of getPaginasVisibles()" (click)="irAPagina(pagina)"
+                            [ngClass]="pagina === paginaActual ? 'bg-black border-black text-white' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                            class="px-4 py-2 border text-sm font-medium">{{ pagina + 1 }}</button>
+                        <button (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual >= getTotalPaginas() - 1"
+                            class="px-2 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                            <i class="ph ph-caret-right"></i><span class="sr-only">Siguiente</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </app-responsive-data-view>
+
+        <!-- Implementación anterior conservada temporalmente durante la aprobación. -->
+        <div *ngIf="false" class="view-surface bg-white rounded-lg shadow-sm overflow-hidden">
+            <app-loading *ngIf="isLoading" variant="table" [columns]="5" label="Cargando préstamos"></app-loading>
+            <table *ngIf="!isLoading" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Código prestamo</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            trabajador</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ fechaColumna }}
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- Material 1 -->
+                    <tr *ngIf="prestamos.length === 0">
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">
+                            No hay prestamos registrados
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50" *ngFor="let prestamo of prestamos">
+                        <td data-label="Código préstamo" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            Prest-{{prestamo.idPrestamo}}</td>
+                        <td data-label="Trabajador" class="px-6 py-4 whitespace-nowrap">
+                            {{prestamo.nombreEmpleado}}
+                        </td>
+                        <td data-label="Fecha" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ prestamo.fechaPrestamo | date:'dd/MM/yyyy HH:mm' }}
+                        </td>
+
+                        <td data-label="Estado" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" [ngClass]="{
+      'bg-yellow-100': prestamo.estado === 'Prestado',
+      'bg-green-100': prestamo.estado === 'Entregado'
+    }">
+                            <strong>{{ prestamo.estado }}</strong>
+                        </td>
+                        <td data-label="Acciones" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                            <!-- Editar -->
+                            <button title="Editar" *ngIf="prestamo.estado==='Prestado'"
+                                (click)="openEditModal(prestamo)" class="text-blue-500 hover:text-blue-700 text-2xl">
+                                <i class="ph ph-pencil-simple"></i>
+                            </button>
+                            <!-- Ver Detalles -->
+                            <!-- Ver Detalles -->
+                            <button (click)="openDetailModal(prestamo)" title="Ver Detalles"
+                                class="text-gray-500 hover:text-gray-700 text-2xl">
+                                <i class="ph ph-eye"></i>
+                            </button>
+                            <!-- Anular -->
+                            <button title="Anular" *ngIf="prestamo.estado==='Prestado'"
+                                (click)="openAnularModal(prestamo)" class="text-red-500 hover:text-red-700 text-2xl">
+                                <i class="ph ph-x-circle"></i>
+                            </button>
+                            <!-- Confirmar -->
+                            <button title="Devolución" *ngIf="prestamo.estado==='Prestado'"
+                                (click)="openDevolucionModal(prestamo)"
+                                class="text-green-500 hover:text-green-700 text-2xl">
+                                <i class="ph ph-check-circle"></i>
+                            </button>
+                            <!-- Imprimir -->
+                            <button title="Imprimir" class="text-purple-500 hover:text-purple-700 text-2xl">
+                                <i class="ph ph-printer"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <!-- Paginación -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex items-center justify-between w-full">
+                    <!-- Info de registros -->
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">{{ getRegistroInicio() }}</span>
+                            a
+                            <span class="font-medium">{{ getRegistroFin() }}</span>
+                            de
+                            <span class="font-medium">{{ totalElementos }}</span>
+                            préstamos
+                        </p>
+                    </div>
+
+                    <!-- Controles de paginación -->
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <!-- Botón Anterior -->
+                            <button (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 0"
+                                [class.opacity-50]="paginaActual === 0" [class.cursor-not-allowed]="paginaActual === 0"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:hover:bg-white">
+                                <span class="sr-only">Anterior</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+
+                            <!-- Primera página -->
+                            <button *ngIf="paginaActual > 2" (click)="irAPagina(0)"
+                                class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                1
+                            </button>
+
+                            <!-- Puntos suspensivos izquierda -->
+                            <span *ngIf="paginaActual > 3"
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                ...
+                            </span>
+
+                            <!-- Páginas intermedias -->
+                            <button *ngFor="let pagina of getPaginasVisibles()" (click)="irAPagina(pagina)"
+                                [class.z-10]="pagina === paginaActual" [class.bg-black]="pagina === paginaActual"
+                                [class.border-black]="pagina === paginaActual"
+                                [class.text-white]="pagina === paginaActual" [class.bg-white]="pagina !== paginaActual"
+                                [class.border-gray-300]="pagina !== paginaActual"
+                                [class.text-gray-500]="pagina !== paginaActual"
+                                [class.hover:bg-gray-50]="pagina !== paginaActual"
+                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                {{ pagina + 1 }}
+                            </button>
+
+                            <!-- Puntos suspensivos derecha -->
+                            <span *ngIf="paginaActual < getTotalPaginas() - 4"
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                ...
+                            </span>
+
+                            <!-- Última página -->
+                            <button *ngIf="paginaActual < getTotalPaginas() - 3"
+                                (click)="irAPagina(getTotalPaginas() - 1)"
+                                class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                {{ getTotalPaginas() }}
+                            </button>
+
+                            <!-- Botón Siguiente -->
+                            <button (click)="irAPagina(paginaActual + 1)"
+                                [disabled]="paginaActual >= getTotalPaginas() - 1"
+                                [class.opacity-50]="paginaActual >= getTotalPaginas() - 1"
+                                [class.cursor-not-allowed]="paginaActual >= getTotalPaginas() - 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:hover:bg-white">
+                                <span class="sr-only">Siguiente</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Editar Préstamo -->
+<div *ngIf="isConfirmModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-4xl animate-fade-in-modal overflow-y-auto max-h-[90vh]">
+        <h2 class="text-2xl font-bold text-black mb-6">Editar Préstamo de Herramientas</h2>
+
+        <form (ngSubmit)="onUpdate()" class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Trabajador -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Trabajador</label>
+                    <select [(ngModel)]="idEmpleado" name="idEmpleado" required
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                        <option disabled [ngValue]="null">Seleccione el trabajador</option>
+                        <option *ngFor="let data of ListEmpleadosActivos" [value]="data.idEmployee">
+                            {{ data.fullName }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Fecha de préstamo -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Fecha de préstamo</label>
+                    <input type="datetime-local" [(ngModel)]="fechaPrestamo" name="fechaPrestamo" disabled
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition" />
+                </div>
+
+                <!-- Tipo de préstamo -->
+                <div>
+                    <label class="block text-sm font-medium text-black mb-2">Tipo de préstamo</label>
+                    <select [(ngModel)]="tipoPrestamo" name="tipoPrestamo" required
+                        class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                        <option value="DIARIO">DIARIO</option>
+                        <option value="PROYECTO">PROYECTO</option>
+                        <option value="INDEFINIDO">INDEFINIDO</option>
+                    </select>
+                </div>
+
+                <!-- Herramientas -->
+                <div class="md:col-span-2">
+                    <h3 class="text-lg font-bold text-black mt-4 mb-2">Herramientas del préstamo</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <div>
+                            <label class="block text-sm font-medium text-black mb-2">Herramienta</label>
+                            <select [(ngModel)]="selectedHerramientaId" [ngModelOptions]="{standalone: true}"
+                                class="w-full px-4 py-2 border-b-2 border-black focus:border-[#FFD000] focus:outline-none bg-transparent transition">
+                                <option disabled [ngValue]="null">Seleccione herramienta</option>
+                                <option [ngValue]="data.idHerramienta" *ngFor="let data of ListHerramientasActivas">
+                                    {{ data.nombre }} - {{ data.codigo }}
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="button" (click)="agregarHerramienta()"
+                                class="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium">
+                                + Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla -->
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="min-w-full border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 border">#</th>
+                                    <th class="px-4 py-2 border">Foto</th>
+                                    <th class="px-4 py-2 border">Herramienta</th>
+                                    <th class="px-4 py-2 border">Código</th>
+                                    <th class="px-4 py-2 border">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let h of HerramientasSeleccionadas; let i = index">
+                                    <td class="px-4 py-2 border">{{ i + 1 }}</td>
+                                    <td class="px-4 py-2 border text-center">
+                                        <img *ngIf="h.foto" [src]="h.foto" alt="{{ h.nombre }}"
+                                            class="h-10 w-10 object-cover mx-auto rounded" />
+                                        <span *ngIf="!h.foto">Sin imagen</span>
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ h.nombre }}</td>
+                                    <td class="px-4 py-2 border">{{ h.codigo }}</td>
+                                    <td class="px-4 py-2 border text-center">
+                                        <button type="button" (click)="eliminarHerramienta(i)"
+                                            class="text-red-500 hover:underline">Eliminar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <small *ngIf="HerramientasSeleccionadas.length === 0" class="text-gray-500 block mt-2">
+                            No hay herramientas agregadas
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-8 flex justify-end space-x-4">
+                <button type="button" (click)="closeConfirmModal()"
+                    class="px-6 py-2 border border-black text-black rounded-lg hover:bg-gray-100 transition font-medium">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-6 py-2 bg-black text-white rounded-lg hover:bg-[#FFD000] hover:text-black transition font-medium"
+                [disabled]="!idEmpleado || HerramientasSeleccionadas.length === 0 || isProcessing">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Modal Ver Detalles -->
+<div *ngIf="isDetailModalOpen"
+    class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div
+        class="bg-white rounded-2xl p-8 shadow-xl w-full max-w-4xl animate-fade-in-modal overflow-y-auto max-h-[90vh] border border-gray-200">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Detalles del Préstamo</h2>
+                <p class="text-sm text-gray-500 mt-1">Préstamo #{{ prestamoSeleccionado?.idPrestamo }}</p>
+            </div>
+            <button (click)="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Info general -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Trabajador</p>
+                <p class="text-lg font-semibold text-gray-800">{{ prestamoSeleccionado?.nombreEmpleado }}</p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Tipo de Préstamo</p>
+                <p class="text-lg font-semibold text-gray-800">{{ prestamoSeleccionado?.tipoPrestamo }}</p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Fecha de Préstamo</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ prestamoSeleccionado?.fechaPrestamo | date:'dd/MM/yyyy, HH:mm' }}
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Estado</p>
+                <span class="inline-block px-4 py-2 rounded-full text-sm font-semibold" [ngClass]="{
+                        'bg-yellow-100 text-yellow-700': prestamoSeleccionado?.estado === 'Prestado',
+                        'bg-green-100 text-green-700': prestamoSeleccionado?.estado === 'Entregado',
+                        'bg-red-100 text-red-700': prestamoSeleccionado?.estado === 'Anulado'
+                    }">
+                    {{ prestamoSeleccionado?.estado }}
+                </span>
+            </div>
+
+            <div *ngIf="prestamoSeleccionado?.fechaDevolucion" class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Fecha de Devolución</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ prestamoSeleccionado?.fechaDevolucion | date:'dd/MM/yyyy, HH:mm' }}
+                </p>
+            </div>
+
+            <div *ngIf="prestamoSeleccionado?.idPedido" class="bg-blue-50 border border-blue-200 p-4 rounded-lg md:col-span-2 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-blue-600 uppercase tracking-wide mb-1 font-semibold">Pedido Asociado</p>
+                    <p class="text-lg font-bold text-blue-900">Pedido #{{ prestamoSeleccionado?.idPedido }}</p>
+                </div>
+            </div>
+
+            <div *ngIf="prestamoSeleccionado?.observacion" class="bg-gray-50 p-4 rounded-lg md:col-span-2">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Observaciones</p>
+                <p class="text-base text-gray-700">{{ prestamoSeleccionado?.observacion }}</p>
+            </div>
+        </div>
+
+        <!-- Herramientas -->
+        <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="ph ph-toolbox text-xl"></i>
+                Herramientas Prestadas
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let herramienta of prestamoSeleccionado?.detalles"
+                    class="flex items-center gap-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all">
+
+                    <!-- Foto -->
+                    <div class="flex-shrink-0">
+                        <img *ngIf="herramienta.fotoHerramienta" [src]="herramienta.fotoHerramienta"
+                            [alt]="herramienta.nombreHerramienta"
+                            class="h-20 w-20 rounded-lg object-cover border-2 border-white shadow-sm" />
+                        <div *ngIf="!herramienta.fotoHerramienta"
+                            class="h-20 w-20 rounded-lg flex items-center justify-center bg-gray-300 text-gray-500 border-2 border-white">
+                            <i class="ph ph-wrench text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Info Herramienta -->
+                    <div class="flex-grow">
+                        <p class="font-bold text-gray-800 text-base mb-1">{{ herramienta.nombreHerramienta }}</p>
+                        <p class="text-sm text-gray-600">
+                            <span class="font-medium">Código:</span> {{ herramienta.codigoHerramienta }}
+                        </p>
+                        <p class="text-sm text-gray-600" *ngIf="herramienta.marcaHerramienta">
+                            <span class="font-medium">Marca:</span> {{ herramienta.marcaHerramienta }}
+                        </p>
+                        <p class="text-sm text-gray-600" *ngIf="herramienta.modeloHerramienta">
+                            <span class="font-medium">Modelo:</span> {{ herramienta.modeloHerramienta }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 flex justify-end pt-6 border-t">
+            <button (click)="closeDetailModal()"
+                class="px-6 py-2.5 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium shadow-sm">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div *ngIf="isAnularModal"
+    class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div class="bg-white rounded-lg p-6 shadow-lg w-96 animate-fade-in-modal">
+
+        <!-- Título dinámico -->
+        <h2 class="text-lg font-bold mb-4 text-gray-800">
+            Anular Préstamo
+        </h2>
+
+        <!-- Mensaje -->
+        <p class="text-gray-600 mb-6">
+            ¿Deseas anular el préstamo asignado? Esta acción no se puede deshacer y anulará el préstamo
+            seleccionado de forma permanente.
+        </p>
+
+        <!-- Acciones -->
+        <div class="flex justify-end space-x-3">
+            <button (click)="closeAnularModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                Cancelar
+            </button>
+            <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Modal de Confirmación -->
+<!-- Modal Devolución -->
+<div *ngIf="isDevolucionModal"
+    class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
+
+    <div
+        class="bg-white rounded-2xl p-8 shadow-2xl w-full max-w-2xl border-t-4 border-green-500 animate-fade-in-modal overflow-y-auto max-h-[90vh]">
+
+        <!-- Título -->
+        <div class="flex items-center justify-between mb-6 pb-4 border-b">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="ph ph-check-circle text-green-600 text-3xl"></i>
+                Confirmar Devolución
+            </h2>
+            <button (click)="closeDevolucionModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Info del Trabajador -->
+        <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+            <p class="text-sm text-gray-600 mb-1">Trabajador</p>
+            <p class="text-lg font-bold text-gray-800">{{ prestamoSeleccionado?.nombreEmpleado }}</p>
+        </div>
+
+        <!-- Fechas -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-2">
+                    <i class="ph ph-calendar-blank"></i>
+                    Fecha de Préstamo
+                </p>
+                <p class="text-base font-semibold text-gray-800">
+                    {{ prestamoSeleccionado?.fechaPrestamo | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p class="text-xs text-green-700 uppercase tracking-wide mb-1 flex items-center gap-2">
+                    <i class="ph ph-check"></i>
+                    Fecha de Devolución
+                </p>
+                <p class="text-base font-semibold text-green-800">
+                    {{ fechaDevolucion | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Herramientas a devolver -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <i class="ph ph-toolbox"></i>
+                Herramientas a Devolver
+            </h3>
+            <div class="space-y-3 max-h-60 overflow-y-auto">
+                <div *ngFor="let herramienta of prestamoSeleccionado?.detalles"
+                    class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-green-300 transition">
+
+                    <!-- Foto -->
+                    <div class="flex-shrink-0">
+                        <img *ngIf="herramienta.fotoHerramienta" [src]="herramienta.fotoHerramienta"
+                            [alt]="herramienta.nombreHerramienta"
+                            class="h-14 w-14 rounded-lg object-cover border-2 border-white shadow-sm" />
+                        <div *ngIf="!herramienta.fotoHerramienta"
+                            class="h-14 w-14 rounded-lg flex items-center justify-center bg-gray-300 text-gray-500 border-2 border-white">
+                            <i class="ph ph-wrench text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-grow">
+                        <p class="font-semibold text-gray-800">{{ herramienta.nombreHerramienta }}</p>
+                        <p class="text-xs text-gray-600">
+                            <span class="font-medium">Código:</span> {{ herramienta.codigoHerramienta }}
+                        </p>
+                    </div>
+
+                    <!-- Check icon -->
+                    <div class="flex-shrink-0">
+                        <i class="ph ph-check-circle text-green-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="mb-6">
+            <label for="observacion" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <i class="ph ph-note"></i>
+                Observaciones
+            </label>
+            <textarea id="observacion" [(ngModel)]="observacion"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition resize-none shadow-sm"
+                rows="3" placeholder="Escribe tus observaciones sobre el estado de las herramientas..."></textarea>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex justify-end gap-3 pt-4 border-t">
+            <button (click)="closeDevolucionModal()"
+                class="px-6 py-2.5 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium shadow-sm">
+                Cancelar
+            </button>
+            <button (click)="confirmarDevolucion()" [disabled]="isProcessing"
+                class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-sm flex items-center gap-2">
+                <i class="ph ph-check-circle"></i>
+                Confirmar Devolución
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,325 @@
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+    *ngIf="mostrar">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-500 to-green-600 px-8 py-5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-black/5"></div>
+            <div class="flex justify-between items-center relative z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="ph ph-check-circle text-3xl"></i>
+                        COMPLETAR ENTREGA - Pedido #{{pedido?.idPedido}}
+                    </h2>
+                    <p class="text-white/90 text-sm mt-1 font-medium">
+                        Cotización: {{pedido?.cotizacion?.codCotizacion}} | Fecha: {{pedido?.fechaPedido}}
+                    </p>
+                </div>
+                <button (click)="cerrarModal()"
+                    class="text-white hover:text-gray-200 transition-colors p-2 hover:bg-white/10 rounded-lg">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-8 overflow-y-auto max-h-[calc(90vh-120px)] bg-gray-50">
+
+            <!-- Alerta de Acción -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-lg mb-6 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <i class="ph ph-info text-blue-600 text-3xl flex-shrink-0"></i>
+                    <div>
+                        <h4 class="text-lg font-bold text-blue-900 mb-1">¿Está listo para completar este pedido?</h4>
+                        <p class="text-blue-800 text-sm">
+                            Al confirmar, el pedido se marcará como <strong>ENTREGADO</strong> al cliente.
+                            {{ pedido?.saldoPendiente > 0 ? 'Primero debe registrar el pago del saldo pendiente.' : 'El pedido ya está completamente pagado.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen Rápido del Pedido -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-6 shadow-sm">
+                <h3 class="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2 border-b-2 border-yellow-400 pb-3">
+                    <i class="ph ph-clipboard-text text-yellow-500 text-xl"></i>
+                    Resumen del Pedido
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs text-gray-600 font-semibold mb-1 uppercase">Estado Actual</p>
+                        <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold border-2 bg-blue-100 text-blue-800 border-blue-400">
+                            {{ pedido?.estadoPedido }}
+                        </span>
+                    </div>
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs text-gray-600 font-semibold mb-1 uppercase">Trabajos</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</p>
+                    </div>
+                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs text-gray-600 font-semibold mb-1 uppercase">Materiales</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ getTotalMateriales() }}</p>
+                    </div>
+                    <div class="text-center p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg border-2 border-yellow-400">
+                        <p class="text-xs text-gray-700 font-semibold mb-1 uppercase">Total</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ pedido?.totalPedido | number:'1.2-2' }} Bs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Financiera -->
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-2 border-gray-300 mb-6 shadow-sm">
+                <h3 class="font-bold text-gray-900 mb-5 text-lg flex items-center gap-2 border-b-2 border-yellow-400 pb-3">
+                    <i class="ph ph-coins text-yellow-500 text-xl"></i>
+                    Estado de Pagos
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-white rounded-lg p-5 border-2 border-gray-200 text-center">
+                        <label class="text-xs font-semibold text-gray-600 mb-2 block uppercase">Total del Pedido</label>
+                        <p class="text-3xl font-bold text-gray-900">{{ pedido?.totalPedido | number:'1.2-2' }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Bolivianos</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-5 border-2 border-green-300 text-center">
+                        <label class="text-xs font-semibold text-green-700 mb-2 block uppercase">Ya Pagado</label>
+                        <p class="text-3xl font-bold text-green-600">{{ pedido?.anticipo | number:'1.2-2' }}</p>
+                        <p class="text-xs text-green-600 mt-1 font-medium">{{ getPorcentajePagado() | number:'1.0-0' }}% del total</p>
+                    </div>
+                    <div [ngClass]="{
+                        'bg-red-50 border-red-300': pedido?.saldoPendiente > 0,
+                        'bg-green-50 border-green-300': pedido?.saldoPendiente <= 0
+                    }" class="rounded-lg p-5 border-2 text-center">
+                        <label class="text-xs font-semibold mb-2 block uppercase" [ngClass]="{
+                            'text-red-700': pedido?.saldoPendiente > 0,
+                            'text-green-700': pedido?.saldoPendiente <= 0
+                        }">Saldo Pendiente</label>
+                        <p class="text-3xl font-bold" [ngClass]="{
+                            'text-red-600': pedido?.saldoPendiente > 0,
+                            'text-green-600': pedido?.saldoPendiente <= 0
+                        }">{{ pedido?.saldoPendiente | number:'1.2-2' }}</p>
+                        <p class="text-xs mt-1 font-medium" [ngClass]="{
+                            'text-red-600': pedido?.saldoPendiente > 0,
+                            'text-green-600': pedido?.saldoPendiente <= 0
+                        }">
+                            {{ pedido?.saldoPendiente > 0 ? 'Por cobrar' : '¡Pagado!' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Progreso de Pago</span>
+                        <span class="text-sm font-bold text-gray-900">{{ getPorcentajePagado() | number:'1.1-1' }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="h-3 rounded-full transition-all duration-500 shadow-sm" 
+                             [ngClass]="{
+                                'bg-gradient-to-r from-green-400 to-green-500': getPorcentajePagado() === 100,
+                                'bg-gradient-to-r from-yellow-400 to-yellow-500': getPorcentajePagado() < 100
+                             }"
+                             [style.width.%]="getPorcentajePagado()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Pago Final (SOLO SI HAY SALDO) -->
+            <div *ngIf="pedido?.saldoPendiente > 0" class="bg-white rounded-xl p-6 border-2 border-yellow-400 mb-6 shadow-lg">
+                <h3 class="font-bold text-gray-900 mb-5 text-lg flex items-center gap-2 border-b-2 border-yellow-400 pb-3">
+                    <i class="ph ph-wallet text-yellow-500 text-xl"></i>
+                    Registrar Pago Final
+                    <span class="ml-auto bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">
+                        Requerido
+                    </span>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Monto -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Monto a Pagar <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="number" 
+                                [(ngModel)]="pagoFinal.monto"
+                                (blur)="validarMontoPago()"
+                                step="0.01"
+                                min="0"
+                                [max]="pedido?.saldoPendiente"
+                                class="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-lg focus:border-yellow-400 focus:outline-none text-lg font-bold"
+                                placeholder="0.00">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Bs</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <p class="text-xs text-gray-500">
+                                Saldo: {{ pedido?.saldoPendiente | number:'1.2-2' }} Bs
+                            </p>
+                            <button 
+                                type="button"
+                                (click)="pagoFinal.monto = pedido?.saldoPendiente"
+                                class="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline">
+                                Pagar todo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Método de Pago <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            [(ngModel)]="pagoFinal.metodoPago"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-yellow-400 focus:outline-none text-base font-medium appearance-none bg-white cursor-pointer">
+                            <option value="EFECTIVO">💵 Efectivo</option>
+                            <option value="TRANSFERENCIA">🏦 Transferencia Bancaria</option>
+                            <option value="QR">📱 QR / Billetera Digital</option>
+                            <option value="TARJETA">💳 Tarjeta</option>
+                            <option value="CHEQUE">📝 Cheque</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="mt-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        Observaciones del Pago (Opcional)
+                    </label>
+                    <textarea 
+                        [(ngModel)]="pagoFinal.observacion"
+                        rows="2"
+                        maxlength="200"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-yellow-400 focus:outline-none resize-none text-sm"
+                        placeholder="Ej: Número de transacción, detalles adicionales..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1 text-right">
+                        {{ pagoFinal.observacion.length || 0 }}/200 caracteres
+                    </p>
+                </div>
+            </div>
+
+            <!-- Mensaje cuando está totalmente pagado -->
+            <div *ngIf="pedido?.saldoPendiente <= 0" class="bg-green-50 border-l-4 border-green-500 p-5 rounded-lg mb-6 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class="ph ph-check-circle text-green-600 text-3xl"></i>
+                    <div>
+                        <h4 class="text-lg font-bold text-green-900">✓ Pedido Pagado Completamente</h4>
+                        <p class="text-green-800 text-sm mt-1">
+                            No hay saldo pendiente. Puede proceder a completar la entrega directamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidencia Fotográfica y Datos de Entrega -->
+            <div class="bg-white rounded-xl p-6 border-2 border-emerald-400 mb-6 shadow-md">
+                <h3 class="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2 border-b-2 border-emerald-400 pb-3">
+                    <i class="ph ph-camera text-emerald-600 text-2xl"></i>
+                    Evidencia de Entrega Física
+                    <span class="ml-auto bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+                        Recomendado / Móvil
+                    </span>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                    <!-- Selector de Operario que entrega -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Operario / Instalador Responsable
+                        </label>
+                        <select [(ngModel)]="idEmpleadoEntrega"
+                            class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none text-sm font-medium bg-white">
+                            <option [ngValue]="null">-- Seleccionar Operario --</option>
+                            <option *ngFor="let emp of empleadosActivos" [value]="emp.idEmployee">
+                                {{ emp.fullName }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Archivo de Foto de Evidencia -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Foto de Evidencia (Instalación o Recepción)
+                        </label>
+                        <input type="file" (change)="onFotoSeleccionada($event)" accept="image/*"
+                            class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer" />
+                    </div>
+                </div>
+
+                <!-- Preview de la Foto si se seleccionó -->
+                <div *ngIf="fotoPreview" class="mb-4 p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img [src]="fotoPreview" alt="Vista previa de evidencia"
+                            class="h-16 w-16 object-cover rounded-lg border-2 border-white shadow-sm" />
+                        <div>
+                            <p class="text-xs font-bold text-gray-800">{{ fotoArchivo?.name }}</p>
+                            <p class="text-[11px] text-gray-500">{{ (fotoArchivo?.size || 0) / 1024 | number:'1.0-1' }} KB</p>
+                        </div>
+                    </div>
+                    <button type="button" (click)="eliminarFoto()" class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1">
+                        <i class="ph ph-trash text-base"></i> Quitar foto
+                    </button>
+                </div>
+
+                <!-- Observaciones de la entrega -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">
+                        Observaciones de la Entrega / Instalación (Opcional)
+                    </label>
+                    <input type="text" [(ngModel)]="observacionEntrega"
+                        placeholder="Ej: Instalado en fachada principal, recibido por el cliente conforme..."
+                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none text-sm" />
+                </div>
+            </div>
+
+            <!-- Confirmación Final -->
+            <div class="bg-yellow-50 rounded-xl p-5 border-2 border-yellow-400 mb-6 shadow-sm">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input 
+                        type="checkbox" 
+                        [(ngModel)]="confirmarCompletacion"
+                        class="mt-1 w-5 h-5 text-green-600 border-2 border-gray-400 rounded focus:ring-2 focus:ring-green-500 cursor-pointer flex-shrink-0">
+                    <span class="text-gray-900 font-semibold text-sm group-hover:text-gray-700">
+                        <i class="ph ph-seal-check text-yellow-600 mr-1"></i>
+                        Confirmo que el pedido ha sido <strong class="text-green-700">entregado al cliente</strong> 
+                        y todos los detalles son correctos. Acepto marcar este pedido como <strong>COMPLETADO</strong>.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex justify-between items-center gap-3 pt-4 border-t-2 border-gray-200">
+                <button 
+                    (click)="cerrarModal()" 
+                    [disabled]="procesando"
+                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 font-bold flex items-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="ph ph-x text-lg"></i>
+                    Cancelar
+                </button>
+
+                <button 
+                    (click)="procesarCompletacion()" 
+                    [disabled]="!puedeCompletar() || procesando"
+                    [ngClass]="{
+                        'opacity-50 cursor-not-allowed': !puedeCompletar() || procesando,
+                        'hover:from-green-600 hover:to-green-700 hover:shadow-xl hover:scale-105': puedeCompletar() && !procesando
+                    }"
+                    class="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl transition-all duration-200 font-bold flex items-center gap-2 shadow-lg">
+                    <i class="ph-bold text-xl" [ngClass]="{
+                        'ph-check-circle': !procesando,
+                        'ph-spinner animate-spin': procesando
+                    }"></i>
+                    <span>{{ procesando ? 'Procesando...' : 'Confirmar Entrega' }}</span>
+                </button>
+            </div>
+
+            <!-- Nota informativa -->
+            <div class="mt-4 text-center">
+                <p class="text-xs text-gray-500">
+                    <i class="ph ph-info mr-1"></i>
+                    Esta acción cambiará el estado del pedido a <strong>ENTREGADO</strong> y no se podrá revertir.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
