@@ -1,0 +1,36 @@
+<!--<div
+  class="fixed inset-0 bg-white/90 dark:bg-gray-900/90 flex flex-col items-center justify-center z-50 backdrop-blur-sm">
+  <div class="text-center mb-8 animate-pulse">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Cargando tu aventura...</h1>
+    <p class="text-gray-600 dark:text-gray-300 mt-2">Nuestra hormiga exploradora está preparando todo</p>
+  </div>
+
+  <div class="w-72 md:w-96 mb-2 relative">
+    <div class="absolute top-0 transform -translate-y-full transition-all duration-300 ease-out z-10"
+      [style.left.%]="progress">
+      <img [src]="antImagePath" alt="Hormiga cargando" class="w-10 h-10 object-contain transform -translate-x-1/2"
+        [class.scale-x-100]="progress % 20 < 10" [class.scale-x-[-1]]="progress % 20 >= 10">
+    </div>
+    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative shadow-inner">
+      <div class="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-300 ease-out"
+        [style.width.%]="progress">
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md">
+    <span class="font-mono font-bold text-amber-600 dark:text-amber-400">
+      {{ progress | number:'1.0-0' }}%
+    </span>
+  </div>
+</div>-->
+
+<div class="fixed inset-0 bg-white/90 dark:bg-gray-900/90 flex flex-col items-center justify-center z-50 backdrop-blur-sm">
+  <div class="relative w-100 h-100"> 
+    <div class="absolute w-full h-full rounded-full border-[15px] border-black opacity-30"></div>
+    <div class="absolute w-full h-full rounded-full border-[15px] border-transparent border-t-yellow-400 border-r-yellow-400 animate-spin"></div>
+    <div class="absolute inset-0 flex items-center justify-center">
+      <span class="loading loading-dots loading-xl"></span>
+
+    </div>
+  </div>
+</div>

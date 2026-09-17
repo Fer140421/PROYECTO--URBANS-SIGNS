@@ -1,0 +1,72 @@
+/* Estilos adicionales para animaciones y efectos personalizados */
+
+/* Animación de entrada para el card */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efecto de fondo animado */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Aplicar animación al cargar */
+:host {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Efecto glow en inputs al hacer focus */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(255, 208, 0, 0.1);
+}
+
+/* Personalizar checkbox */
+input[type="checkbox"]:checked {
+  background-color: #FFD000;
+  border-color: #FFD000;
+}
+
+/* Efecto hover en botones sociales */
+button:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Animación para el botón de submit */
+button[type="submit"]:active {
+  transform: scale(0.98);
+}
+
+/* Estilo para links */
+a {
+  position: relative;
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #FFD000;
+  transition: width 0.3s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}

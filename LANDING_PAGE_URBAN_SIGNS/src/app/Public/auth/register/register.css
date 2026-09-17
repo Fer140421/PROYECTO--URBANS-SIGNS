@@ -1,0 +1,9 @@
+
+:host { animation: fadeInUp 0.4s ease-out; }
+
+.input { width: 100%; border: 1px solid #374151; border-radius: .75rem; background: rgb(0 0 0 / .3); padding: .75rem 1rem; color: white; outline: none; }
+.input:focus { border-color: transparent; box-shadow: 0 0 0 2px #ffd000; }
+.label { display: block; margin-bottom: .5rem; font-size: .875rem; font-weight: 500; color: #d1d5db; }
+.error { margin-top: .5rem; font-size: .75rem; color: #f87171; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }

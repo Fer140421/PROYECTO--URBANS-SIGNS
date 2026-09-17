@@ -1,0 +1,35 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+html,
+body,
+app-root {
+  min-height: 100%;
+  background-color: #000;
+  color: #fff;
+}
+
+/* Animaciones suaves de entrada al aparecer cada bloque durante el scroll. */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 2rem, 0);
+  transition:
+    opacity 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-active {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,15 @@
+:host { display: block; background: #000; color: #fff; }
+
+.hero-workshop::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at calc(50% + var(--hero-x, 0) * 18%) calc(40% + var(--hero-y, 0) * 14%), rgb(255 208 0 / .14), transparent 29%); transition: background .25s ease-out; }
+
+.kinetic-logo { transform: perspective(900px) rotateX(calc(var(--hero-y, 0) * -4deg)) rotateY(calc(var(--hero-x, 0) * 7deg)); transform-style: preserve-3d; transition: transform .25s ease-out; text-shadow: 1px 1px 0 #a78400, 2px 2px 0 #846900, 3px 3px 0 #5d4a00, 9px 12px 24px rgb(0 0 0 / .7); }
+
+.process-card { position: relative; min-height: 15rem; overflow: hidden; border: 1px solid rgb(75 85 99 / .75); border-radius: 1.5rem; background: linear-gradient(145deg, rgb(31 31 31 / .9), #050505); padding: 1.75rem; transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease; }
+.process-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #ffd000; transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
+.process-card:hover { transform: translateY(-.5rem); border-color: rgb(255 208 0 / .65); box-shadow: 0 1rem 2.5rem rgb(255 208 0 / .12); }
+.process-card:hover::before { transform: scaleX(1); }
+.process-card span { display: block; font-size: .8rem; font-weight: 800; letter-spacing: .16em; color: #ffd000; }
+.process-card h3 { margin-top: 3rem; font-size: 1.5rem; font-weight: 800; }
+.process-card p { margin-top: .75rem; color: #9ca3af; line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) { .kinetic-logo, .process-card { transition: none; transform: none; } }

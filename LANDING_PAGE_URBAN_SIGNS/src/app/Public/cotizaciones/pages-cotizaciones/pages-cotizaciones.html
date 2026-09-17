@@ -1,0 +1,28 @@
+<section class="min-h-screen bg-[#080808] px-4 pb-16 pt-32 text-white sm:px-6">
+  <div class="mx-auto max-w-5xl">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="text-sm font-bold tracking-[0.2em] text-[#FFD000]">COTIZACIÓN PERSONALIZADA</p>
+      <h1 class="mt-4 text-4xl font-black sm:text-5xl">Tu proyecto empieza con una gran idea.</h1>
+      <p class="mt-5 text-lg text-gray-400">Cuéntanos qué necesitas: letreros, impresión, señalización, rotulación o activaciones de marca.</p>
+    </div>
+
+    @if (!currentUser()) {
+      <div class="mx-auto mt-12 max-w-2xl rounded-3xl border border-[#FFD000]/30 bg-gradient-to-br from-[#FFD000]/10 to-gray-900 p-8 text-center shadow-2xl">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD000] text-2xl text-black">✦</div>
+        <h2 class="mt-5 text-2xl font-bold">Crea tu cuenta para solicitar una cotización</h2>
+        <p class="mt-3 text-gray-300">Así podrás recibir la propuesta, revisar el historial y hacer seguimiento de tus pedidos desde un solo lugar.</p>
+        <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><a routerLink="/register" class="rounded-xl bg-[#FFD000] px-6 py-3 font-bold text-black transition hover:bg-[#ffdc40]">Crear cuenta</a><a routerLink="/login" class="rounded-xl border border-gray-600 px-6 py-3 font-bold transition hover:border-[#FFD000] hover:text-[#FFD000]">Ya tengo una cuenta</a></div>
+      </div>
+    } @else if (submitted) {
+      <div class="mx-auto mt-12 max-w-2xl rounded-3xl border border-[#FFD000]/30 bg-gray-900/70 p-8 text-center"><p class="text-4xl text-[#FFD000]">✓</p><h2 class="mt-4 text-2xl font-bold">Solicitud recibida</h2><p class="mt-3 text-gray-400">Te avisaremos cuando tu cotización esté lista. Ya puedes seguirla desde tu portal.</p><a routerLink="/portal/cotizaciones" class="mt-6 inline-block rounded-xl bg-[#FFD000] px-6 py-3 font-bold text-black">Ver mis cotizaciones</a></div>
+    } @else {
+      <form (ngSubmit)="submit()" class="mx-auto mt-12 max-w-3xl rounded-3xl border border-gray-800 bg-gray-900/60 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold">Solicita tu cotización</h2><p class="mt-2 text-sm text-gray-400">Hola, {{ currentUser()?.name }}. Completa los datos principales de tu proyecto.</p>
+        <div class="mt-7 grid gap-5 sm:grid-cols-2"><label class="sm:col-span-2"><span class="mb-2 block text-sm font-medium text-gray-300">¿Qué proyecto tienes en mente?</span><input [(ngModel)]="form.title" name="title" required placeholder="Ej. Letrero luminoso para mi restaurante" class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"></label><label><span class="mb-2 block text-sm font-medium text-gray-300">Servicio</span><select [(ngModel)]="form.service" name="service" class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"><option>Letreros luminosos</option><option>Impresión digital</option><option>Rotulación vehicular</option><option>Señalización</option><option>BTL y eventos</option></select></label><label><span class="mb-2 block text-sm font-medium text-gray-300">Cantidad</span><input [(ngModel)]="form.quantity" name="quantity" type="number" min="1" class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"></label><label class="sm:col-span-2"><span class="mb-2 block text-sm font-medium text-gray-300">Medidas aproximadas</span><input [(ngModel)]="form.dimensions" name="dimensions" required placeholder="Ej. 3 m x 0,80 m" class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"></label><label class="sm:col-span-2"><span class="mb-2 block text-sm font-medium text-gray-300">Detalles adicionales</span><textarea [(ngModel)]="form.notes" name="notes" rows="4" placeholder="Material, ubicación, fecha estimada o referencia visual..." class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"></textarea></label></div><button class="mt-7 w-full rounded-xl bg-[#FFD000] px-6 py-4 font-bold text-black transition hover:bg-[#ffdc40]">Enviar solicitud</button>
+      </form>
+      @if (submitError) {
+        <p class="mx-auto mt-4 max-w-3xl rounded-xl border border-red-400/50 bg-red-400/10 px-4 py-3 text-sm text-red-200" role="alert">{{ submitError }}</p>
+      }
+    }
+  </div>
+</section>

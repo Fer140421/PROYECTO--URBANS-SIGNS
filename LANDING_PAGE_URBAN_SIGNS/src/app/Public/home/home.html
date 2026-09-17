@@ -1,0 +1,134 @@
+<section id="inicio" #hero class="hero-workshop relative h-screen flex items-center justify-center overflow-hidden" (pointermove)="updateHero($event, hero)" (pointerleave)="resetHero()" [style.--hero-x]="heroX()" [style.--hero-y]="heroY()">
+    <!-- Efectos de Partículas 3D -->
+    <div class="absolute inset-0">
+        <!-- Partículas flotantes -->
+        <div class="absolute top-1/4 left-1/4 w-4 h-4 bg-[#FFD000] rounded-full animate-float opacity-60"></div>
+        <div class="absolute top-3/4 right-1/3 w-3 h-3 bg-[#FFD000] rounded-full animate-float"
+            style="animation-delay: 1s; animation-duration: 8s;"></div>
+        <div class="absolute bottom-1/3 left-1/3 w-2 h-2 bg-[#FFD000] rounded-full animate-float"
+            style="animation-delay: 2s; animation-duration: 6s;"></div>
+
+        <!-- Gradientes animados -->
+        <div
+            class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#FFD000]/20 to-transparent rounded-full blur-3xl animate-pulse">
+        </div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#FFD000]/10 to-transparent rounded-full blur-3xl animate-pulse"
+            style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Grid 3D Interactivo -->
+    <div class="absolute inset-0 opacity-[0.03]">
+        <div class="w-full h-full transform-3d" style="
+        background-image: 
+          linear-gradient(rgba(255, 208, 0, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 208, 0, 0.3) 1px, transparent 1px);
+        background-size: 60px 60px;
+        transform: perspective(1000px) rotateX(65deg) translateZ(0);
+      "></div>
+    </div>
+
+    <div class="relative z-10 text-center px-4 max-w-6xl" appScrollRevealDirective>
+        <!-- Logo Principal con Efecto Neon -->
+        <div class="relative mb-8 perspective-3d">
+            <div class="kinetic-logo text-7xl md:text-9xl font-black tracking-tighter leading-none transform-3d">
+                <span class="text-[#FFD000] drop-shadow-[0_0_30px_rgba(255,208,0,0.5)]">URBAN</span>
+                <span class="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] block md:inline">SIGNS</span>
+            </div>
+            <!-- Efecto de resplandor -->
+            <div
+                class="absolute -inset-8 bg-gradient-to-r from-[#FFD000] to-transparent opacity-10 blur-3xl rounded-full -z-10 animate-glow">
+            </div>
+        </div>
+
+        <p class="text-2xl md:text-3xl mb-12 opacity-90 font-light max-w-3xl mx-auto leading-relaxed">
+            Transformamos <span class="text-[#FFD000] font-semibold">ideas creativas</span> en experiencias visuales
+            impactantes desde 2010
+        </p>
+
+        <div class="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
+            <button (click)="scrollTo('servicios')" class="rounded-2xl bg-[#FFD000] px-7 py-4 font-bold text-black transition hover:scale-105 hover:shadow-[0_0_28px_rgba(255,208,0,.35)]">Explorar servicios</button>
+            <button (click)="scrollTo('whatsapp')" class="rounded-2xl border border-white/25 bg-black/30 px-7 py-4 font-bold text-white transition hover:border-[#25D366] hover:text-[#25D366]">Contáctanos</button>
+        </div>
+
+        <!-- Stats en Tiempo Real -->
+        <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div class="text-center">
+                <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">13+</div>
+                <div class="text-sm opacity-80">Años de Experiencia</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">500+</div>
+                <div class="text-sm opacity-80">Proyectos Completados</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl md:text-4xl font-bold text-[#FFD000] mb-2">98%</div>
+                <div class="text-sm opacity-80">Clientes Satisfechos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator Mejorado -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <div class="flex flex-col items-center gap-2">
+            <span class="text-sm text-[#FFD000] opacity-80">Desplazar</span>
+            <div class="w-6 h-10 border-2 border-[#FFD000] rounded-full flex justify-center relative">
+                <div class="w-1 h-3 bg-[#FFD000] rounded-full mt-2 animate-bounce absolute"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="relative overflow-hidden bg-black px-4 py-24 text-white">
+    <div class="process-light absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-[#FFD000]/10 blur-3xl"></div>
+    <div class="relative mx-auto max-w-7xl">
+        <div class="mb-14 max-w-2xl" appScrollRevealDirective><p class="mb-3 text-sm font-bold tracking-[.24em] text-[#FFD000]">DEL CONCEPTO A LA CALLE</p><h2 class="text-4xl font-black md:text-5xl">Tu marca toma <span class="text-[#FFD000]">volumen</span>.</h2><p class="mt-5 text-lg text-gray-400">Un recorrido visual del taller: diseño, impresión, acabados e instalación.</p></div>
+        <div class="grid gap-5 md:grid-cols-4">
+            <article class="process-card" appScrollRevealDirective style="--reveal-delay: 80ms"><span>01</span><h3>Diseñamos</h3><p>Convertimos tu idea en una propuesta lista para producir.</p></article>
+            <article class="process-card" appScrollRevealDirective style="--reveal-delay: 160ms"><span>02</span><h3>Imprimimos</h3><p>Color vibrante y precisión para cada formato y superficie.</p></article>
+            <article class="process-card" appScrollRevealDirective style="--reveal-delay: 240ms"><span>03</span><h3>Construimos</h3><p>Volumen, luz y acabados que hacen visible tu marca.</p></article>
+            <article class="process-card" appScrollRevealDirective style="--reveal-delay: 320ms"><span>04</span><h3>Instalamos</h3><p>El resultado final, preparado para destacar en su entorno.</p></article>
+        </div>
+    </div>
+</section>
+
+<section id="whatsapp-legacy" class="hidden">
+    <div class="absolute left-1/2 top-0 h-56 w-96 -translate-x-1/2 rounded-full bg-[#FFD000]/10 blur-3xl"></div>
+    <div class="relative mx-auto max-w-7xl" appScrollRevealDirective>
+        <div class="grid items-center gap-10 lg:grid-cols-[1.2fr_.8fr] lg:gap-20">
+            <div>
+                <p class="text-sm font-bold tracking-[.2em] text-[#FFD000]">ATENCIÓN DIRECTA</p>
+                <h2 class="mt-4 max-w-3xl text-4xl font-black leading-tight sm:text-5xl md:text-6xl">Hablemos de tu <span class="text-[#FFD000]">próximo proyecto.</span></h2>
+                <p class="mt-6 max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">Escríbenos por WhatsApp con tu idea, medidas o una referencia. Nuestro equipo te orientará con materiales, acabados y detalles para hacerlo realidad.</p>
+            </div>
+            <div class="flex flex-col items-start lg:items-center">
+                <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#FFD000]/40 bg-[#FFD000]/10 text-3xl font-black text-[#FFD000]">W</div>
+                <h3 class="mt-6 text-2xl font-bold">Contáctanos por WhatsApp</h3>
+                <p class="mt-2 text-gray-400">Respuesta directa para más detalles.</p>
+                <a href="https://wa.me/59165807763?text=Hola%20Urban%20Signs%2C%20quiero%20recibir%20más%20detalles%20sobre%20un%20proyecto." target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex rounded-2xl bg-[#FFD000] px-7 py-4 font-bold text-black transition hover:scale-105 hover:bg-[#ffdc40] hover:shadow-[0_0_24px_rgba(255,208,0,.25)]">Ir a WhatsApp</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<app-about></app-about>
+
+<app-servicios></app-servicios>
+
+<section id="whatsapp" class="relative overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black px-4 py-24 text-white sm:py-28">
+    <div class="absolute left-1/2 top-0 h-56 w-96 -translate-x-1/2 rounded-full bg-[#FFD000]/10 blur-3xl"></div>
+    <div class="relative mx-auto max-w-7xl" appScrollRevealDirective>
+        <div class="grid items-center gap-10 lg:grid-cols-[1.2fr_.8fr] lg:gap-20">
+            <div>
+                <p class="text-sm font-bold tracking-[.2em] text-[#FFD000]">ATENCIÓN DIRECTA</p>
+                <h2 class="mt-4 max-w-3xl text-4xl font-black leading-tight sm:text-5xl md:text-6xl">Hablemos de tu <span class="text-[#FFD000]">próximo proyecto.</span></h2>
+                <p class="mt-6 max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg">Escríbenos por WhatsApp con tu idea, medidas o una referencia. Nuestro equipo te orientará con materiales, acabados y detalles para hacerlo realidad.</p>
+            </div>
+            <div class="flex flex-col items-start lg:items-center">
+                <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#FFD000]/40 bg-[#FFD000]/10 text-3xl font-black text-[#FFD000]">W</div>
+                <h3 class="mt-6 text-2xl font-bold">Contáctanos por WhatsApp</h3>
+                <p class="mt-2 text-gray-400">Respuesta directa para más detalles.</p>
+                <a href="https://wa.me/59165807763?text=Hola%20Urban%20Signs%2C%20quiero%20recibir%20más%20detalles%20sobre%20un%20proyecto." target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex rounded-2xl bg-[#FFD000] px-7 py-4 font-bold text-black transition hover:scale-105 hover:bg-[#ffdc40] hover:shadow-[0_0_24px_rgba(255,208,0,.25)]">Ir a WhatsApp</a>
+            </div>
+        </div>
+    </div>
+</section>
