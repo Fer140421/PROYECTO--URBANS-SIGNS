@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: urbansigns_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: urban_signs
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - urbansigns_net
+
+  backend:
+    build:
+      context: ./backend_urbansigns
+      dockerfile: Dockerfile
+    container_name: urbansigns_backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/urban_signs
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-none}
+      SPRING_JPA_SHOW_SQL: "false"
+      JWT_SECRET: ${JWT_SECRET:-claveSecretaPorDefectoParaJwtMinimo32Caracteres}
+      JWT_COOKIES_SECURE: ${JWT_COOKIES_SECURE:-true}
+      JWT_COOKIES_SAMESITE: ${JWT_COOKIES_SAMESITE:-None}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:4201,https://*.vercel.app}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      FACTURACION_API_URL: ${FACTURACION_API_URL:-https://facturador.soft-solution.org/api/v1/facturacion/electronica}
+      FACTURACION_API_TOKEN: ${FACTURACION_API_TOKEN:-}
+    ports:
+      - "8080:8080"
+    networks:
+      - urbansigns_net
+
+volumes:
+  postgres_data:
+
+networks:
+  urbansigns_net:
+    driver: bridge

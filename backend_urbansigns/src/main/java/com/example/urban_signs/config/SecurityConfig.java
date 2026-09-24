@@ -85,7 +85,7 @@ public class SecurityConfig {
                 })
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOrigins(Arrays.asList(allowedOrigins));
+                    corsConfig.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
                     corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(Arrays.asList("Content-Type", "Accept", "Authorization"));
                     corsConfig.setExposedHeaders(Arrays.asList("Set-Cookie", "Retry-After"));
