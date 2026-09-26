@@ -28,6 +28,7 @@ export interface Quote {
   estimatedTotal?: number;
   items: QuoteItem[];
   notes: string;
+  referenceImage?: string;
 }
 
 export interface OrderEvent {
@@ -58,3 +59,11 @@ export interface ClientNotification {
   type: 'quote' | 'order' | 'system';
   read: boolean;
 }
+
+export interface PublicService {
+  idTrabajo: number;
+  nombre: string;
+  descripcion: string;
+  foto: string;
+}
+

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, Observable, catchError, map, tap } from 'rxjs';
-import { ClientOrder, Quote } from '../../Models/client-portal.model';
+import { ClientOrder, PublicService, Quote } from '../../Models/client-portal.model';
 import { API_URL } from '../../config/api.config';
 
 /** Datos del portal obtenidos exclusivamente para el cliente de la cookie actual. */
@@ -13,6 +13,10 @@ export class PortalDataService {
   readonly orders = signal<ClientOrder[]>([]);
   readonly isLoading = signal(false);
   readonly error = signal('');
+
+  getPublicServices(): Observable<PublicService[]> {
+    return this.http.get<PublicService[]>(`${API_URL}/portal/servicios`);
+  }
 
   loadQuotes(): Observable<Quote[]> {
     this.isLoading.set(true);
@@ -60,13 +64,23 @@ export class PortalDataService {
     );
   }
 
-  createQuote(payload: { title: string; service: string; items: Quote['items']; notes: string }): Observable<void> {
+  createQuote(
+    payload: { title: string; service: string; items: Quote['items']; notes: string },
+    file?: File | null
+  ): Observable<void> {
     const details = [
       payload.title,
       `Servicio solicitado: ${payload.service}.`,
       ...payload.items.map(item => `${item.quantity} × ${item.description} (${item.dimensions}).`),
       payload.notes
     ].filter(Boolean).join('\n');
+
+    if (file) {
+      const formData = new FormData();
+      formData.append('observaciones', details);
+      formData.append('file', file);
+      return this.http.post<void>(`${API_URL}/portal/solicitudes`, formData, { withCredentials: true });
+    }
 
     return this.http.post<void>(`${API_URL}/portal/solicitudes`, {
       observaciones: details
@@ -84,7 +98,8 @@ export class PortalDataService {
       status: quote.estado,
       estimatedTotal: quote.total,
       notes: quote.descripcion,
-      items: quote.items ?? []
+      items: quote.items ?? [],
+      referenceImage: quote.archivoReferencia
     };
   }
 
@@ -115,6 +130,7 @@ interface PortalQuoteDto {
   estado: Quote['status'];
   total?: number;
   items?: Quote['items'];
+  archivoReferencia?: string;
 }
 
 interface PortalOrderDto {

@@ -1,145 +1,127 @@
- <!-- Services Section Ultra Moderna -->
-  <section id="servicios" class="py-24 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden" appScrollRevealDirective>
-    <!-- Efectos de fondo -->
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black to-transparent"></div>
-    <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent"></div>
+<!-- Services Section Ultra Moderna -->
+<section id="servicios" class="py-24 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden" appScrollRevealDirective>
+  <!-- Efectos de fondo sutiles -->
+  <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black to-transparent pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
+  <div class="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#FFD000]/5 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="max-w-7xl mx-auto px-4 relative z-10">
-      <div class="text-center mb-20" appScrollRevealDirective>
-        <h2 class="text-5xl md:text-6xl font-bold mb-6">
-          Nuestros <span class="text-[#FFD000]">Servicios</span>
-        </h2>
-        <p class="text-xl opacity-90 max-w-3xl mx-auto">
-          Soluciones integrales en diseño gráfico y señalización para potenciar tu marca
-        </p>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <!-- Encabezado de la sección -->
+    <div class="text-center mb-16 md:mb-20" appScrollRevealDirective>
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFD000]/10 border border-[#FFD000]/30 text-[#FFD000] text-xs md:text-sm font-bold tracking-widest uppercase mb-4">
+        <span class="w-2 h-2 rounded-full bg-[#FFD000] animate-pulse"></span>
+        Catálogo de Producción
       </div>
+      <h2 class="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-6">
+        Nuestros <span class="text-[#FFD000] drop-shadow-[0_0_25px_rgba(255,208,0,0.35)]">Servicios</span>
+      </h2>
+      <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+        Fabricación propia, diseño de precisión e instalación profesional para destacar la presencia visual de tu negocio.
+      </p>
+    </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <!-- Service 1 - BTL -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 80ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-            </svg>
+    <!-- Skeleton Loading -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div *ngFor="let item of [1,2,3,4,5,6]" class="bg-gray-900/60 rounded-3xl border border-gray-800 p-4 animate-pulse">
+        <div class="aspect-[16/10] bg-gray-800 rounded-2xl mb-6"></div>
+        <div class="h-6 bg-gray-800 rounded-lg w-3/4 mb-4"></div>
+        <div class="h-4 bg-gray-800/80 rounded w-full mb-2"></div>
+        <div class="h-4 bg-gray-800/80 rounded w-2/3 mb-6"></div>
+        <div class="h-12 bg-gray-800 rounded-xl w-full"></div>
+      </div>
+    </div>
+
+    <!-- Grid de Servicios Dinámicos con Foto Real -->
+    <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div *ngFor="let servicio of servicios; let i = index"
+        class="group relative bg-gradient-to-b from-gray-900/90 to-black/95 rounded-3xl border border-gray-800 hover:border-[#FFD000]/60 transition-all duration-500 overflow-hidden flex flex-col justify-between hover:shadow-[0_12px_45px_rgba(255,208,0,0.18)] hover:-translate-y-2"
+        appScrollRevealDirective [style.--reveal-delay]="(i * 70) + 'ms'">
+
+        <!-- Contenedor Superior de Imagen -->
+        <div class="relative aspect-[16/10] w-full overflow-hidden bg-gray-950">
+          <img [src]="servicio.foto" [alt]="servicio.nombre" loading="lazy" (error)="onImageError($event, i)"
+            class="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-105 transition-all duration-700 ease-out" />
+
+          <!-- Degradado de superposición para legibilidad -->
+          <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-black/20"></div>
+
+          <!-- Badge flotante de servicio -->
+          <div class="absolute top-4 left-4">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-black/75 backdrop-blur-md border border-[#FFD000]/40 text-[#FFD000] text-xs font-bold rounded-full shadow-lg">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#FFD000]"></span>
+              Especialidad
+            </span>
           </div>
-          <h3 class="text-2xl font-bold mb-4">BTL & Eventos</h3>
-          <p class="opacity-90 leading-relaxed">Stands para ferias, armados, juegos publicitarios y asesoría integral
-            para eventos.</p>
+
+          <!-- Código o Indicador -->
+          <div class="absolute top-4 right-4">
+            <span class="px-2.5 py-0.5 bg-black/60 backdrop-blur-sm rounded-lg text-gray-400 text-xs font-mono">
+              #0{{i + 1}}
+            </span>
+          </div>
         </div>
 
-        <!-- Service 2 - Letreros -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 140ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+        <!-- Contenido y Descripción -->
+        <div class="p-6 md:p-8 flex-1 flex flex-col justify-between">
+          <div>
+            <h3 class="text-2xl font-bold text-white group-hover:text-[#FFD000] transition-colors duration-300 mb-3 leading-snug">
+              {{ servicio.nombre }}
+            </h3>
+            <p class="text-gray-300 text-sm leading-relaxed font-normal mb-6 line-clamp-3">
+              {{ servicio.descripcion }}
+            </p>
           </div>
-          <h3 class="text-2xl font-bold mb-4">Letreros</h3>
-          <p class="opacity-90 leading-relaxed">Letreros luminosos, bastidores, letras INOX, acrílicos, metálicas y
-            trupan.</p>
-        </div>
 
-        <!-- Service 3 - Impresión Digital -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 200ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Impresión Digital</h3>
-          <p class="opacity-90 leading-relaxed">Banners, rollers, pasacalles, adhesivos, esmerilados y gigantografías.
-          </p>
-        </div>
+          <!-- Acciones de la Tarjeta -->
+          <div class="pt-4 border-t border-gray-800/80 flex items-center gap-3">
+            <!-- Botón Principal: Cotizar este servicio -->
+            <button (click)="cotizarServicio(servicio)"
+              class="flex-1 py-3 px-4 bg-[#FFD000] hover:bg-[#ffdc40] text-black font-extrabold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:shadow-[#FFD000]/25 group-hover:scale-[1.02]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+              <span>Cotizar</span>
+            </button>
 
-        <!-- Service 4 - Rotulación -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 260ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            </svg>
+            <!-- Botón Secundario: WhatsApp con mensaje personalizado -->
+            <a [href]="getWhatsAppLink(servicio)" target="_blank" rel="noopener noreferrer"
+              class="p-3 bg-gray-800/80 hover:bg-[#25D366] text-gray-300 hover:text-white rounded-xl transition-all duration-200 flex items-center justify-center border border-gray-700 hover:border-[#25D366] shadow-sm hover:scale-105"
+              title="Consultar por WhatsApp">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+              </svg>
+            </a>
           </div>
-          <h3 class="text-2xl font-bold mb-4">Rotulación</h3>
-          <p class="opacity-90 leading-relaxed">Camiones, autos, motos, laptops y todo tipo de superficies vehiculares.
-          </p>
-        </div>
-
-        <!-- Service 5 - Señalización -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 320ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Señalización</h3>
-          <p class="opacity-90 leading-relaxed">Horizontal, vertical, vial, de seguridad e informativa para espacios
-            públicos y privados.</p>
-        </div>
-
-        <!-- Service 6 - Display -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 380ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Display</h3>
-          <p class="opacity-90 leading-relaxed">Banderolas, porta folletos, mesas publicitarias, pop ups y toldos.</p>
-        </div>
-
-        <!-- Service 7 - Diseño Gráfico -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 440ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Diseño Gráfico</h3>
-          <p class="opacity-90 leading-relaxed">Imagen institucional, logotipos, arte para web y redes sociales.</p>
-        </div>
-
-        <!-- Service 8 - Consultoría -->
-        <div
-          class="group bg-black/50 backdrop-blur-sm rounded-3xl border border-gray-800 p-8 transition-all duration-500 hover-lift hover:border-[#FFD000]/50"
-          appScrollRevealDirective style="--reveal-delay: 500ms">
-          <div
-            class="w-20 h-20 bg-gradient-to-br from-[#FFD000] to-[#ffdc40] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-            <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Consultoría</h3>
-          <p class="opacity-90 leading-relaxed">Asesoramiento profesional para optimizar tu estrategia visual y de
-            marketing.</p>
         </div>
       </div>
     </div>
-  </section>
+
+    <!-- Banner Inferior de Cotización Personalizada -->
+    <div class="mt-16 bg-gradient-to-r from-gray-900 via-black to-gray-900 border border-[#FFD000]/30 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-2xl"
+      appScrollRevealDirective style="--reveal-delay: 200ms">
+      <div class="absolute -right-20 -top-20 w-64 h-64 bg-[#FFD000]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 max-w-3xl mx-auto">
+        <h3 class="text-2xl md:text-3xl font-extrabold text-white mb-4">
+          ¿Tienes un proyecto especial con especificaciones a medida?
+        </h3>
+        <p class="text-gray-300 text-sm md:text-base mb-8 font-light leading-relaxed">
+          Diseñamos, calculamos la estructura y fabricamos según las necesidades exactas de tu marca. Sube tus referencias y nosotros nos encargamos del resto.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a routerLink="/cotizaciones"
+            class="px-8 py-4 bg-[#FFD000] hover:bg-[#ffdc40] text-black font-extrabold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 inline-flex items-center justify-center gap-2">
+            <span>Iniciar Solicitud de Cotización</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+          <a href="https://wa.me/59165807763?text=Hola%20Urban%20Signs%2C%20tengo%20un%20proyecto%20especial%20y%20requiero%20asesoramiento."
+            target="_blank" rel="noopener noreferrer"
+            class="px-8 py-4 bg-transparent border-2 border-gray-700 hover:border-[#25D366] text-white hover:text-[#25D366] font-bold rounded-2xl transition-all duration-200 inline-flex items-center justify-center gap-2">
+            <span>Hablar con un Asesor</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
