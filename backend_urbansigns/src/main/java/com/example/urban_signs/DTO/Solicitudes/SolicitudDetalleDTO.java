@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.example.urban_signs.Model.ClienteModel;
+import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +22,8 @@ public class SolicitudDetalleDTO {
     private ClienteModel cliente;
     private LocalDate fechaSolicitud;
     private SolicitudCotizacion estado;
+    private OrigenSolicitud origen;
+    private String archivoReferencia;
     private String observaciones;
     private List<SolicitudTrabajoDetlDTO> trabajos;
 }

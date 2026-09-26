@@ -9,8 +9,12 @@ import com.example.urban_signs.DTO.Solicitudes.SolicitudDetalleDTO;
 import com.example.urban_signs.Model.SolicitudCotizacionModel;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface SolicitudCotizacionService {
     SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request);
+
+    SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file);
 
     Page<SolicitudCotizacionModel> listarSolicitudes(SolicitudCotizacion estado, String codSolicitud,
             Pageable pageable);

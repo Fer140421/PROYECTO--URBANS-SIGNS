@@ -70,7 +70,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/error").permitAll();
                     // Rutas públicas
                     auth.requestMatchers("/v1/user/login").permitAll();
-                    auth.requestMatchers("/users/send-code", "/users/verify-code", "/portal/registro").permitAll();
+                    auth.requestMatchers("/users/send-code", "/users/verify-code", "/portal/registro", "/portal/servicios/**").permitAll();
                     auth.requestMatchers("/users/refresh").permitAll();
                     auth.requestMatchers("/users/verificar-email-recuperacion/**").permitAll();
                     auth.requestMatchers("/users/enviar-codigo-recuperacion").permitAll();

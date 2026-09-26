@@ -27,9 +27,12 @@ import com.example.urban_signs.Repository.SolicitudCotizacionRepository;
 import com.example.urban_signs.Repository.SolicitudTrabajoRepository;
 import com.example.urban_signs.Repository.TrabajosRepository;
 import com.example.urban_signs.Services.SolicitudCotizacionService;
+import com.example.urban_signs.Utils.Enum.CloudinaryFolder;
 import com.example.urban_signs.Utils.Enum.EstadoCotizacion;
+import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -40,10 +43,17 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
         private final CotizacionRepository cotizacionRepository;
         private final ClienteRepository clienteRepository;
         private final TrabajosRepository trabajoRepository;
+        private final CloudinaryService cloudinaryService;
 
         @Override
         @Transactional
         public SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request) {
+                return registrarSolicitud(request, null);
+        }
+
+        @Override
+        @Transactional
+        public SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file) {
                 if (solicitudCotizacionRepository.existsByCodSolicitud(request.getCodSolicitud())) {
                         throw new RuntimeException("El código de solicitud ya existe: " + request.getCodSolicitud());
                 }
@@ -52,6 +62,11 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Cliente no encontrado con ID: " + request.getIdCliente()));
 
+                String archivoUrl = request.getArchivoReferencia();
+                if (file != null && !file.isEmpty()) {
+                        archivoUrl = cloudinaryService.uploadFile(file, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                }
+
                 LocalDate fechaActualLaPaz = LocalDate.now(ZoneId.of("America/La_Paz"));
 
                 SolicitudCotizacionModel solicitud = SolicitudCotizacionModel.builder()
@@ -59,6 +74,8 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .cliente(cliente)
                                 .fechaSolicitud(fechaActualLaPaz)
                                 .estado(SolicitudCotizacion.PENDIENTE)
+                                .origen(OrigenSolicitud.DASHBOARD)
+                                .archivoReferencia(archivoUrl)
                                 .observaciones(request.getObservaciones())
                                 .build();
 
@@ -148,6 +165,8 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .tipoCliente(solicitud.getCliente().getTipoCliente())
                                 .tipoPersonaEmpresa(solicitud.getCliente().getTipoClientePersonaEmpresa())
                                 .estado(solicitud.getEstado())
+                                .origen(solicitud.getOrigen())
+                                .archivoReferencia(solicitud.getArchivoReferencia())
                                 .observaciones(solicitud.getObservaciones())
                                 .trabajos(trabajos)
                                 .build();
@@ -238,6 +257,8 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .cliente(solicitud.getCliente())
                                 .fechaSolicitud(solicitud.getFechaSolicitud())
                                 .estado(solicitud.getEstado())
+                                .origen(solicitud.getOrigen())
+                                .archivoReferencia(solicitud.getArchivoReferencia())
                                 .observaciones(solicitud.getObservaciones())
                                 .trabajos(trabajosDTO)
                                 .build();

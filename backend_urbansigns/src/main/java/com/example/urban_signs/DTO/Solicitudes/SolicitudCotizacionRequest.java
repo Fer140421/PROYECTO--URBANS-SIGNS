@@ -17,5 +17,6 @@ public class SolicitudCotizacionRequest {
     private String codSolicitud;
     private Long idCliente;
     private String observaciones;
+    private String archivoReferencia;
     private List<TrabajoRequest> trabajos;
 }

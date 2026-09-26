@@ -1,6 +1,7 @@
 package com.example.urban_signs.Model;
 
 import java.time.LocalDate;
+import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,11 +30,20 @@ public class SolicitudCotizacionModel {
     @Column(name = "fecha_solicitud")
     private LocalDate fechaSolicitud;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private SolicitudCotizacion estado = SolicitudCotizacion.PENDIENTE;
 
-    @Column(name = "observaciones")
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "origen", length = 20)
+    private OrigenSolicitud origen = OrigenSolicitud.DASHBOARD;
+
+    @Column(name = "archivo_referencia", length = 500)
+    private String archivoReferencia;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
 
 }

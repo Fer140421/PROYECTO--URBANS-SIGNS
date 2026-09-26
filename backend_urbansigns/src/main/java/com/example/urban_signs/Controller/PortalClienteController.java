@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.urban_signs.DTO.Portal.PortalCotizacionResponse;
@@ -32,7 +35,10 @@ import com.example.urban_signs.Repository.ClienteRepository;
 import com.example.urban_signs.Repository.CotizacionRepository;
 import com.example.urban_signs.Repository.PedidosRepository;
 import com.example.urban_signs.Repository.SolicitudCotizacionRepository;
+import com.example.urban_signs.ServicesImpl.CloudinaryService;
+import com.example.urban_signs.Utils.Enum.CloudinaryFolder;
 import com.example.urban_signs.Utils.Enum.EstadoCotizacion;
+import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.EstadoPedido;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 
@@ -48,6 +54,7 @@ public class PortalClienteController {
     private final CotizacionRepository cotizacionRepository;
     private final PedidosRepository pedidosRepository;
     private final SolicitudCotizacionRepository solicitudRepository;
+    private final CloudinaryService cloudinaryService;
 
     /** Devuelve únicamente el perfil vinculado al usuario autenticado. */
     @GetMapping("/me")
@@ -139,13 +146,33 @@ public class PortalClienteController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
     }
 
-    @PostMapping("/solicitudes")
+    @PostMapping(value = "/solicitudes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<Void> crearSolicitud(@RequestBody PortalSolicitudRequest request, Authentication authentication) {
+    public ResponseEntity<Void> crearSolicitudMultipart(
+            @RequestParam("observaciones") String observaciones,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            Authentication authentication) {
+        return registrarSolicitudPortal(observaciones, file, authentication);
+    }
+
+    @PostMapping(value = "/solicitudes", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<Void> crearSolicitudJson(
+            @RequestBody PortalSolicitudRequest request,
+            Authentication authentication) {
+        return registrarSolicitudPortal(request.observaciones(), null, authentication);
+    }
+
+    private ResponseEntity<Void> registrarSolicitudPortal(String observacionesRaw, MultipartFile file, Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
-        String observaciones = request.observaciones() == null ? "" : request.observaciones().trim();
+        String observaciones = observacionesRaw == null ? "" : observacionesRaw.trim();
         if (observaciones.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La descripción de la solicitud es obligatoria");
+        }
+
+        String archivoUrl = null;
+        if (file != null && !file.isEmpty()) {
+            archivoUrl = cloudinaryService.uploadFile(file, CloudinaryFolder.REFERENCIAS_SOLICITUD);
         }
 
         SolicitudCotizacionModel solicitud = SolicitudCotizacionModel.builder()
@@ -153,6 +180,8 @@ public class PortalClienteController {
                 .cliente(cliente)
                 .fechaSolicitud(LocalDate.now())
                 .estado(SolicitudCotizacion.PENDIENTE)
+                .origen(OrigenSolicitud.LANDING)
+                .archivoReferencia(archivoUrl)
                 .observaciones(observaciones)
                 .build();
         solicitudRepository.save(solicitud);
@@ -188,6 +217,7 @@ public class PortalClienteController {
 
     private PortalCotizacionResponse mapearCotizacion(CotizacionModel cotizacion) {
         String obs = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getObservaciones() : "";
+        String ref = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getArchivoReferencia() : null;
         String titulo = extraerTitulo(obs, "Cotización " + cotizacion.getCodCotizacion());
         String servicio = extraerServicio(obs, "Servicio cotizado");
         return new PortalCotizacionResponse(cotizacion.getIdCotizacion(), cotizacion.getCodCotizacion(),
@@ -197,7 +227,8 @@ public class PortalClienteController {
                     case PENDIENTE -> "quoted";
                     case APROBADA -> "accepted";
                     case CADUCADA -> "rejected";
-                }, cotizacion.getCostoTotal());
+                }, cotizacion.getCostoTotal(),
+                ref);
     }
 
     private PortalCotizacionResponse mapearSolicitud(SolicitudCotizacionModel solicitud) {
@@ -218,7 +249,8 @@ public class PortalClienteController {
                 solicitud.getFechaSolicitud(),
                 null,
                 estado,
-                null
+                null,
+                solicitud.getArchivoReferencia()
         );
     }
 

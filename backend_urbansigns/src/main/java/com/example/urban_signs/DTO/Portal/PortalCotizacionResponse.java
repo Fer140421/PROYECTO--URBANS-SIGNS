@@ -12,5 +12,6 @@ public record PortalCotizacionResponse(
         LocalDate fechaEmision,
         LocalDate fechaCaducidad,
         String estado,
-        BigDecimal total) {
+        BigDecimal total,
+        String archivoReferencia) {
 }

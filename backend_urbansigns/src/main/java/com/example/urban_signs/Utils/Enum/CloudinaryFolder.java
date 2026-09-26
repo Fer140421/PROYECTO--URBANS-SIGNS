@@ -6,7 +6,8 @@ public enum CloudinaryFolder {
     MATERIALES_TRABAJO("materiales_trabajo"),
     HERRAMIENTAS_TRABAJO("herramientas_trabajo"),
     TRABAJOS("trabajos"),
-    EVIDENCIAS_ENTREGA("evidencias_entrega");
+    EVIDENCIAS_ENTREGA("evidencias_entrega"),
+    REFERENCIAS_SOLICITUD("referencias_solicitud");
     
     private final String folderName;
     
