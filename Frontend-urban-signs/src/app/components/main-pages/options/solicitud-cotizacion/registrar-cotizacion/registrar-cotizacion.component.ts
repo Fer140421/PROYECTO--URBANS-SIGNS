@@ -30,6 +30,8 @@ interface Solicitud {
   tipoPersonaEmpresa: string;
   fechaSolicitud: string;
   estado: string;
+  origen?: string;
+  archivoReferencia?: string;
   observaciones: string;
   trabajos: TrabajoSolicitud[];
 }

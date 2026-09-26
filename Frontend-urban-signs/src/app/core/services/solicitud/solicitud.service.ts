@@ -12,8 +12,19 @@ export class SolicitudService {
   private apiUrl = `${environment.API_URL}/solicitudes`;
   constructor(private http: HttpClient) { }
 
-  registrarSolicitud(solicitud: any): Observable<any> {
+  registrarSolicitud(solicitud: any, file?: File | null): Observable<any> {
     const context = new HttpContext().set(TRANSACTION_MESSAGE, 'Registrando solicitud de cotización...');
+    if (file) {
+      const formData = new FormData();
+      formData.append('data', new Blob([JSON.stringify(solicitud)], { type: 'application/json' }));
+      formData.append('file', file);
+      return this.http.post<any>(`${this.apiUrl}/registrar`, formData, { context })
+        .pipe(
+          catchError(error => {
+            return throwError(() => new Error('Error al registrar la solicitud.'));
+          })
+        );
+    }
     return this.http.post<any>(`${this.apiUrl}/registrar`, solicitud, { context })
       .pipe(
         catchError(error => {

@@ -63,6 +63,35 @@ export class SolicitudCotizacionComponent {
   isLoading = false;
   cotizacionResultado?: any;
   mostrarErrores = false;
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        this.notificationService.error('Formato de imagen no permitido. Use JPG, PNG, WEBP o GIF.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.notificationService.error('La imagen no debe superar los 5 MB.');
+        return;
+      }
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -364,7 +393,7 @@ export class SolicitudCotizacionComponent {
         }))
       };
       console.log(cotizacionData)
-      this.solicitud.registrarSolicitud(cotizacionData).pipe(
+      this.solicitud.registrarSolicitud(cotizacionData, this.selectedFile).pipe(
         finalize(() => this.isLoading = false)
       ).subscribe({
         next: (result) => {
@@ -538,6 +567,8 @@ export class SolicitudCotizacionComponent {
     this.nuevoCliente = { tipo_cliente: 'normal', email: '' };
     this.nuevaPersona = { nombre: '', ap: '', am: '', ci: '', celular: '', direccion: '' };
     this.nuevaEmpresa = { razon_social: '', nit: '', direccion: '', telefono: '' };
+    this.selectedFile = null;
+    this.imagePreview = null;
 
     this.autoSeleccionarFechas();
 

@@ -20,7 +20,7 @@
         <!-- Contenido del Modal -->
         <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
             <!-- Información General -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 <!-- Estado -->
                 <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
                     <div class="flex items-center mb-3">
@@ -37,6 +37,22 @@
                         'bg-gray-100 text-gray-800 border-gray-400': solicitud?.estado === 'CANCELADO'
                     }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
                         {{ solicitud?.estado }}
+                    </span>
+                </div>
+
+                <!-- Origen -->
+                <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
+                             [ngClass]="solicitud?.origen === 'LANDING' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'">
+                            <i class="ph text-xl" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg">Origen</h3>
+                    </div>
+                    <span [ngClass]="solicitud?.origen === 'LANDING' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-blue-100 text-blue-800 border-blue-400'"
+                          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold border-2">
+                        <i class="ph text-base" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
+                        {{ solicitud?.origen === 'LANDING' ? 'Web / Landing' : 'Dashboard' }}
                     </span>
                 </div>
 
@@ -147,6 +163,50 @@
                 </h3>
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ solicitud?.observaciones }}</p>
+                </div>
+            </div>
+
+            <!-- Foto / Archivo de Referencia -->
+            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm" *ngIf="solicitud?.archivoReferencia">
+                <div class="flex items-center justify-between border-b-2 border-yellow-400 pb-3 mb-4">
+                    <h3 class="font-bold text-gray-900 flex items-center text-xl">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
+                            <i class="ph ph-image text-gray-900 text-xl"></i>
+                        </div>
+                        Foto / Archivo de Referencia
+                    </h3>
+                    <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-900 rounded-lg font-semibold text-xs border border-yellow-300 transition-colors">
+                        <i class="ph ph-arrow-square-out text-sm"></i>
+                        Ver tamaño completo
+                    </a>
+                </div>
+                <div class="flex flex-col md:flex-row items-center gap-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                       class="group relative block overflow-hidden rounded-xl border-2 border-gray-300 hover:border-yellow-400 transition-all shadow-md max-w-sm flex-shrink-0 bg-white">
+                        <img [src]="solicitud?.archivoReferencia" alt="Foto de referencia del cliente"
+                             class="h-52 w-auto max-w-full object-contain mx-auto group-hover:scale-105 transition-transform duration-200 p-1" />
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                            <span class="inline-flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                <i class="ph ph-magnifying-glass-plus text-base"></i> Ampliar
+                            </span>
+                        </div>
+                    </a>
+                    <div class="flex-1 space-y-2 text-sm text-gray-600">
+                        <p class="font-bold text-gray-800 text-base flex items-center gap-2">
+                            <i class="ph ph-info text-yellow-600"></i> Archivo adjunto a la solicitud
+                        </p>
+                        <p class="leading-relaxed">
+                            Esta imagen fue adjuntada como referencia del diseño, letrero o especificación solicitada por el cliente.
+                        </p>
+                        <div class="pt-2">
+                            <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 rounded-lg font-medium text-xs shadow-sm transition-colors">
+                                <i class="ph ph-arrow-square-out text-sm"></i>
+                                Abrir imagen en una pestaña nueva
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
