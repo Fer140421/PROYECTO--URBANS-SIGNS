@@ -230,7 +230,7 @@
                                 Trabajo {{i + 1}}
                             </h4>
                             <span class="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg border border-gray-300 font-medium">
-                                {{ getNombreTrabajo(trabajo.idTrabajo) }}
+                                {{ trabajo.nombreTrabajo || getNombreTrabajo(trabajo.idTrabajo) || 'Trabajo solicitado' }}
                             </span>
                         </div>
 
@@ -283,9 +283,10 @@
 
                 <!-- Mensaje cuando no hay trabajos -->
                 <div *ngIf="!solicitud?.trabajos || solicitud.trabajos.length === 0"
-                    class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                    <i class="ph ph-hammer text-5xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500 text-lg">No hay trabajos registrados</p>
+                    class="text-center py-10 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                    <i class="ph ph-hammer text-5xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-700 font-semibold text-base">No hay trabajos desglosados en el catálogo</p>
+                    <p class="text-gray-500 text-sm mt-1 max-w-md mx-auto">Revisa la sección de Observaciones arriba para consultar las medidas y especificaciones enviadas por el cliente.</p>
                 </div>
             </div>
 

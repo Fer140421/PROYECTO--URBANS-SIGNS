@@ -65,8 +65,9 @@ export class VisualizarComponent {
   }
 
   getNombreTrabajo(idTrabajo: number): string {
-    const trabajo = this.listTrabajos.find(t => t.id === idTrabajo);
-    return trabajo ? trabajo.nombre : 'Trabajo no encontrado';
+    if (!idTrabajo) return '';
+    const trabajo = this.listTrabajos.find(t => t.id === idTrabajo || t.idTrabajo === idTrabajo);
+    return trabajo ? trabajo.nombre : '';
   }
 
   getAreaTotal(): number {

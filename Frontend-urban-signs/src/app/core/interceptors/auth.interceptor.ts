@@ -7,7 +7,7 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, map, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, finalize, map, switchMap, take, throwError, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginService } from '../services/login/login.service';
 
@@ -32,6 +32,7 @@ function isRefreshExcluded(url: string): boolean {
 }
 
 function clearSessionAndRedirect(error: unknown, loginService: LoginService, router: Router) {
+  isRefreshing = false;
   loginService.clearCurrentUser();
   void router.navigate(['/login']);
   return throwError(() => error);
@@ -52,7 +53,7 @@ function retryAfterRefresh(
 ) {
   return retryRequest(request, next).pipe(
     catchError(retryError => {
-      if (retryError instanceof HttpErrorResponse && retryError.status === 401) {
+      if (retryError instanceof HttpErrorResponse && (retryError.status === 401 || retryError.status === 403)) {
         return clearSessionAndRedirect(retryError, loginService, router);
       }
 
@@ -90,10 +91,15 @@ export function authInterceptor(request: HttpRequest<unknown>, next: HttpHandler
         return refreshState$.pipe(
           filter((refreshSucceeded): refreshSucceeded is boolean => refreshSucceeded !== null),
           take(1),
+          timeout(8000),
           switchMap(refreshSucceeded => refreshSucceeded
             ? retryAfterRefresh(request, next, loginService, router)
             : clearSessionAndRedirect(error, loginService, router)
-          )
+          ),
+          catchError(waitError => {
+            isRefreshing = false;
+            return clearSessionAndRedirect(waitError, loginService, router);
+          })
         );
       }
 
@@ -107,6 +113,7 @@ export function authInterceptor(request: HttpRequest<unknown>, next: HttpHandler
       });
 
       return next(refreshRequest).pipe(
+        timeout(10000),
         filter((event): event is HttpResponse<RefreshResponse> => event instanceof HttpResponse),
         take(1),
         map(response => {
@@ -124,6 +131,11 @@ export function authInterceptor(request: HttpRequest<unknown>, next: HttpHandler
           isRefreshing = false;
           refreshState$.next(true);
           return retryAfterRefresh(request, next, loginService, router);
+        }),
+        finalize(() => {
+          if (isRefreshing) {
+            isRefreshing = false;
+          }
         })
       );
     })
