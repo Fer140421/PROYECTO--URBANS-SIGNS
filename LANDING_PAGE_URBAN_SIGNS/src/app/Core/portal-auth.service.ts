@@ -26,7 +26,7 @@ export class PortalAuthService {
 
   login(email: string, password: string): Observable<ClientUser> {
     const version = ++this.generation;
-    return this.http.post<void>(`${API_URL}/v1/user/login`, {
+    return this.http.post<void>(`${API_URL}/portal/auth/login`, {
       userAcces: email.trim(), passwordAcces: password
     }, { withCredentials: true }).pipe(
       switchMap(() => this.loadProfile(version)),
@@ -44,7 +44,7 @@ export class PortalAuthService {
   }
 
   refreshSession(): Observable<void> {
-    return this.http.post<void>(`${API_URL}/users/refresh`, {}, { withCredentials: true });
+    return this.http.post<void>(`${API_URL}/portal/auth/refresh`, {}, { withCredentials: true });
   }
 
   clearSession(): void {
@@ -55,7 +55,7 @@ export class PortalAuthService {
   logout(): Observable<void> {
     this.setLoggedOut(true);
     this.clearSession();
-    return this.http.post<void>(`${API_URL}/users/logout`, {}, { withCredentials: true }).pipe(
+    return this.http.post<void>(`${API_URL}/portal/auth/logout`, {}, { withCredentials: true }).pipe(
       catchError(() => of(void 0))
     );
   }

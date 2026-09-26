@@ -6,7 +6,7 @@ import { PortalAuthService } from '../portal-auth.service';
 
 let refreshInFlight$: Observable<void> | null = null;
 
-const excludedPaths = ['/v1/user/login', '/users/refresh', '/users/logout'];
+const excludedPaths = ['/v1/user/login', '/users/refresh', '/users/logout', '/portal/auth/', '/portal/servicios'];
 
 export const portalSessionInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(PortalAuthService);

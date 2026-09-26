@@ -11,13 +11,29 @@ export interface ClientUser {
 }
 
 export interface QuoteItem {
+  id?: number;
   service: string;
   description: string;
   quantity: number;
-  dimensions: string;
+  dimensions?: string;
+  base?: number;
+  altura?: number;
+  areaTotal?: number;
+  unitPrice?: number;
+  subtotal?: number;
+}
+
+export interface CreateQuoteTrabajoPayload {
+  idTrabajo?: number;
+  servicio: string;
+  cantidad: number;
+  base: number;
+  altura: number;
+  descripcion?: string;
 }
 
 export interface Quote {
+  numericId: number;
   id: string;
   title: string;
   service: string;

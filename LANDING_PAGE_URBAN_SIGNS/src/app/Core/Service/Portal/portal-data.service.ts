@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, Observable, catchError, map, tap } from 'rxjs';
-import { ClientOrder, PublicService, Quote } from '../../Models/client-portal.model';
+import { ClientOrder, CreateQuoteTrabajoPayload, PublicService, Quote } from '../../Models/client-portal.model';
 import { API_URL } from '../../config/api.config';
 
 /** Datos del portal obtenidos exclusivamente para el cliente de la cookie actual. */
@@ -65,30 +65,57 @@ export class PortalDataService {
   }
 
   createQuote(
-    payload: { title: string; service: string; items: Quote['items']; notes: string },
+    payload: {
+      title: string;
+      service?: string;
+      items?: Quote['items'];
+      trabajos?: CreateQuoteTrabajoPayload[];
+      notes?: string;
+    },
     file?: File | null
   ): Observable<void> {
-    const details = [
-      payload.title,
-      `Servicio solicitado: ${payload.service}.`,
-      ...payload.items.map(item => `${item.quantity} × ${item.description} (${item.dimensions}).`),
-      payload.notes
+    let trabajos: CreateQuoteTrabajoPayload[] = payload.trabajos ?? [];
+    if (trabajos.length === 0 && payload.items && payload.items.length > 0) {
+      trabajos = payload.items.map(item => ({
+        idTrabajo: item.id,
+        servicio: item.service || payload.service || 'Servicio solicitado',
+        cantidad: item.quantity || 1,
+        base: item.base || 0,
+        altura: item.altura || 0,
+        descripcion: item.description || ''
+      }));
+    }
+
+    const formattedObservations = [
+      payload.title ? `Proyecto: ${payload.title}` : '',
+      payload.service ? `Servicio principal: ${payload.service}.` : '',
+      ...trabajos.map(t => {
+        const dims = (t.base && t.altura) ? `${t.base}m × ${t.altura}m (${(t.base * t.altura).toFixed(2)} m²)` : '';
+        return `${t.cantidad} × ${t.servicio}${dims ? ` [${dims}]` : ''}${t.descripcion ? ` - ${t.descripcion}` : ''}`;
+      }),
+      payload.notes ? `Observaciones: ${payload.notes}` : ''
     ].filter(Boolean).join('\n');
+
+    const dataObj = {
+      titulo: payload.title,
+      observaciones: formattedObservations,
+      trabajos: trabajos
+    };
 
     if (file) {
       const formData = new FormData();
-      formData.append('observaciones', details);
+      formData.append('data', JSON.stringify(dataObj));
+      formData.append('observaciones', formattedObservations);
       formData.append('file', file);
       return this.http.post<void>(`${API_URL}/portal/solicitudes`, formData, { withCredentials: true });
     }
 
-    return this.http.post<void>(`${API_URL}/portal/solicitudes`, {
-      observaciones: details
-    }, { withCredentials: true });
+    return this.http.post<void>(`${API_URL}/portal/solicitudes`, dataObj, { withCredentials: true });
   }
 
   private toQuote(quote: PortalQuoteDto): Quote {
     return {
+      numericId: quote.id,
       id: quote.codigo,
       title: quote.titulo,
       service: quote.servicio,
@@ -98,7 +125,18 @@ export class PortalDataService {
       status: quote.estado,
       estimatedTotal: quote.total,
       notes: quote.descripcion,
-      items: quote.items ?? [],
+      items: (quote.items ?? []).map(item => ({
+        id: item.id,
+        service: item.servicio ?? 'Trabajo solicitado',
+        description: item.descripcion || '',
+        quantity: item.cantidad ?? 1,
+        dimensions: (item.base != null && item.altura != null) ? `${item.base}m × ${item.altura}m` : undefined,
+        base: item.base,
+        altura: item.altura,
+        areaTotal: item.areaTotal,
+        unitPrice: item.costoUnitario,
+        subtotal: item.subtotal
+      })),
       referenceImage: quote.archivoReferencia
     };
   }
@@ -119,6 +157,18 @@ export class PortalDataService {
   }
 }
 
+interface PortalCotizacionItemDto {
+  id?: number;
+  servicio?: string;
+  descripcion?: string;
+  cantidad?: number;
+  base?: number;
+  altura?: number;
+  areaTotal?: number;
+  costoUnitario?: number;
+  subtotal?: number;
+}
+
 interface PortalQuoteDto {
   id: number;
   codigo: string;
@@ -129,7 +179,7 @@ interface PortalQuoteDto {
   fechaCaducidad?: string;
   estado: Quote['status'];
   total?: number;
-  items?: Quote['items'];
+  items?: PortalCotizacionItemDto[];
   archivoReferencia?: string;
 }
 
