@@ -1,6 +1,8 @@
 package com.example.urban_signs.Controller;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,24 +25,32 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.urban_signs.DTO.Portal.PortalCotizacionItemResponse;
 import com.example.urban_signs.DTO.Portal.PortalCotizacionResponse;
 import com.example.urban_signs.DTO.Portal.PortalPedidoResponse;
 import com.example.urban_signs.DTO.Portal.PortalPerfilResponse;
 import com.example.urban_signs.DTO.Portal.PortalSolicitudRequest;
+import com.example.urban_signs.DTO.Portal.PortalSolicitudTrabajoRequest;
 import com.example.urban_signs.Model.ClienteModel;
 import com.example.urban_signs.Model.CotizacionModel;
+import com.example.urban_signs.Model.CotizacionTrabajoModel;
 import com.example.urban_signs.Model.PedidoModel;
 import com.example.urban_signs.Model.SolicitudCotizacionModel;
+import com.example.urban_signs.Model.SolicitudTrabajoModel;
+import com.example.urban_signs.Model.TrabajosModel;
 import com.example.urban_signs.Repository.ClienteRepository;
 import com.example.urban_signs.Repository.CotizacionRepository;
 import com.example.urban_signs.Repository.PedidosRepository;
 import com.example.urban_signs.Repository.SolicitudCotizacionRepository;
+import com.example.urban_signs.Repository.SolicitudTrabajoRepository;
+import com.example.urban_signs.Repository.TrabajosRepository;
 import com.example.urban_signs.ServicesImpl.CloudinaryService;
 import com.example.urban_signs.Utils.Enum.CloudinaryFolder;
 import com.example.urban_signs.Utils.Enum.EstadoCotizacion;
 import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.EstadoPedido;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -54,7 +64,10 @@ public class PortalClienteController {
     private final CotizacionRepository cotizacionRepository;
     private final PedidosRepository pedidosRepository;
     private final SolicitudCotizacionRepository solicitudRepository;
+    private final SolicitudTrabajoRepository solicitudTrabajoRepository;
+    private final TrabajosRepository trabajosRepository;
     private final CloudinaryService cloudinaryService;
+    private final ObjectMapper objectMapper;
 
     /** Devuelve únicamente el perfil vinculado al usuario autenticado. */
     @GetMapping("/me")
@@ -149,10 +162,21 @@ public class PortalClienteController {
     @PostMapping(value = "/solicitudes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> crearSolicitudMultipart(
-            @RequestParam("observaciones") String observaciones,
+            @RequestParam(value = "data", required = false) String dataJson,
+            @RequestParam(value = "observaciones", required = false) String observacionesRaw,
             @RequestParam(value = "file", required = false) MultipartFile file,
             Authentication authentication) {
-        return registrarSolicitudPortal(observaciones, file, authentication);
+        PortalSolicitudRequest request = null;
+        if (dataJson != null && !dataJson.isBlank()) {
+            try {
+                request = objectMapper.readValue(dataJson, PortalSolicitudRequest.class);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato de datos de solicitud inválido", e);
+            }
+        } else {
+            request = new PortalSolicitudRequest(null, observacionesRaw, null);
+        }
+        return registrarSolicitudPortal(request, file, authentication);
     }
 
     @PostMapping(value = "/solicitudes", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -160,14 +184,22 @@ public class PortalClienteController {
     public ResponseEntity<Void> crearSolicitudJson(
             @RequestBody PortalSolicitudRequest request,
             Authentication authentication) {
-        return registrarSolicitudPortal(request.observaciones(), null, authentication);
+        return registrarSolicitudPortal(request, null, authentication);
     }
 
-    private ResponseEntity<Void> registrarSolicitudPortal(String observacionesRaw, MultipartFile file, Authentication authentication) {
+    private ResponseEntity<Void> registrarSolicitudPortal(PortalSolicitudRequest request, MultipartFile file, Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
-        String observaciones = observacionesRaw == null ? "" : observacionesRaw.trim();
-        if (observaciones.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La descripción de la solicitud es obligatoria");
+
+        String observaciones = request != null && request.observaciones() != null ? request.observaciones().trim() : "";
+        String titulo = request != null && request.titulo() != null ? request.titulo().trim() : "";
+
+        String textoObservaciones = observaciones;
+        if (!titulo.isBlank() && !textoObservaciones.contains(titulo)) {
+            textoObservaciones = titulo + (!textoObservaciones.isBlank() ? ("\n" + textoObservaciones) : "");
+        }
+
+        if (textoObservaciones.isBlank() && (request == null || request.trabajos() == null || request.trabajos().isEmpty())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La descripción o los trabajos de la solicitud son obligatorios");
         }
 
         String archivoUrl = null;
@@ -175,16 +207,94 @@ public class PortalClienteController {
             archivoUrl = cloudinaryService.uploadFile(file, CloudinaryFolder.REFERENCIAS_SOLICITUD);
         }
 
+        LocalDate fechaActualLaPaz = LocalDate.now(ZoneId.of("America/La_Paz"));
+
         SolicitudCotizacionModel solicitud = SolicitudCotizacionModel.builder()
                 .codSolicitud(generarCodigoSolicitud())
                 .cliente(cliente)
-                .fechaSolicitud(LocalDate.now())
+                .fechaSolicitud(fechaActualLaPaz)
                 .estado(SolicitudCotizacion.PENDIENTE)
                 .origen(OrigenSolicitud.LANDING)
                 .archivoReferencia(archivoUrl)
-                .observaciones(observaciones)
+                .observaciones(textoObservaciones)
                 .build();
-        solicitudRepository.save(solicitud);
+        solicitud = solicitudRepository.save(solicitud);
+
+        // Guardar trabajos en solicitud_trabajo para que aparezcan en el dashboard con medidas completas
+        if (request != null && request.trabajos() != null && !request.trabajos().isEmpty()) {
+            List<SolicitudTrabajoModel> trabajosGuardar = new ArrayList<>();
+            for (PortalSolicitudTrabajoRequest item : request.trabajos()) {
+                TrabajosModel trabajo = null;
+                if (item.idTrabajo() != null) {
+                    trabajo = trabajosRepository.findById(item.idTrabajo()).orElse(null);
+                }
+                if (trabajo == null && item.servicio() != null && !item.servicio().isBlank()) {
+                    trabajo = trabajosRepository.findFirstByNombreIgnoreCase(item.servicio().trim())
+                            .or(() -> trabajosRepository.findFirstByNombreContainingIgnoreCase(item.servicio().trim()))
+                            .orElse(null);
+                }
+                if (trabajo == null) {
+                    List<TrabajosModel> activos = trabajosRepository.findByEstadoTrueOrderByIdTrabajoAsc();
+                    if (!activos.isEmpty()) {
+                        trabajo = activos.get(0);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay servicios o trabajos disponibles en el catálogo");
+                    }
+                }
+
+                int cantidad = (item.cantidad() != null && item.cantidad() > 0) ? item.cantidad() : 1;
+                BigDecimal base = item.base() != null ? item.base() : BigDecimal.ZERO;
+                BigDecimal altura = item.altura() != null ? item.altura() : BigDecimal.ZERO;
+                BigDecimal areaTotal = (base != null && altura != null) ? base.multiply(altura) : BigDecimal.ZERO;
+
+                String desc = item.descripcion() != null ? item.descripcion().trim() : "";
+                if (desc.isBlank() && !titulo.isBlank()) {
+                    desc = titulo;
+                }
+
+                SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
+                        .solicitud(solicitud)
+                        .trabajo(trabajo)
+                        .cantidad(cantidad)
+                        .base(base)
+                        .altura(altura)
+                        .areaTotal(areaTotal)
+                        .descripcion(desc)
+                        .build();
+
+                trabajosGuardar.add(nuevoTrabajo);
+            }
+
+            solicitudTrabajoRepository.saveAll(trabajosGuardar);
+        } else if (!textoObservaciones.isBlank()) {
+            // Retrocompatibilidad: asegurar que siempre exista al menos 1 trabajo asociado en el dashboard
+            String servicioNombre = extraerServicio(textoObservaciones, null);
+            TrabajosModel trabajo = null;
+            if (servicioNombre != null) {
+                trabajo = trabajosRepository.findFirstByNombreIgnoreCase(servicioNombre)
+                        .or(() -> trabajosRepository.findFirstByNombreContainingIgnoreCase(servicioNombre))
+                        .orElse(null);
+            }
+            if (trabajo == null) {
+                List<TrabajosModel> activos = trabajosRepository.findByEstadoTrueOrderByIdTrabajoAsc();
+                if (!activos.isEmpty()) {
+                    trabajo = activos.get(0);
+                }
+            }
+            if (trabajo != null) {
+                SolicitudTrabajoModel itemDefecto = SolicitudTrabajoModel.builder()
+                        .solicitud(solicitud)
+                        .trabajo(trabajo)
+                        .cantidad(1)
+                        .base(BigDecimal.ZERO)
+                        .altura(BigDecimal.ZERO)
+                        .areaTotal(BigDecimal.ZERO)
+                        .descripcion(titulo.isBlank() ? "Solicitud registrada desde la web" : titulo)
+                        .build();
+                solicitudTrabajoRepository.save(itemDefecto);
+            }
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -219,27 +329,106 @@ public class PortalClienteController {
         String obs = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getObservaciones() : "";
         String ref = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getArchivoReferencia() : null;
         String titulo = extraerTitulo(obs, "Cotización " + cotizacion.getCodCotizacion());
-        String servicio = extraerServicio(obs, "Servicio cotizado");
-        return new PortalCotizacionResponse(cotizacion.getIdCotizacion(), cotizacion.getCodCotizacion(),
-                titulo, servicio,
-                obs, cotizacion.getFechaEmision(), cotizacion.getFechaCaducado(),
+
+        List<PortalCotizacionItemResponse> items = new ArrayList<>();
+        if (cotizacion.getTrabajos() != null && !cotizacion.getTrabajos().isEmpty()) {
+            for (CotizacionTrabajoModel ct : cotizacion.getTrabajos()) {
+                String serv = "Servicio cotizado";
+                String desc = null;
+                if (ct.getSolicitudTrabajo() != null) {
+                    if (ct.getSolicitudTrabajo().getTrabajo() != null) {
+                        serv = ct.getSolicitudTrabajo().getTrabajo().getNombre();
+                    }
+                    desc = ct.getSolicitudTrabajo().getDescripcion();
+                }
+                BigDecimal base = ct.getBase() != null ? ct.getBase()
+                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getBase() : null);
+                BigDecimal altura = ct.getAltura() != null ? ct.getAltura()
+                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getAltura() : null);
+                BigDecimal area = ct.getAreaTotal() != null ? ct.getAreaTotal()
+                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getAreaTotal() : null);
+                Integer cant = ct.getCantidad() != null ? ct.getCantidad()
+                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getCantidad() : 1);
+
+                items.add(new PortalCotizacionItemResponse(
+                        ct.getIdCotizacionTrabajo(),
+                        serv,
+                        desc,
+                        cant,
+                        base,
+                        altura,
+                        area,
+                        ct.getCostoUnitario(),
+                        ct.getSubtotal()));
+            }
+        } else if (cotizacion.getSolicitud() != null && cotizacion.getSolicitud().getIdSolicitud() != null) {
+            List<SolicitudTrabajoModel> solicitudTrabajos = solicitudTrabajoRepository
+                    .findBySolicitudId(cotizacion.getSolicitud().getIdSolicitud());
+            for (SolicitudTrabajoModel st : solicitudTrabajos) {
+                items.add(new PortalCotizacionItemResponse(
+                        st.getIdSolicitudTrabajo(),
+                        st.getTrabajo() != null ? st.getTrabajo().getNombre() : "Servicio solicitado",
+                        st.getDescripcion(),
+                        st.getCantidad() != null ? st.getCantidad() : 1,
+                        st.getBase(),
+                        st.getAltura(),
+                        st.getAreaTotal(),
+                        null,
+                        null));
+            }
+        }
+
+        String primerServicio = !items.isEmpty() ? items.get(0).servicio() : null;
+        String servicio = primerServicio != null ? primerServicio : extraerServicio(obs, "Servicio cotizado");
+
+        return new PortalCotizacionResponse(
+                cotizacion.getIdCotizacion(),
+                cotizacion.getCodCotizacion(),
+                titulo,
+                servicio,
+                obs,
+                cotizacion.getFechaEmision(),
+                cotizacion.getFechaCaducado(),
                 switch (cotizacion.getEstado()) {
                     case PENDIENTE -> "quoted";
                     case APROBADA -> "accepted";
                     case CADUCADA -> "rejected";
-                }, cotizacion.getCostoTotal(),
-                ref);
+                },
+                cotizacion.getCostoTotal(),
+                ref,
+                items);
     }
 
     private PortalCotizacionResponse mapearSolicitud(SolicitudCotizacionModel solicitud) {
         String obs = solicitud.getObservaciones() != null ? solicitud.getObservaciones() : "";
         String titulo = extraerTitulo(obs, "Solicitud " + solicitud.getCodSolicitud());
-        String servicio = extraerServicio(obs, "Servicio solicitado");
+
+        List<PortalCotizacionItemResponse> items = new ArrayList<>();
+        if (solicitud.getIdSolicitud() != null) {
+            List<SolicitudTrabajoModel> solicitudTrabajos = solicitudTrabajoRepository
+                    .findBySolicitudId(solicitud.getIdSolicitud());
+            for (SolicitudTrabajoModel st : solicitudTrabajos) {
+                items.add(new PortalCotizacionItemResponse(
+                        st.getIdSolicitudTrabajo(),
+                        st.getTrabajo() != null ? st.getTrabajo().getNombre() : "Servicio solicitado",
+                        st.getDescripcion(),
+                        st.getCantidad() != null ? st.getCantidad() : 1,
+                        st.getBase(),
+                        st.getAltura(),
+                        st.getAreaTotal(),
+                        null,
+                        null));
+            }
+        }
+
+        String primerServicio = !items.isEmpty() ? items.get(0).servicio() : null;
+        String servicio = primerServicio != null ? primerServicio : extraerServicio(obs, "Servicio solicitado");
         String estado = switch (solicitud.getEstado()) {
             case CANCELADA -> "rejected";
             case COTIZADA -> "quoted";
             default -> "review";
         };
+
         return new PortalCotizacionResponse(
                 solicitud.getIdSolicitud(),
                 solicitud.getCodSolicitud(),
@@ -250,8 +439,8 @@ public class PortalClienteController {
                 null,
                 estado,
                 null,
-                solicitud.getArchivoReferencia()
-        );
+                solicitud.getArchivoReferencia(),
+                items);
     }
 
     private String extraerTitulo(String observaciones, String defecto) {

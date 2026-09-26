@@ -33,7 +33,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            String token = getTokenFromCookie(request);
+            String token = resolveToken(request);
 
             if (token != null && jwtUtils.isTokenValid(token)) {
 
@@ -70,13 +70,44 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
-    private String getTokenFromCookie(HttpServletRequest request) {
+    private String resolveToken(HttpServletRequest request) {
+        // 1. Soporte para header Authorization: Bearer <token>
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String bearer = authHeader.substring(7).trim();
+            if (!bearer.isEmpty()) {
+                return bearer;
+            }
+        }
+
+        // 2. Discriminación inteligente de cookies por ruta
+        String path = request.getRequestURI();
+        if (path != null && path.startsWith("/portal/")) {
+            // Petición al Portal del Cliente: prioridad a portal-jwt-token
+            String portalToken = getCookieValue(request, com.example.urban_signs.config.JwtCookieService.PORTAL_ACCESS_TOKEN_COOKIE);
+            if (portalToken != null && !portalToken.isEmpty()) {
+                return portalToken;
+            }
+            return getCookieValue(request, com.example.urban_signs.config.JwtCookieService.ACCESS_TOKEN_COOKIE);
+        }
+
+        // Petición al Dashboard o general: prioridad a jwt-token (personal / admin)
+        String adminToken = getCookieValue(request, com.example.urban_signs.config.JwtCookieService.ACCESS_TOKEN_COOKIE);
+        if (adminToken != null && !adminToken.isEmpty()) {
+            return adminToken;
+        }
+
+        // Fallback a portal cookie para endpoints compartidos si existe
+        return getCookieValue(request, com.example.urban_signs.config.JwtCookieService.PORTAL_ACCESS_TOKEN_COOKIE);
+    }
+
+    private String getCookieValue(HttpServletRequest request, String cookieName) {
         if (request.getCookies() == null) {
             return null;
         }
 
         for (Cookie cookie : request.getCookies()) {
-            if ("jwt-token".equals(cookie.getName())) {
+            if (cookieName.equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }

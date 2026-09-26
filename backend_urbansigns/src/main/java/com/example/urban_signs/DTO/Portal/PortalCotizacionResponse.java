@@ -2,6 +2,7 @@ package com.example.urban_signs.DTO.Portal;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public record PortalCotizacionResponse(
         Long id,
@@ -13,5 +14,6 @@ public record PortalCotizacionResponse(
         LocalDate fechaCaducidad,
         String estado,
         BigDecimal total,
-        String archivoReferencia) {
+        String archivoReferencia,
+        List<PortalCotizacionItemResponse> items) {
 }

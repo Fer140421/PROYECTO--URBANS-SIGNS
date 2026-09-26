@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtCookieService {
     public static final String ACCESS_TOKEN_COOKIE = "jwt-token";
     public static final String REFRESH_TOKEN_COOKIE = "refresh-token";
+    public static final String PORTAL_ACCESS_TOKEN_COOKIE = "portal-jwt-token";
+    public static final String PORTAL_REFRESH_TOKEN_COOKIE = "portal-refresh-token";
 
     @Value("${jwt.time.expiration}")
     private long accessExpirationMs;
@@ -33,6 +35,19 @@ public class JwtCookieService {
     public void limpiarTokens(HttpServletResponse response) {
         agregarCookie(response, ACCESS_TOKEN_COOKIE, "", 0);
         agregarCookie(response, REFRESH_TOKEN_COOKIE, "", 0);
+    }
+
+    public void agregarPortalAccessToken(HttpServletResponse response, String token) {
+        agregarCookie(response, PORTAL_ACCESS_TOKEN_COOKIE, token, accessExpirationMs / 1000);
+    }
+
+    public void agregarPortalRefreshToken(HttpServletResponse response, String token) {
+        agregarCookie(response, PORTAL_REFRESH_TOKEN_COOKIE, token, refreshExpirationMs / 1000);
+    }
+
+    public void limpiarPortalTokens(HttpServletResponse response) {
+        agregarCookie(response, PORTAL_ACCESS_TOKEN_COOKIE, "", 0);
+        agregarCookie(response, PORTAL_REFRESH_TOKEN_COOKIE, "", 0);
     }
 
     private void agregarCookie(HttpServletResponse response, String nombre, String valor, long maxAge) {

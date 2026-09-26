@@ -9,10 +9,15 @@ import org.springframework.data.repository.query.Param;
 import com.example.urban_signs.Model.TrabajosModel;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TrabajosRepository extends JpaRepository<TrabajosModel, Long> {
 
         List<TrabajosModel> findByEstadoTrueOrderByIdTrabajoAsc();
+
+        Optional<TrabajosModel> findFirstByNombreIgnoreCase(String nombre);
+
+        Optional<TrabajosModel> findFirstByNombreContainingIgnoreCase(String nombre);
 
         @Query(value = "SELECT * FROM trabajos " +
                    "WHERE (:nombre IS NULL OR LOWER(nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
