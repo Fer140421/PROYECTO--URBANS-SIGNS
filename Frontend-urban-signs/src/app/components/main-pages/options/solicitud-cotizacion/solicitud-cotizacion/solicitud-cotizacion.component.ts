@@ -133,7 +133,8 @@ export class SolicitudCotizacionComponent {
       base: [0, [Validators.required, Validators.min(0.1)]],
       altura: [0, [Validators.required, Validators.min(0.1)]],
       area_total: [{ value: 0, disabled: true }],
-      descripcion: ['', Validators.required]
+      descripcion: ['', Validators.required],
+      material: ['']
     });
   }
 
@@ -389,7 +390,8 @@ export class SolicitudCotizacionComponent {
           cantidad: trabajo.cantidad,
           base: trabajo.base,
           altura: trabajo.altura,
-          descripcion: trabajo.descripcion
+          descripcion: trabajo.descripcion,
+          material: trabajo.material ? trabajo.material.trim() : ''
         }))
       };
       console.log(cotizacionData)

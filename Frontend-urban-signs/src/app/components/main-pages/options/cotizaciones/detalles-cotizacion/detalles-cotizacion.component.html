@@ -153,29 +153,33 @@
                             </div>
                         </div>
 
-                        <!-- Materiales -->
-                        <div class="mt-5" *ngIf="trabajo.materiales && trabajo.materiales.length > 0">
-                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-                                <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                                    <i class="ph ph-package text-blue-600 mr-2"></i>
-                                    Materiales ({{ trabajo.materiales.length }})
-                                </h5>
-                                <div class="space-y-2">
-                                    <div *ngFor="let material of trabajo.materiales" 
-                                         class="bg-white rounded-lg p-3 flex justify-between items-center border border-blue-200">
-                                        <div>
-                                            <p class="font-medium text-gray-900">{{ material.nombreMaterial }}</p>
-                                        </div>
-                                    </div>
+                        <!-- Material / Acabado Libre -->
+                        <div class="mt-4" *ngIf="trabajo.material">
+                            <div class="bg-indigo-50 border border-indigo-200 p-3.5 rounded-lg flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0">
+                                    <i class="ph ph-package text-lg"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-indigo-900 uppercase tracking-wide block">Material / Acabado Acordado</span>
+                                    <span class="text-sm font-semibold text-slate-800">{{ trabajo.material }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sin materiales -->
-                        <div *ngIf="!trabajo.materiales || trabajo.materiales.length === 0" 
-                             class="mt-5 bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
-                            <i class="ph ph-package text-gray-400 text-2xl mb-2"></i>
-                            <p class="text-gray-500">No hay materiales asignados a este trabajo</p>
+                        <!-- Materiales históricos si existieran -->
+                        <div class="mt-4" *ngIf="trabajo.materiales && trabajo.materiales.length > 0">
+                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+                                <h5 class="font-semibold text-gray-900 mb-2 flex items-center text-xs">
+                                    <i class="ph ph-package text-blue-600 mr-2"></i>
+                                    Materiales registrados ({{ trabajo.materiales.length }})
+                                </h5>
+                                <div class="space-y-1.5">
+                                    <div *ngFor="let material of trabajo.materiales" 
+                                         class="bg-white rounded-lg p-2 flex justify-between items-center border border-blue-200 text-sm">
+                                        <p class="font-medium text-gray-900">{{ material.nombreMaterial }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -200,8 +204,8 @@
                         <p class="text-2xl font-bold text-gray-900">{{ cotizacion?.trabajos?.length || 0 }}</p>
                     </div>
                     <div class="bg-white/90 rounded-lg p-4 text-center">
-                        <p class="text-sm text-gray-600 font-semibold mb-1">Total Materiales</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ getTotalMateriales() }}</p>
+                        <p class="text-sm text-gray-600 font-semibold mb-1">Estado</p>
+                        <p class="text-xl font-bold text-gray-900">{{ cotizacion?.estado || 'PENDIENTE' }}</p>
                     </div>
                     <div class="bg-gray-900 rounded-lg p-4 text-center">
                         <p class="text-sm text-yellow-400 font-semibold mb-1">COSTO TOTAL</p>

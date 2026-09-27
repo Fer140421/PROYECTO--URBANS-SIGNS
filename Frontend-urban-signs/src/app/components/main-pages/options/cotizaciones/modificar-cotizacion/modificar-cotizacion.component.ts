@@ -136,6 +136,7 @@ export class ModificarCotizacionComponent {
       cantidad: [1, [Validators.required, Validators.min(1), this.validarNumeroEntero.bind(this)]],
       costoUnitario: [0, [Validators.required, Validators.min(0), this.validarDecimal.bind(this)]],
       subtotal: [0],
+      material: [''],
       materiales: this.fb.array([])
     });
   }
@@ -220,7 +221,8 @@ export class ModificarCotizacionComponent {
           nombreTrabajo: trabajo.nombreTrabajo,
           cantidad: trabajo.cantidad,
           costoUnitario: trabajo.costoUnitario,
-          subtotal: trabajo.subtotal
+          subtotal: trabajo.subtotal,
+          material: trabajo.material || ''
         });
 
         const materialesArray = trabajoForm.get('materiales') as FormArray;
@@ -375,24 +377,14 @@ export class ModificarCotizacionComponent {
       return;
     }
 
-    // Validar que al menos un trabajo tenga materiales
-    const tieneMateriales = this.trabajos.controls.some(trabajo => {
-      const materiales = (trabajo as FormGroup).get('materiales') as FormArray;
-      return materiales.length > 0;
-    });
-
-    if (!tieneMateriales) {
-      this.mensajeError = 'Al menos un trabajo debe tener materiales asociados';
-      return;
-    }
-
     const request = {
       trabajos: this.trabajos.value.map((t: any) => ({
         idCotizacionTrabajo: t.idCotizacionTrabajo,
         cantidad: t.cantidad,
         costoUnitario: t.costoUnitario,
         subtotal: t.cantidad * t.costoUnitario,
-        materiales: t.materiales.map((m: any) => ({
+        material: t.material ? t.material.trim() : '',
+        materiales: (t.materiales || []).map((m: any) => ({
           idMaterial: Number(m.idMaterial)
         }))
       }))

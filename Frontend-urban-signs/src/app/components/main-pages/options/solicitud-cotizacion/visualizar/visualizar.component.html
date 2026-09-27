@@ -261,11 +261,17 @@
                             </div>
                         </div>
 
-                        <!-- Descripción Adicional -->
-                        <div class="mb-4" *ngIf="trabajo.descripcion">
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <!-- Descripción y Material -->
+                        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="trabajo.descripcion || trabajo.material">
+                            <div class="bg-white rounded-lg p-4 border border-gray-200" *ngIf="trabajo.descripcion">
                                 <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Descripción</label>
                                 <p class="text-gray-700 leading-relaxed">{{ trabajo.descripcion }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border border-amber-200 bg-amber-50/40" *ngIf="trabajo.material">
+                                <label class="block text-xs font-semibold text-amber-800 mb-2 uppercase tracking-wide flex items-center gap-1">
+                                    <i class="ph ph-package text-base text-amber-600"></i> Material / Acabado Sugerido
+                                </label>
+                                <p class="text-gray-800 font-medium leading-relaxed">{{ trabajo.material }}</p>
                             </div>
                         </div>
 

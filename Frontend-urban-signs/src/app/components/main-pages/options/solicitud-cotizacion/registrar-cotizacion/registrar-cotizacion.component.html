@@ -152,11 +152,6 @@
               <span class="text-xl font-bold">{{solicitud?.trabajos?.length || 0}}</span>
             </div>
 
-            <div class="flex justify-between items-center pb-3 border-b border-slate-700">
-              <span class="text-slate-300">Materiales totales</span>
-              <span class="text-xl font-bold text-blue-400">{{getTotalMateriales()}}</span>
-            </div>
-
             <div class="flex justify-between items-center">
               <span class="text-slate-300">Costo Total</span>
               <span class="text-3xl font-bold text-yellow-400">Bs {{getCostoTotal()}}</span>
@@ -209,7 +204,12 @@
                   </div>
                   <div>
                     <h3 class="font-bold text-slate-900 text-xl">{{trabajo.trabajoNombre || 'Trabajo ' + (i + 1)}}</h3>
-                    <p class="text-sm text-slate-800">{{getMaterialesDelTrabajo(i) || 0}} material(es) agregado(s)</p>
+                    <p class="text-sm text-slate-800" *ngIf="getMaterialTrabajo(i)">
+                      <span class="font-medium">Material:</span> {{getMaterialTrabajo(i)}}
+                    </p>
+                    <p class="text-sm text-slate-800/70" *ngIf="!getMaterialTrabajo(i)">
+                      Material sin especificar
+                    </p>
                   </div>
                 </div>
                 <div class="bg-white/90 backdrop-blur px-4 py-2 rounded-xl border-2 border-white">
@@ -306,81 +306,31 @@
                 </div>
               </div>
 
-              <!-- SECCIÓN DESTACADA: Materiales -->
+              <!-- SECCIÓN DESTACADA: Material / Especificación Técnica Libre -->
               <div
                 class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-lg border-2 border-indigo-200 p-6">
-                <div class="flex justify-between items-center mb-5">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
-                      <i class="ph ph-package text-xl text-white"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-slate-900">Materiales Requeridos</h4>
-                      <p class="text-xs text-slate-600">Agregue los materiales necesarios *</p>
-                    </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                    <i class="ph ph-package text-xl text-white"></i>
                   </div>
-                  <button type="button" (click)="agregarMaterialATrabajo(i)"
-                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:scale-105">
-                    <i class="ph ph-plus-circle text-lg"></i>
-                    Agregar
-                  </button>
-                </div>
-
-                <!-- Lista de Materiales -->
-                <div class="space-y-3">
-                  <div *ngFor="let material of getMaterialesDelTrabajo(i); let j = index"
-                    class="bg-white rounded-xl p-4 border-2 border-indigo-200 shadow-sm hover:shadow-md transition-shadow">
-
-                    <div class="flex items-center gap-4">
-                      <!-- Número -->
-                      <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span class="font-bold text-indigo-700">{{j + 1}}</span>
-                      </div>
-
-                      <!-- Selector de Material -->
-                      <div class="flex-1">
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Material</label>
-                        <select [(ngModel)]="material.id_material" [ngModelOptions]="{standalone: true}"
-                          (change)="onMaterialChange(i, j)"
-                          class="w-full px-4 py-2.5 border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 font-medium">
-                          <option value="">Seleccione material</option>
-                          <option *ngFor="let mat of getMaterialesDisponiblesParaTrabajo(i, j)" [value]="mat.idMaterial"
-                            [disabled]="!mat.idMaterial">
-                            {{mat.nombre}} {{mat.caracteristica}}
-                          </option>
-                        </select>
-
-                        <!-- Contador de materiales disponibles -->
-                        <div class="flex items-center gap-2 mt-1">
-                          <div *ngIf="getMaterialesDisponiblesParaTrabajo(i, j).length > 0"
-                            class="text-xs text-green-600 font-medium flex items-center gap-1">
-                            <i class="ph ph-check-circle"></i>
-                            {{getMaterialesDisponiblesParaTrabajo(i, j).length}} disponible(s)
-                          </div>
-                          <div *ngIf="getMaterialesDisponiblesParaTrabajo(i, j).length === 0"
-                            class="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <i class="ph ph-x-circle"></i>
-                            No hay materiales disponibles
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Botón eliminar -->
-                      <button type="button" (click)="removerMaterialDeTrabajo(i, j)"
-                        *ngIf="getMaterialesDelTrabajo(i) && getMaterialesDelTrabajo(i).length > 1"
-                        class="w-10 h-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors flex items-center justify-center flex-shrink-0">
-                        <i class="ph ph-trash text-lg"></i>
-                      </button>
-                    </div>
+                  <div>
+                    <h4 class="font-bold text-slate-900">Material / Especificación Técnica</h4>
+                    <p class="text-xs text-slate-600">Material o acabado acordado con el cliente (Opcional)</p>
                   </div>
                 </div>
 
-                <!-- Estado vacío -->
-                <div *ngIf="getMaterialesDelTrabajo(i)?.length === 0"
-                  class="text-center py-12 border-2 border-dashed border-indigo-300 rounded-xl bg-indigo-50/50">
-                  <i class="ph ph-package text-5xl text-indigo-300 mb-3"></i>
-                  <p class="text-indigo-600 font-medium">No hay materiales agregados</p>
-                  <p class="text-sm text-indigo-500 mt-1">Haga clic en "Agregar" para añadir materiales</p>
+                <div class="bg-white rounded-xl p-4 border-2 border-indigo-200 shadow-sm">
+                  <label class="block text-xs font-bold text-indigo-800 mb-2">
+                    MATERIAL O ACABADO (LIBRE)
+                  </label>
+                  <input type="text"
+                    [value]="getMaterialTrabajo(i)"
+                    (input)="actualizarMaterialTrabajo(i, $any($event.target).value)"
+                    placeholder="Ej: Acrílico blanco 3mm, Lona Front 13oz, Vinil reflectivo 3M..."
+                    class="w-full px-4 py-3 border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-slate-900 font-medium text-sm" />
+                  <p class="text-xs text-slate-500 mt-2">
+                    Puede ingresar libremente el tipo de material, espesor o especificación técnica sin depender de un inventario cerrado.
+                  </p>
                 </div>
               </div>
 
