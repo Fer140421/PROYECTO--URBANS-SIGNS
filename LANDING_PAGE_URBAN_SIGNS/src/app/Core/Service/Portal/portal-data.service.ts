@@ -64,6 +64,10 @@ export class PortalDataService {
     );
   }
 
+  cancelQuote(id: number): Observable<void> {
+    return this.http.put<void>(`${API_URL}/portal/solicitudes/${id}/cancelar`, {}, { withCredentials: true });
+  }
+
   createQuote(
     payload: {
       title: string;
@@ -74,33 +78,7 @@ export class PortalDataService {
     },
     file?: File | null
   ): Observable<void> {
-    let trabajos: CreateQuoteTrabajoPayload[] = payload.trabajos ?? [];
-    if (trabajos.length === 0 && payload.items && payload.items.length > 0) {
-      trabajos = payload.items.map(item => ({
-        idTrabajo: item.id,
-        servicio: item.service || payload.service || 'Servicio solicitado',
-        cantidad: item.quantity || 1,
-        base: item.base || 0,
-        altura: item.altura || 0,
-        descripcion: item.description || ''
-      }));
-    }
-
-    const formattedObservations = [
-      payload.title ? `Proyecto: ${payload.title}` : '',
-      payload.service ? `Servicio principal: ${payload.service}.` : '',
-      ...trabajos.map(t => {
-        const dims = (t.base && t.altura) ? `${t.base}m × ${t.altura}m (${(t.base * t.altura).toFixed(2)} m²)` : '';
-        return `${t.cantidad} × ${t.servicio}${dims ? ` [${dims}]` : ''}${t.descripcion ? ` - ${t.descripcion}` : ''}`;
-      }),
-      payload.notes ? `Observaciones: ${payload.notes}` : ''
-    ].filter(Boolean).join('\n');
-
-    const dataObj = {
-      titulo: payload.title,
-      observaciones: formattedObservations,
-      trabajos: trabajos
-    };
+    const { dataObj, formattedObservations } = this.buildQuoteRequest(payload);
 
     if (file) {
       const formData = new FormData();
@@ -113,9 +91,79 @@ export class PortalDataService {
     return this.http.post<void>(`${API_URL}/portal/solicitudes`, dataObj, { withCredentials: true });
   }
 
+  updateQuote(
+    id: number,
+    payload: {
+      title: string;
+      service?: string;
+      items?: Quote['items'];
+      trabajos?: CreateQuoteTrabajoPayload[];
+      notes?: string;
+    },
+    file?: File | null
+  ): Observable<void> {
+    const { dataObj, formattedObservations } = this.buildQuoteRequest(payload);
+
+    if (file) {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(dataObj));
+      formData.append('observaciones', formattedObservations);
+      formData.append('file', file);
+      return this.http.put<void>(`${API_URL}/portal/solicitudes/${id}`, formData, { withCredentials: true });
+    }
+
+    return this.http.put<void>(`${API_URL}/portal/solicitudes/${id}`, dataObj, { withCredentials: true });
+  }
+
+  private buildQuoteRequest(payload: {
+    title: string;
+    service?: string;
+    items?: Quote['items'];
+    trabajos?: CreateQuoteTrabajoPayload[];
+    notes?: string;
+  }) {
+    let trabajos: CreateQuoteTrabajoPayload[] = payload.trabajos ?? [];
+    if (trabajos.length === 0 && payload.items && payload.items.length > 0) {
+      trabajos = payload.items.map(item => ({
+        idTrabajo: item.idTrabajo || item.id,
+        servicio: item.service || payload.service || 'Servicio solicitado',
+        cantidad: item.quantity || 1,
+        base: item.base || 0,
+        altura: item.altura || 0,
+        descripcion: item.description || '',
+        material: item.material || ''
+      }));
+    }
+
+    const formattedObservations = [
+      payload.title ? `Proyecto: ${payload.title}` : '',
+      payload.service ? `Servicio principal: ${payload.service}.` : '',
+      ...trabajos.map(t => {
+        const dims = (t.base && t.altura) ? `${t.base}m × ${t.altura}m (${(t.base * t.altura).toFixed(2)} m²)` : '';
+        const mat = t.material ? ` (Material: ${t.material})` : '';
+        return `${t.cantidad} × ${t.servicio}${dims ? ` [${dims}]` : ''}${mat}${t.descripcion ? ` - ${t.descripcion}` : ''}`;
+      }),
+      payload.notes ? `Observaciones: ${payload.notes}` : ''
+    ].filter(Boolean).join('\n');
+
+    const dataObj = {
+      titulo: payload.title,
+      observaciones: formattedObservations,
+      trabajos: trabajos
+    };
+
+    return { dataObj, formattedObservations };
+  }
+
   private toQuote(quote: PortalQuoteDto): Quote {
+    const status = quote.estado;
+    const isReview = status === 'review' || status === 'draft' || status === 'pending';
+    const isQuoted = status === 'quoted';
+
     return {
       numericId: quote.id,
+      idSolicitud: quote.idSolicitud ?? quote.id,
+      idCotizacion: quote.idCotizacion,
       id: quote.codigo,
       title: quote.titulo,
       service: quote.servicio,
@@ -125,10 +173,14 @@ export class PortalDataService {
       status: quote.estado,
       estimatedTotal: quote.total,
       notes: quote.descripcion,
+      editable: quote.editable !== undefined ? quote.editable : isReview,
+      cancelable: quote.cancelable !== undefined ? quote.cancelable : (isReview || isQuoted),
       items: (quote.items ?? []).map(item => ({
         id: item.id,
+        idTrabajo: item.idTrabajo,
         service: item.servicio ?? 'Trabajo solicitado',
         description: item.descripcion || '',
+        material: item.material || '',
         quantity: item.cantidad ?? 1,
         dimensions: (item.base != null && item.altura != null) ? `${item.base}m × ${item.altura}m` : undefined,
         base: item.base,
@@ -159,8 +211,10 @@ export class PortalDataService {
 
 interface PortalCotizacionItemDto {
   id?: number;
+  idTrabajo?: number;
   servicio?: string;
   descripcion?: string;
+  material?: string;
   cantidad?: number;
   base?: number;
   altura?: number;
@@ -171,6 +225,8 @@ interface PortalCotizacionItemDto {
 
 interface PortalQuoteDto {
   id: number;
+  idSolicitud?: number;
+  idCotizacion?: number;
   codigo: string;
   titulo: string;
   servicio: string;
@@ -179,6 +235,8 @@ interface PortalQuoteDto {
   fechaCaducidad?: string;
   estado: Quote['status'];
   total?: number;
+  editable?: boolean;
+  cancelable?: boolean;
   items?: PortalCotizacionItemDto[];
   archivoReferencia?: string;
 }

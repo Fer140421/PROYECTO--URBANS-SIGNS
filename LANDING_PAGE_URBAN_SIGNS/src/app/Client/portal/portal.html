@@ -38,9 +38,125 @@
 
       <div>
         @if (view() === 'quotes') {
+          <!-- Cabecera de la sección con botón de Nueva Solicitud -->
+          <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 class="text-xl sm:text-2xl font-bold text-white">Mis Cotizaciones y Solicitudes</h2>
+              <p class="text-xs sm:text-sm text-gray-400 mt-0.5">Controla tus requerimientos, solicita nuevos trabajos o gestiona cotizaciones emitidas.</p>
+            </div>
+            <button type="button" (click)="openCreateModal()"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FFD000] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#ffdc40] shadow-lg shadow-[#FFD000]/10 flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nueva Solicitud
+            </button>
+          </div>
+
+          <!-- Barra de búsqueda y filtros -->
+          <div class="mb-5 space-y-3">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </span>
+              <input type="text" [(ngModel)]="searchQuery"
+                     placeholder="Buscar por código, título de proyecto o servicio..."
+                     class="w-full rounded-xl border border-gray-800 bg-gray-900/60 pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition" />
+            </div>
+
+            <!-- Tabs de filtro por estado -->
+            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+              <button type="button" (click)="statusFilter.set('all')"
+                      [class.bg-[#FFD000]]="statusFilter() === 'all'"
+                      [class.text-black]="statusFilter() === 'all'"
+                      [class.bg-gray-900/60]="statusFilter() !== 'all'"
+                      [class.text-gray-400]="statusFilter() !== 'all'"
+                      [class.border]="true"
+                      [class.border-gray-800]="statusFilter() !== 'all'"
+                      [class.border-[#FFD000]]="statusFilter() === 'all'"
+                      class="rounded-xl px-3.5 py-1.5 transition flex items-center gap-1.5 hover:text-white">
+                Todas <span class="rounded-full px-1.5 py-0.2 text-[10px] font-bold" [class.bg-black/20]="statusFilter() === 'all'" [class.bg-gray-800]="statusFilter() !== 'all'">{{ data.quotes().length }}</span>
+              </button>
+
+              <button type="button" (click)="statusFilter.set('review')"
+                      [class.bg-amber-500/20]="statusFilter() === 'review'"
+                      [class.text-amber-300]="statusFilter() === 'review'"
+                      [class.border-amber-500/40]="statusFilter() === 'review'"
+                      [class.bg-gray-900/60]="statusFilter() !== 'review'"
+                      [class.text-gray-400]="statusFilter() !== 'review'"
+                      [class.border]="true"
+                      [class.border-gray-800]="statusFilter() !== 'review'"
+                      class="rounded-xl px-3.5 py-1.5 transition flex items-center gap-1.5 hover:text-amber-300">
+                En revisión <span class="rounded-full px-1.5 py-0.2 text-[10px] font-bold bg-amber-500/20 text-amber-300">{{ countReview() }}</span>
+              </button>
+
+              <button type="button" (click)="statusFilter.set('quoted')"
+                      [class.bg-blue-500/20]="statusFilter() === 'quoted'"
+                      [class.text-blue-300]="statusFilter() === 'quoted'"
+                      [class.border-blue-500/40]="statusFilter() === 'quoted'"
+                      [class.bg-gray-900/60]="statusFilter() !== 'quoted'"
+                      [class.text-gray-400]="statusFilter() !== 'quoted'"
+                      [class.border]="true"
+                      [class.border-gray-800]="statusFilter() !== 'quoted'"
+                      class="rounded-xl px-3.5 py-1.5 transition flex items-center gap-1.5 hover:text-blue-300">
+                Listas para aprobar <span class="rounded-full px-1.5 py-0.2 text-[10px] font-bold bg-blue-500/20 text-blue-300">{{ countQuoted() }}</span>
+              </button>
+
+              <button type="button" (click)="statusFilter.set('accepted')"
+                      [class.bg-emerald-500/20]="statusFilter() === 'accepted'"
+                      [class.text-emerald-300]="statusFilter() === 'accepted'"
+                      [class.border-emerald-500/40]="statusFilter() === 'accepted'"
+                      [class.bg-gray-900/60]="statusFilter() !== 'accepted'"
+                      [class.text-gray-400]="statusFilter() !== 'accepted'"
+                      [class.border]="true"
+                      [class.border-gray-800]="statusFilter() !== 'accepted'"
+                      class="rounded-xl px-3.5 py-1.5 transition flex items-center gap-1.5 hover:text-emerald-300">
+                Aprobadas <span class="rounded-full px-1.5 py-0.2 text-[10px] font-bold bg-emerald-500/20 text-emerald-300">{{ countAccepted() }}</span>
+              </button>
+
+              <button type="button" (click)="statusFilter.set('closed')"
+                      [class.bg-red-500/20]="statusFilter() === 'closed'"
+                      [class.text-red-300]="statusFilter() === 'closed'"
+                      [class.border-red-500/40]="statusFilter() === 'closed'"
+                      [class.bg-gray-900/60]="statusFilter() !== 'closed'"
+                      [class.text-gray-400]="statusFilter() !== 'closed'"
+                      [class.border]="true"
+                      [class.border-gray-800]="statusFilter() !== 'closed'"
+                      class="rounded-xl px-3.5 py-1.5 transition flex items-center gap-1.5 hover:text-red-300">
+                Caducadas / Canceladas <span class="rounded-full px-1.5 py-0.2 text-[10px] font-bold bg-red-500/20 text-red-300">{{ countClosed() }}</span>
+              </button>
+            </div>
+          </div>
+
+          @if (countQuoted() > 0 && !data.isLoading()) {
+            <div class="mb-5 rounded-2xl border border-[#FFD000]/40 bg-gradient-to-r from-[#FFD000]/15 via-amber-500/10 to-transparent p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-black/40">
+              <div class="flex items-start gap-3.5">
+                <div class="rounded-xl bg-[#FFD000]/20 p-2.5 text-[#FFD000] border border-[#FFD000]/30 shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    ¡Tienes {{ countQuoted() === 1 ? '1 cotización lista' : countQuoted() + ' cotizaciones listas' }} para tu aprobación!
+                    <span class="inline-block h-2 w-2 rounded-full bg-[#FFD000] animate-ping"></span>
+                  </h3>
+                  <p class="text-xs sm:text-sm text-gray-300 mt-0.5">
+                    El taller técnico ha preparado tu presupuesto formal con vigencia de 15 días. Revisa los costos y aprueba tu cotización para programar el inicio del trabajo.
+                  </p>
+                </div>
+              </div>
+              <button type="button" (click)="statusFilter.set('quoted')"
+                      class="self-stretch sm:self-auto shrink-0 rounded-xl bg-[#FFD000] px-4 py-2 text-xs font-bold text-black transition hover:bg-[#ffdc40] flex items-center justify-center gap-1.5 shadow-md">
+                Ver cotizaciones listas ↗
+              </button>
+            </div>
+          }
+
           @if (data.isLoading()) {
-            <div class="rounded-2xl border border-gray-800 bg-gray-900/20 p-8 text-center text-gray-400">
-              <p>Cargando cotizaciones...</p>
+            <div class="rounded-2xl border border-gray-800 bg-gray-900/20 p-12 text-center text-gray-400">
+              <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-[#FFD000] border-t-transparent mb-3"></div>
+              <p>Cargando tus solicitudes y cotizaciones...</p>
             </div>
           } @else if (data.error()) {
             <div class="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-200">
@@ -48,10 +164,10 @@
             </div>
           } @else {
             <section class="space-y-4">
-              @for (quote of data.quotes(); track quote.id) {
+              @for (quote of filteredQuotes(); track quote.id) {
                 <article class="rounded-2xl border border-gray-800 bg-gray-900/40 p-5 sm:flex sm:items-center sm:justify-between hover:border-gray-700 transition">
                   <div class="flex-1 pr-4">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                       <p class="text-sm font-semibold text-[#FFD000]">{{ quote.id }} · {{ quote.service }}</p>
                       @if (quote.status === 'quoted') {
                         <span class="inline-flex items-center gap-1 rounded-full bg-[#FFD000]/20 px-2 py-0.5 text-xs font-bold text-[#FFD000]">
@@ -59,13 +175,13 @@
                         </span>
                       }
                     </div>
-                    <h2 class="mt-1 text-lg font-bold">{{ quote.title }}</h2>
+                    <h2 class="mt-1 text-lg font-bold text-white">{{ quote.title }}</h2>
                     <p class="mt-1 text-sm text-gray-400">Fecha: {{ quote.createdAt || quote.updatedAt }}</p>
                     @if (quote.estimatedTotal) {
                       <p class="mt-1 text-sm font-semibold text-white">Total Cotizado: <span class="text-[#FFD000]">Bs. {{ quote.estimatedTotal }}</span></p>
                     }
                     @if (quote.items && quote.items.length > 0) {
-                      <p class="mt-1 text-xs text-gray-400">{{ quote.items.length }} {{ quote.items.length === 1 ? 'ítem incluido' : 'ítems incluidos' }}</p>
+                      <p class="mt-1 text-xs text-gray-400">{{ quote.items.length }} {{ quote.items.length === 1 ? 'trabajo incluido' : 'trabajos incluidos' }}</p>
                     }
                     @if (quote.referenceImage) {
                       <div class="mt-2 flex items-center gap-2">
@@ -74,34 +190,76 @@
                       </div>
                     }
                   </div>
+
                   <div class="mt-4 sm:mt-0 flex flex-col sm:items-end gap-2.5">
-                    <span class="rounded-full px-3 py-1 text-xs font-semibold text-center"
+                    <!-- Badge del Estado -->
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold text-center border"
                           [class.bg-blue-500/20]="quote.status === 'quoted'"
                           [class.text-blue-400]="quote.status === 'quoted'"
-                          [class.border]="true"
                           [class.border-blue-500/30]="quote.status === 'quoted'"
                           [class.bg-emerald-500/20]="quote.status === 'accepted'"
                           [class.text-emerald-400]="quote.status === 'accepted'"
                           [class.border-emerald-500/30]="quote.status === 'accepted'"
+                          [class.bg-stone-500/20]="quote.status === 'expired'"
+                          [class.text-stone-300]="quote.status === 'expired'"
+                          [class.border-stone-500/30]="quote.status === 'expired'"
+                          [class.bg-rose-500/20]="quote.status === 'cancelled'"
+                          [class.text-rose-400]="quote.status === 'cancelled'"
+                          [class.border-rose-500/30]="quote.status === 'cancelled'"
                           [class.bg-red-500/20]="quote.status === 'rejected'"
                           [class.text-red-400]="quote.status === 'rejected'"
                           [class.border-red-500/30]="quote.status === 'rejected'"
-                          [class.bg-amber-500/20]="quote.status === 'review'"
-                          [class.text-amber-400]="quote.status === 'review'"
-                          [class.border-amber-500/30]="quote.status === 'review'">
+                          [class.bg-amber-500/20]="quote.status === 'review' || quote.status === 'pending'"
+                          [class.text-amber-400]="quote.status === 'review' || quote.status === 'pending'"
+                          [class.border-amber-500/30]="quote.status === 'review' || quote.status === 'pending'">
                       {{ getStatusLabel(quote.status) }}
                     </span>
-                    <button type="button" (click)="openQuoteDetail(quote)"
-                            class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gray-800 px-4 py-2 text-xs font-bold text-white transition hover:bg-[#FFD000] hover:text-black">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                      Ver Detalle
-                    </button>
+
+                    <!-- Acciones rápidas -->
+                    <div class="flex flex-wrap items-center gap-2">
+                      @if (quote.status === 'quoted') {
+                        <button type="button" (click)="openApprovalModal(quote)"
+                                title="Aprobar cotización formal"
+                                class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#FFD000] px-3.5 py-2 text-xs font-bold text-black transition hover:bg-[#ffdc40] shadow-md shadow-[#FFD000]/20">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                          Aprobar Cotización
+                        </button>
+                      }
+
+                      @if (quote.editable) {
+                        <button type="button" (click)="openEditModal(quote)"
+                                title="Editar solicitud"
+                                class="inline-flex items-center justify-center gap-1 rounded-xl border border-gray-700 bg-gray-800/80 px-3 py-2 text-xs font-bold text-gray-200 transition hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-500/40">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                          Editar
+                        </button>
+                      }
+
+                      @if (quote.cancelable) {
+                        <button type="button" (click)="cancelQuote(quote)"
+                                title="Cancelar solicitud"
+                                class="inline-flex items-center justify-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-300 transition hover:bg-red-500/20">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                          Cancelar
+                        </button>
+                      }
+
+                      <button type="button" (click)="openQuoteDetail(quote)"
+                              class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gray-800 px-4 py-2 text-xs font-bold text-white transition hover:bg-[#FFD000] hover:text-black">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        Ver Detalle
+                      </button>
+                    </div>
                   </div>
                 </article>
               } @empty {
                 <div class="rounded-2xl border border-gray-800 bg-gray-900/20 p-12 text-center">
-                  <p class="text-gray-400">No tienes cotizaciones registradas actualmente.</p>
-                  <a routerLink="/landing/cotizaciones" class="mt-4 inline-block rounded-xl bg-[#FFD000] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#ffdc40]">Solicitar cotización</a>
+                  <p class="text-gray-400">
+                    {{ searchQuery() || statusFilter() !== 'all' ? 'No se encontraron resultados para los filtros seleccionados.' : 'No tienes solicitudes o cotizaciones registradas actualmente.' }}
+                  </p>
+                  <button type="button" (click)="openCreateModal()" class="mt-4 inline-block rounded-xl bg-[#FFD000] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#ffdc40]">
+                    Registrar nueva solicitud
+                  </button>
                 </div>
               }
             </section>
@@ -139,14 +297,25 @@
             </section>
           }
         } @else {
-          <section class="max-w-2xl rounded-3xl border border-gray-800 bg-gray-900/40 p-6"><h2 class="text-xl font-bold">Mi perfil</h2><dl class="mt-6 grid gap-5 sm:grid-cols-2"><div><dt class="text-sm text-gray-500">Nombre</dt><dd class="mt-1 font-medium">{{ user()?.name }}</dd></div><div><dt class="text-sm text-gray-500">Correo</dt><dd class="mt-1 font-medium">{{ user()?.email }}</dd></div><div><dt class="text-sm text-gray-500">Empresa</dt><dd class="mt-1 font-medium">{{ user()?.company }}</dd></div><div><dt class="text-sm text-gray-500">Teléfono</dt><dd class="mt-1 font-medium">{{ user()?.phone }}</dd></div></dl><button (click)="logout()" class="mt-8 rounded-xl border border-red-400/40 px-5 py-3 font-semibold text-red-300 transition hover:bg-red-400/10">Cerrar sesión</button></section>
+          <section class="max-w-2xl rounded-3xl border border-gray-800 bg-gray-900/40 p-6">
+            <h2 class="text-xl font-bold">Mi perfil</h2>
+            <dl class="mt-6 grid gap-5 sm:grid-cols-2">
+              <div><dt class="text-sm text-gray-500">Nombre</dt><dd class="mt-1 font-medium">{{ user()?.name }}</dd></div>
+              <div><dt class="text-sm text-gray-500">Correo</dt><dd class="mt-1 font-medium">{{ user()?.email }}</dd></div>
+              <div><dt class="text-sm text-gray-500">Empresa</dt><dd class="mt-1 font-medium">{{ user()?.company }}</dd></div>
+              <div><dt class="text-sm text-gray-500">Teléfono</dt><dd class="mt-1 font-medium">{{ user()?.phone }}</dd></div>
+            </dl>
+            <button (click)="logout()" class="mt-8 rounded-xl border border-red-400/40 px-5 py-3 font-semibold text-red-300 transition hover:bg-red-400/10">Cerrar sesión</button>
+          </section>
         }
       </div>
     </div>
   </div>
 </main>
 
-<!-- Modal de Detalle de Cotización -->
+<!-- ======================================================== -->
+<!-- MODAL DE DETALLE DE COTIZACIÓN                           -->
+<!-- ======================================================== -->
 @if (isDetailModalOpen() && selectedQuote(); as quote) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
        (click)="closeQuoteDetail()">
@@ -160,20 +329,25 @@
             <span class="rounded-lg bg-[#FFD000]/15 px-3 py-1 text-xs font-bold text-[#FFD000] tracking-wide border border-[#FFD000]/30">
               {{ quote.id }}
             </span>
-            <span class="rounded-lg px-3 py-1 text-xs font-semibold"
+            <span class="rounded-lg px-3 py-1 text-xs font-semibold border"
                   [class.bg-blue-500/20]="quote.status === 'quoted'"
                   [class.text-blue-400]="quote.status === 'quoted'"
-                  [class.border]="true"
                   [class.border-blue-500/30]="quote.status === 'quoted'"
                   [class.bg-emerald-500/20]="quote.status === 'accepted'"
                   [class.text-emerald-400]="quote.status === 'accepted'"
                   [class.border-emerald-500/30]="quote.status === 'accepted'"
+                  [class.bg-stone-500/20]="quote.status === 'expired'"
+                  [class.text-stone-300]="quote.status === 'expired'"
+                  [class.border-stone-500/30]="quote.status === 'expired'"
+                  [class.bg-rose-500/20]="quote.status === 'cancelled'"
+                  [class.text-rose-400]="quote.status === 'cancelled'"
+                  [class.border-rose-500/30]="quote.status === 'cancelled'"
                   [class.bg-red-500/20]="quote.status === 'rejected'"
                   [class.text-red-400]="quote.status === 'rejected'"
                   [class.border-red-500/30]="quote.status === 'rejected'"
-                  [class.bg-amber-500/20]="quote.status === 'review'"
-                  [class.text-amber-400]="quote.status === 'review'"
-                  [class.border-amber-500/30]="quote.status === 'review'">
+                  [class.bg-amber-500/20]="quote.status === 'review' || quote.status === 'pending'"
+                  [class.text-amber-400]="quote.status === 'review' || quote.status === 'pending'"
+                  [class.border-amber-500/30]="quote.status === 'review' || quote.status === 'pending'">
               {{ getStatusLabel(quote.status) }}
             </span>
           </div>
@@ -193,9 +367,8 @@
       <div class="overflow-y-auto space-y-6 pt-5 pr-1 flex-1">
         <!-- Alerta de feedback de acción -->
         @if (actionFeedback(); as fb) {
-          <div class="rounded-xl p-4 text-sm font-medium"
+          <div class="rounded-xl p-4 text-sm font-medium border"
                [class.bg-emerald-500/10]="fb.type === 'success'"
-               [class.border]="true"
                [class.border-emerald-500/30]="fb.type === 'success'"
                [class.text-emerald-300]="fb.type === 'success'"
                [class.bg-red-500/10]="fb.type === 'error'"
@@ -278,6 +451,11 @@
                     <tr class="hover:bg-gray-800/30 transition">
                       <td class="py-3 px-4">
                         <p class="font-semibold text-white">{{ item.service }}</p>
+                        @if (item.material) {
+                          <span class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded bg-[#FFD000]/15 text-[#FFD000] border border-[#FFD000]/30">
+                            Material: {{ item.material }}
+                          </span>
+                        }
                         @if (item.description && item.description !== item.service) {
                           <p class="text-xs text-gray-400 mt-0.5">{{ item.description }}</p>
                         }
@@ -327,12 +505,12 @@
 
         <!-- Bloque informativo según el estado -->
         <div>
-          @if (quote.status === 'review') {
+          @if (quote.status === 'review' || quote.status === 'pending') {
             <div class="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200 flex items-start gap-3">
               <span class="text-xl">⏳</span>
               <div>
                 <p class="font-bold text-amber-300">Solicitud en revisión técnica</p>
-                <p class="text-xs text-amber-300/80 mt-0.5">Nuestro equipo está cubicando materiales y costos. Cuando esté cotizada, podrás aprobarla directamente desde este panel.</p>
+                <p class="text-xs text-amber-300/80 mt-0.5">Nuestro equipo está cubicando materiales y costos. Mientras esté en revisión puedes <strong class="text-amber-200">editar las medidas</strong> o <strong class="text-amber-200">cancelar la solicitud</strong> si tus necesidades cambiaron.</p>
               </div>
             </div>
           } @else if (quote.status === 'quoted') {
@@ -340,7 +518,7 @@
               <span class="text-xl">✨</span>
               <div>
                 <p class="font-bold text-[#FFD000]">Cotización lista para tu aprobación</p>
-                <p class="text-xs text-gray-300 mt-0.5">Puedes aprobar la cotización directamente con el botón <strong class="text-[#FFD000]">Aceptar Cotización</strong> para programar el inicio de trabajos.</p>
+                <p class="text-xs text-gray-300 mt-0.5">Esta cotización tiene una vigencia de 15 días. Puedes aprobarla para programar la producción, o rechazarla/cancelarla si decides no continuar.</p>
               </div>
             </div>
           } @else if (quote.status === 'accepted') {
@@ -351,12 +529,28 @@
                 <p class="text-xs text-emerald-300/80 mt-0.5">¡Tu proyecto ha sido aceptado! Puedes revisar su progreso de fabricación en la pestaña <strong class="text-white">Mis pedidos</strong>.</p>
               </div>
             </div>
+          } @else if (quote.status === 'expired') {
+            <div class="rounded-2xl border border-stone-500/30 bg-stone-500/10 p-4 text-sm text-stone-200 flex items-start gap-3">
+              <span class="text-xl">⚠️</span>
+              <div>
+                <p class="font-bold text-stone-300">Cotización caducada</p>
+                <p class="text-xs text-stone-300/80 mt-0.5">Esta cotización superó el plazo máximo de vigencia de 15 días y ha caducado sin que se confirmara el inicio del pedido. Si deseas reactivar o actualizar los precios, registra una nueva solicitud.</p>
+              </div>
+            </div>
+          } @else if (quote.status === 'cancelled') {
+            <div class="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200 flex items-start gap-3">
+              <span class="text-xl">🚫</span>
+              <div>
+                <p class="font-bold text-rose-300">Solicitud cancelada</p>
+                <p class="text-xs text-rose-300/80 mt-0.5">Esta solicitud fue cancelada y no procederá a la línea de producción. Puedes crear una nueva solicitud en cualquier momento.</p>
+              </div>
+            </div>
           } @else if (quote.status === 'rejected') {
             <div class="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200 flex items-start gap-3">
               <span class="text-xl">❌</span>
               <div>
-                <p class="font-bold text-red-300">Cotización caducada o rechazada</p>
-                <p class="text-xs text-red-300/80 mt-0.5">Si deseas retomar este proyecto o hacer cambios en los requerimientos, comunícate con nosotros.</p>
+                <p class="font-bold text-red-300">Cotización rechazada</p>
+                <p class="text-xs text-red-300/80 mt-0.5">Has declinado formalmente esta cotización. Si deseas reajustar los requerimientos o solicitar una nueva alternativa, estamos a tu disposición.</p>
               </div>
             </div>
           }
@@ -373,18 +567,35 @@
           Consultar por WhatsApp
         </a>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- Botón de Editar si está en estado editable -->
+          @if (quote.editable) {
+            <button (click)="openEditModal(quote)" type="button"
+                    class="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Editar Solicitud
+            </button>
+          }
+
+          <!-- Botón de Cancelar si es cancelable -->
+          @if (quote.cancelable) {
+            <button (click)="cancelQuote(quote)" [disabled]="isActionLoading()" type="button"
+                    class="rounded-xl border border-red-500/40 px-4 py-2.5 text-xs sm:text-sm font-semibold text-red-300 transition hover:bg-red-500/10 disabled:opacity-50 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              Cancelar Solicitud
+            </button>
+          }
+
+          <!-- Acciones de Cotización Quoted -->
           @if (quote.status === 'quoted') {
             <button (click)="rejectQuote(quote)" [disabled]="isActionLoading()" type="button"
                     class="rounded-xl border border-red-500/40 px-4 py-2.5 text-xs sm:text-sm font-semibold text-red-300 transition hover:bg-red-500/10 disabled:opacity-50">
               Rechazar
             </button>
-            <button (click)="acceptQuote(quote)" [disabled]="isActionLoading()" type="button"
-                    class="rounded-xl bg-[#FFD000] px-5 py-2.5 text-xs sm:text-sm font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 flex items-center gap-2">
-              @if (isActionLoading()) {
-                <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
-              }
-              Aceptar Cotización
+            <button (click)="openApprovalModal(quote)" [disabled]="isActionLoading()" type="button"
+                    class="rounded-xl bg-[#FFD000] px-5 py-2.5 text-xs sm:text-sm font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-[#FFD000]/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Aprobar Cotización
             </button>
           } @else {
             <button (click)="closeQuoteDetail()" type="button"
@@ -398,3 +609,470 @@
     </div>
   </div>
 }
+
+<!-- ======================================================== -->
+<!-- MODAL DE REGISTRO DE NUEVA SOLICITUD                     -->
+<!-- ======================================================== -->
+@if (isCreateModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+       (click)="closeCreateModal()">
+    <div class="relative w-full max-w-3xl rounded-3xl border border-gray-800 bg-[#0d0d10] p-5 sm:p-8 shadow-2xl text-white my-8 max-h-[92vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <!-- Encabezado del modal -->
+      <div class="flex items-start justify-between gap-4 pb-4 border-b border-gray-800 flex-shrink-0">
+        <div>
+          <span class="rounded-lg bg-[#FFD000]/15 px-3 py-1 text-xs font-bold text-[#FFD000] tracking-wide border border-[#FFD000]/30 inline-block mb-1.5">
+            NUEVA SOLICITUD
+          </span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Solicitar Cotización de Trabajo</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Ingresa los requerimientos y dimensiones para que el taller técnico prepare tu presupuesto.</p>
+        </div>
+        <button (click)="closeCreateModal()" type="button"
+                class="rounded-full p-2 text-gray-400 hover:bg-gray-800 hover:text-white transition"
+                aria-label="Cerrar">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Formulario scrollable -->
+      <form (ngSubmit)="submitCreate()" class="overflow-y-auto space-y-6 pt-5 pr-1 flex-1">
+        @if (createError()) {
+          <div class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-xs sm:text-sm text-red-300">
+            {{ createError() }}
+          </div>
+        }
+
+        <!-- Título del proyecto -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Nombre / Título del Proyecto <span class="text-[#FFD000]">*</span>
+          </label>
+          <input type="text" [(ngModel)]="createForm.title" name="createTitle"
+                 placeholder="Ej: Letrero Corporativo Fachada Principal"
+                 class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition" />
+        </div>
+
+        <!-- Trabajos / Ítems a cotizar -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="text-xs font-bold uppercase tracking-wider text-gray-300">
+              Trabajos a fabricar / cotizar <span class="text-[#FFD000]">*</span>
+            </label>
+            <span class="text-xs text-gray-400 font-medium">Área total acumulada: <strong class="text-[#FFD000]">{{ calculateTotalArea(createTrabajos()) }} m²</strong></span>
+          </div>
+
+          <div class="space-y-4">
+            @for (item of createTrabajos(); track $index) {
+              <div class="rounded-2xl border border-gray-800 bg-gray-900/30 p-4 space-y-3 relative group">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-[#FFD000]">Trabajo #{{ $index + 1 }}</span>
+                  @if (createTrabajos().length > 1) {
+                    <button type="button" (click)="removeCreateTrabajo($index)"
+                            class="text-xs text-red-400 hover:text-red-300 p-1 transition flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      Quitar
+                    </button>
+                  }
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Tipo de Servicio / Trabajo</label>
+                    <select [(ngModel)]="item.servicio" [name]="'createService_' + $index" (change)="onServiceChange(item)"
+                            class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white focus:border-[#FFD000] focus:outline-none transition">
+                      @for (srv of serviciosNombres(); track srv) {
+                        <option [value]="srv">{{ srv }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Cantidad de unidades</label>
+                    <input type="number" min="1" [(ngModel)]="item.cantidad" [name]="'createCant_' + $index"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Base (metros)</label>
+                    <input type="number" step="0.01" min="0.1" [(ngModel)]="item.base" [name]="'createBase_' + $index"
+                           placeholder="Ej: 2.50"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white font-mono focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Altura (metros)</label>
+                    <input type="number" step="0.01" min="0.1" [(ngModel)]="item.altura" [name]="'createAlt_' + $index"
+                           placeholder="Ej: 1.20"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white font-mono focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Área calculada</label>
+                    <div class="rounded-xl border border-gray-800/80 bg-black/40 px-3 py-2 text-sm text-[#FFD000] font-mono text-center">
+                      {{ (item.base && item.altura ? ((item.base * item.altura * (item.cantidad || 1)).toFixed(2) + ' m²') : '0.00 m²') }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Descripción o especificación técnica</label>
+                    <input type="text" [(ngModel)]="item.descripcion" [name]="'createDesc_' + $index"
+                           placeholder="Ej: Letras volumétricas acrílicas con retroiluminación LED blanco cálido"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Material o acabado sugerido (opcional)</label>
+                    <input type="text" [(ngModel)]="item.material" [name]="'createMat_' + $index"
+                           placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner, Vinil..."
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button type="button" (click)="addCreateTrabajo()"
+                  class="mt-3 inline-flex items-center gap-2 rounded-xl border border-dashed border-gray-700 bg-gray-900/40 px-4 py-2 text-xs font-semibold text-gray-300 hover:border-[#FFD000] hover:text-[#FFD000] transition w-full justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Agregar otro trabajo a la solicitud
+          </button>
+        </div>
+
+        <!-- Observaciones / Notas generales -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Observaciones o requerimientos especiales
+          </label>
+          <textarea [(ngModel)]="createForm.notes" name="createNotes" rows="3"
+                    placeholder="Indica detalles de instalación, lugar, colores corporativos o cualquier instrucción técnica..."
+                    class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition resize-none"></textarea>
+        </div>
+
+        <!-- Archivo o Imagen de Referencia -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Imagen o diseño de referencia (opcional)
+          </label>
+          @if (createImagePreview) {
+            <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black p-2 flex items-center gap-3">
+              <img [src]="createImagePreview" alt="Previsualización" class="h-20 w-28 object-cover rounded-lg" />
+              <div class="pr-3">
+                <p class="text-xs font-medium text-white">{{ createSelectedFile?.name || 'Imagen seleccionada' }}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">{{ createSelectedFile ? ((createSelectedFile.size / 1024).toFixed(0) + ' KB') : '' }}</p>
+                <button type="button" (click)="removeCreateFile()"
+                        class="mt-2 text-xs text-red-400 hover:text-red-300 font-semibold transition">
+                  Eliminar archivo
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-xl border border-dashed border-gray-800 bg-black/40 p-5 text-center">
+              <input type="file" id="createFileInput" (change)="onCreateFileSelected($event)" accept="image/*" class="hidden" />
+              <label for="createFileInput" class="cursor-pointer">
+                <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-xs font-semibold text-gray-300"><span class="text-[#FFD000]">Haz clic aquí</span> para subir un logo, boceto o foto</p>
+                <p class="text-[11px] text-gray-500 mt-1">Formatos soportados: JPG, PNG, WEBP (hasta 5 MB)</p>
+              </label>
+            </div>
+          }
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="pt-4 border-t border-gray-800 flex items-center justify-end gap-3 flex-shrink-0">
+          <button type="button" (click)="closeCreateModal()"
+                  class="rounded-xl bg-gray-800 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-gray-700">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="isCreating()"
+                  class="rounded-xl bg-[#FFD000] px-6 py-2.5 text-xs sm:text-sm font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 flex items-center gap-2">
+            @if (isCreating()) {
+              <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            }
+            Enviar Solicitud
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL DE EDICIÓN DE SOLICITUD                            -->
+<!-- ======================================================== -->
+@if (isEditModalOpen() && editingQuote(); as quote) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+       (click)="closeEditModal()">
+    <div class="relative w-full max-w-3xl rounded-3xl border border-gray-800 bg-[#0d0d10] p-5 sm:p-8 shadow-2xl text-white my-8 max-h-[92vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <!-- Encabezado del modal -->
+      <div class="flex items-start justify-between gap-4 pb-4 border-b border-gray-800 flex-shrink-0">
+        <div>
+          <span class="rounded-lg bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-300 tracking-wide border border-amber-500/30 inline-block mb-1.5">
+            EDITAR SOLICITUD · {{ quote.id }}
+          </span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">Modificar Requerimientos Técnicos</h2>
+          <p class="text-xs sm:text-sm text-gray-400 mt-1">Actualiza las medidas, cantidad o descripción antes de que se emita la cotización formal.</p>
+        </div>
+        <button (click)="closeEditModal()" type="button"
+                class="rounded-full p-2 text-gray-400 hover:bg-gray-800 hover:text-white transition"
+                aria-label="Cerrar">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Formulario scrollable -->
+      <form (ngSubmit)="submitEdit()" class="overflow-y-auto space-y-6 pt-5 pr-1 flex-1">
+        @if (editError()) {
+          <div class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-xs sm:text-sm text-red-300">
+            {{ editError() }}
+          </div>
+        }
+
+        <!-- Título del proyecto -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Nombre / Título del Proyecto <span class="text-[#FFD000]">*</span>
+          </label>
+          <input type="text" [(ngModel)]="editForm.title" name="editTitle"
+                 class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition" />
+        </div>
+
+        <!-- Trabajos a cotizar -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="text-xs font-bold uppercase tracking-wider text-gray-300">
+              Trabajos a fabricar / medidas <span class="text-[#FFD000]">*</span>
+            </label>
+            <span class="text-xs text-gray-400 font-medium">Área total acumulada: <strong class="text-[#FFD000]">{{ calculateTotalArea(editTrabajos()) }} m²</strong></span>
+          </div>
+
+          <div class="space-y-4">
+            @for (item of editTrabajos(); track $index) {
+              <div class="rounded-2xl border border-gray-800 bg-gray-900/30 p-4 space-y-3 relative group">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-[#FFD000]">Trabajo #{{ $index + 1 }}</span>
+                  @if (editTrabajos().length > 1) {
+                    <button type="button" (click)="removeEditTrabajo($index)"
+                            class="text-xs text-red-400 hover:text-red-300 p-1 transition flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      Quitar
+                    </button>
+                  }
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Tipo de Servicio / Trabajo</label>
+                    <select [(ngModel)]="item.servicio" [name]="'editService_' + $index" (change)="onServiceChange(item)"
+                            class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white focus:border-[#FFD000] focus:outline-none transition">
+                      @for (srv of serviciosNombres(); track srv) {
+                        <option [value]="srv">{{ srv }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Cantidad de unidades</label>
+                    <input type="number" min="1" [(ngModel)]="item.cantidad" [name]="'editCant_' + $index"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Base (metros)</label>
+                    <input type="number" step="0.01" min="0.1" [(ngModel)]="item.base" [name]="'editBase_' + $index"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white font-mono focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Altura (metros)</label>
+                    <input type="number" step="0.01" min="0.1" [(ngModel)]="item.altura" [name]="'editAlt_' + $index"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-sm text-white font-mono focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Área calculada</label>
+                    <div class="rounded-xl border border-gray-800/80 bg-black/40 px-3 py-2 text-sm text-[#FFD000] font-mono text-center">
+                      {{ (item.base && item.altura ? ((item.base * item.altura * (item.cantidad || 1)).toFixed(2) + ' m²') : '0.00 m²') }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Descripción o especificación técnica</label>
+                    <input type="text" [(ngModel)]="item.descripcion" [name]="'editDesc_' + $index"
+                           placeholder="Ej: Medidas exteriores, grosor acrílico, luz LED"
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-gray-400 mb-1">Material o acabado sugerido (opcional)</label>
+                    <input type="text" [(ngModel)]="item.material" [name]="'editMat_' + $index"
+                           placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner..."
+                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button type="button" (click)="addEditTrabajo()"
+                  class="mt-3 inline-flex items-center gap-2 rounded-xl border border-dashed border-gray-700 bg-gray-900/40 px-4 py-2 text-xs font-semibold text-gray-300 hover:border-[#FFD000] hover:text-[#FFD000] transition w-full justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            + Agregar otro trabajo a la solicitud
+          </button>
+        </div>
+
+        <!-- Observaciones / Notas generales -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Observaciones o requerimientos especiales
+          </label>
+          <textarea [(ngModel)]="editForm.notes" name="editNotes" rows="3"
+                    class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition resize-none"></textarea>
+        </div>
+
+        <!-- Archivo o Imagen de Referencia -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
+            Imagen o diseño de referencia
+          </label>
+          @if (editImagePreview) {
+            <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black p-2 flex items-center gap-3">
+              <img [src]="editImagePreview" alt="Previsualización" class="h-20 w-28 object-cover rounded-lg" />
+              <div class="pr-3">
+                <p class="text-xs font-medium text-white">{{ editSelectedFile?.name || 'Imagen actual' }}</p>
+                <div class="mt-2 flex items-center gap-3">
+                  <input type="file" id="editFileInput" (change)="onEditFileSelected($event)" accept="image/*" class="hidden" />
+                  <label for="editFileInput" class="text-xs text-[#FFD000] hover:underline cursor-pointer font-semibold">
+                    Reemplazar imagen
+                  </label>
+                  <button type="button" (click)="removeEditFile()"
+                          class="text-xs text-red-400 hover:text-red-300 font-semibold transition">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-xl border border-dashed border-gray-800 bg-black/40 p-5 text-center">
+              <input type="file" id="editFileInputEmpty" (change)="onEditFileSelected($event)" accept="image/*" class="hidden" />
+              <label for="editFileInputEmpty" class="cursor-pointer">
+                <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-xs font-semibold text-gray-300"><span class="text-[#FFD000]">Haz clic aquí</span> para subir una nueva imagen</p>
+                <p class="text-[11px] text-gray-500 mt-1">Formatos soportados: JPG, PNG, WEBP (hasta 5 MB)</p>
+              </label>
+            </div>
+          }
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="pt-4 border-t border-gray-800 flex items-center justify-end gap-3 flex-shrink-0">
+          <button type="button" (click)="closeEditModal()"
+                  class="rounded-xl bg-gray-800 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-gray-700">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="isEditing()"
+                  class="rounded-xl bg-[#FFD000] px-6 py-2.5 text-xs sm:text-sm font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 flex items-center gap-2">
+            @if (isEditing()) {
+              <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+            }
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL DE CONFIRMACIÓN DE APROBACIÓN DE COTIZACIÓN        -->
+<!-- ======================================================== -->
+@if (isApprovalModalOpen() && approvingQuote()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+       role="dialog" aria-modal="true">
+    <div class="relative w-full max-w-lg rounded-3xl border border-[#FFD000]/40 bg-[#121212] p-5 sm:p-7 shadow-2xl text-white my-auto animate-in fade-in zoom-in-95 duration-200">
+
+      <!-- Encabezado con icono llamativo -->
+      <div class="flex items-start justify-between gap-4 pb-4 border-b border-gray-800">
+        <div class="flex items-center gap-3">
+          <div class="h-12 w-12 rounded-2xl bg-[#FFD000]/15 border border-[#FFD000]/30 flex items-center justify-center text-[#FFD000] shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-white">Confirmar Aprobación</h2>
+            <p class="text-xs text-gray-400">Cotización formal {{ approvingQuote()?.id }}</p>
+          </div>
+        </div>
+        <button type="button" (click)="closeApprovalModal()" [disabled]="isActionLoading()"
+                class="rounded-xl p-1.5 text-gray-400 transition hover:bg-gray-800 hover:text-white disabled:opacity-50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Resumen del proyecto -->
+      <div class="my-5 space-y-4">
+        <div class="rounded-2xl border border-gray-800 bg-black/50 p-4 space-y-3">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-gray-400">Proyecto:</span>
+            <span class="font-semibold text-white truncate max-w-[200px]">{{ approvingQuote()?.title }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-gray-400">Servicio Principal:</span>
+            <span class="font-semibold text-gray-300">{{ approvingQuote()?.service }}</span>
+          </div>
+          @if (approvingQuote()?.items && approvingQuote()!.items.length > 0) {
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-gray-400">Trabajos Incluidos:</span>
+              <span class="font-semibold text-gray-300">{{ approvingQuote()!.items.length }} {{ approvingQuote()!.items.length === 1 ? 'trabajo' : 'trabajos' }}</span>
+            </div>
+          }
+          <div class="pt-2 border-t border-gray-800 flex justify-between items-center">
+            <span class="text-sm font-bold text-gray-200">Monto Total Presupuestado:</span>
+            <span class="text-lg font-extrabold text-[#FFD000]">Bs. {{ approvingQuote()?.estimatedTotal || '0.00' }}</span>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-[#FFD000]/20 bg-[#FFD000]/10 p-4 text-xs text-amber-200/90 leading-relaxed flex items-start gap-3">
+          <span class="text-lg">📋</span>
+          <div>
+            <p class="font-semibold text-[#FFD000] mb-0.5">Compromiso y Procedimiento</p>
+            <p class="text-gray-300">
+              Al confirmar y aprobar esta cotización, manifiestas tu conformidad con las medidas, especificaciones y costos estipulados. El equipo de taller de Urban Signs comenzará con la preparación técnica para la fabricación de tu pedido.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer de acciones -->
+      <div class="pt-4 border-t border-gray-800 flex items-center justify-end gap-3">
+        <button type="button" (click)="closeApprovalModal()" [disabled]="isActionLoading()"
+                class="rounded-xl bg-gray-800 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-gray-700 disabled:opacity-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirmApproveQuote()" [disabled]="isActionLoading()"
+                class="rounded-xl bg-[#FFD000] px-5 py-2.5 text-xs sm:text-sm font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-[#FFD000]/20">
+          @if (isActionLoading()) {
+            <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"></span>
+          }
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          Confirmar y Aprobar Cotización
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+

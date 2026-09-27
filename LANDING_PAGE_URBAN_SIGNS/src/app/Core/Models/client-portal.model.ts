@@ -1,4 +1,4 @@
-export type QuoteStatus = 'draft' | 'review' | 'quoted' | 'accepted' | 'rejected';
+export type QuoteStatus = 'draft' | 'review' | 'pending' | 'quoted' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
 export type OrderStatus = 'design' | 'approval' | 'production' | 'ready' | 'delivery' | 'completed';
 
 export interface ClientUser {
@@ -12,8 +12,10 @@ export interface ClientUser {
 
 export interface QuoteItem {
   id?: number;
+  idTrabajo?: number;
   service: string;
   description: string;
+  material?: string;
   quantity: number;
   dimensions?: string;
   base?: number;
@@ -30,10 +32,13 @@ export interface CreateQuoteTrabajoPayload {
   base: number;
   altura: number;
   descripcion?: string;
+  material?: string;
 }
 
 export interface Quote {
   numericId: number;
+  idSolicitud?: number;
+  idCotizacion?: number;
   id: string;
   title: string;
   service: string;
@@ -45,6 +50,8 @@ export interface Quote {
   items: QuoteItem[];
   notes: string;
   referenceImage?: string;
+  editable?: boolean;
+  cancelable?: boolean;
 }
 
 export interface OrderEvent {
