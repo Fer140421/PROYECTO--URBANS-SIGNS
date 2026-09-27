@@ -19,5 +19,6 @@ public class CotizacionTrabajoMod {
     private Integer cantidad;
     private BigDecimal costoUnitario;
     private BigDecimal subtotal;
+    private String material;
     private List<DetalleCotizacionMod> materiales;
 }

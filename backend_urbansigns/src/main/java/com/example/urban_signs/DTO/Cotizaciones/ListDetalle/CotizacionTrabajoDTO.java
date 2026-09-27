@@ -25,5 +25,7 @@ public class CotizacionTrabajoDTO {
     private BigDecimal area_total;
     private BigDecimal costoUnitario;
     private BigDecimal subtotal;
+    private String descripcion;
+    private String material;
     private List<DetalleMaterialDTO> materiales;
 }

@@ -253,6 +253,7 @@ Table solicitud_trabajo {
   altura decimal(10,2)
   area_total decimal(10,2)
   descripcion text
+  material varchar(255)
 }
 
 Table cotizaciones {
@@ -272,6 +273,7 @@ Table cotizacion_trabajo {
   cantidad integer [not null]
   costo_unitario decimal(12,2)
   subtotal decimal(12,2)
+  material varchar(255)
 }
 
 Table detalle_cotizacion {

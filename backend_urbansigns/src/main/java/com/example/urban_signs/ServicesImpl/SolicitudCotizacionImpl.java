@@ -99,6 +99,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                                 ? BigDecimal.valueOf(t.getBase() * t.getAltura())
                                                                 : null)
                                                 .descripcion(t.getDescripcion())
+                                                .material(t.getMaterial())
                                                 .build();
 
                                 trabajos.add(nuevoTrabajo);
@@ -154,6 +155,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .altura(trabajo.getAltura())
                                                 .areaTotal(trabajo.getAreaTotal())
                                                 .descripcion(trabajo.getDescripcion())
+                                                .material(trabajo.getMaterial())
                                                 .build())
                                 .toList();
 
@@ -219,6 +221,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                                 ? BigDecimal.valueOf(t.getBase() * t.getAltura())
                                                                 : null)
                                                 .descripcion(t.getDescripcion())
+                                                .material(t.getMaterial())
                                                 .build();
 
                                 nuevosTrabajos.add(nuevoTrabajo);

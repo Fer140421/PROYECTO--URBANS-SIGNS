@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +45,7 @@ import com.example.urban_signs.Repository.PedidosRepository;
 import com.example.urban_signs.Repository.SolicitudCotizacionRepository;
 import com.example.urban_signs.Repository.SolicitudTrabajoRepository;
 import com.example.urban_signs.Repository.TrabajosRepository;
+import com.example.urban_signs.Services.PortalNotificacionService;
 import com.example.urban_signs.ServicesImpl.CloudinaryService;
 import com.example.urban_signs.Utils.Enum.CloudinaryFolder;
 import com.example.urban_signs.Utils.Enum.EstadoCotizacion;
@@ -68,6 +70,7 @@ public class PortalClienteController {
     private final TrabajosRepository trabajosRepository;
     private final CloudinaryService cloudinaryService;
     private final ObjectMapper objectMapper;
+    private final PortalNotificacionService portalNotificacionService;
 
     /** Devuelve únicamente el perfil vinculado al usuario autenticado. */
     @GetMapping("/me")
@@ -77,7 +80,7 @@ public class PortalClienteController {
     }
 
     @GetMapping("/cotizaciones")
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PortalCotizacionResponse> listarMisCotizaciones(Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
         List<CotizacionModel> cotizaciones = cotizacionRepository
@@ -107,7 +110,7 @@ public class PortalClienteController {
     }
 
     @GetMapping("/cotizaciones/{id}")
-    @Transactional(readOnly = true)
+    @Transactional
     public PortalCotizacionResponse obtenerMiCotizacion(@PathVariable Long id, Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
         return cotizacionRepository.findByIdCotizacionAndSolicitud_Cliente_IdCliente(id, cliente.getIdCliente())
@@ -125,8 +128,15 @@ public class PortalClienteController {
         if (cotizacion.getEstado() != EstadoCotizacion.PENDIENTE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La cotización ya no puede aceptarse");
         }
+        LocalDate hoy = LocalDate.now(ZoneId.of("America/La_Paz"));
+        if (cotizacion.getFechaCaducado() != null && cotizacion.getFechaCaducado().isBefore(hoy)) {
+            cotizacion.setEstado(EstadoCotizacion.CADUCADA);
+            cotizacionRepository.save(cotizacion);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cotización ha superado su plazo de vigencia (15 días) y ha caducado.");
+        }
         cotizacion.setEstado(EstadoCotizacion.APROBADA);
         cotizacionRepository.save(cotizacion);
+        portalNotificacionService.enviarNotificacionCotizacionAprobada(cotizacion);
         return ResponseEntity.noContent().build();
     }
 
@@ -137,9 +147,52 @@ public class PortalClienteController {
         if (cotizacion.getEstado() != EstadoCotizacion.PENDIENTE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La cotización ya no puede rechazarse");
         }
-        // El esquema actual no tiene estado RECHAZADA; CADUCADA representa una cotización no aceptada.
         cotizacion.setEstado(EstadoCotizacion.CADUCADA);
         cotizacionRepository.save(cotizacion);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/cotizaciones/{id}/cancelar")
+    @Transactional
+    public ResponseEntity<Void> cancelarCotizacionCliente(@PathVariable Long id, Authentication authentication) {
+        CotizacionModel cotizacion = obtenerCotizacionPropia(id, authentication);
+        if (cotizacion.getEstado() == EstadoCotizacion.APROBADA) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede cancelar una cotización que ya fue aprobada");
+        }
+        cotizacion.setEstado(EstadoCotizacion.CADUCADA);
+        cotizacionRepository.save(cotizacion);
+        if (cotizacion.getSolicitud() != null) {
+            cotizacion.getSolicitud().setEstado(SolicitudCotizacion.CANCELADA);
+            solicitudRepository.save(cotizacion.getSolicitud());
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/solicitudes/{id}/cancelar")
+    @Transactional
+    public ResponseEntity<Void> cancelarSolicitudCliente(@PathVariable Long id, Authentication authentication) {
+        ClienteModel cliente = obtenerCliente(authentication);
+        SolicitudCotizacionModel solicitud = solicitudRepository.findById(id)
+                .filter(s -> s.getCliente() != null && s.getCliente().getIdCliente().equals(cliente.getIdCliente()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada"));
+
+        if (solicitud.getEstado() == SolicitudCotizacion.CANCELADA) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La solicitud ya está cancelada.");
+        }
+
+        if (solicitud.getEstado() == SolicitudCotizacion.COTIZADA) {
+            CotizacionModel cotizacion = cotizacionRepository.findBySolicitud(solicitud);
+            if (cotizacion != null) {
+                if (cotizacion.getEstado() == EstadoCotizacion.APROBADA) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede cancelar una solicitud cuya cotización ya fue aprobada.");
+                }
+                cotizacion.setEstado(EstadoCotizacion.CADUCADA);
+                cotizacionRepository.save(cotizacion);
+            }
+        }
+
+        solicitud.setEstado(SolicitudCotizacion.CANCELADA);
+        solicitudRepository.save(solicitud);
         return ResponseEntity.noContent().build();
     }
 
@@ -251,6 +304,7 @@ public class PortalClienteController {
                 if (desc.isBlank() && !titulo.isBlank()) {
                     desc = titulo;
                 }
+                String material = item.material() != null && !item.material().isBlank() ? item.material().trim() : null;
 
                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                         .solicitud(solicitud)
@@ -260,6 +314,7 @@ public class PortalClienteController {
                         .altura(altura)
                         .areaTotal(areaTotal)
                         .descripcion(desc)
+                        .material(material)
                         .build();
 
                 trabajosGuardar.add(nuevoTrabajo);
@@ -298,6 +353,119 @@ public class PortalClienteController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PutMapping(value = "/solicitudes/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional
+    public ResponseEntity<Void> modificarSolicitudMultipart(
+            @PathVariable Long id,
+            @RequestParam(value = "data", required = false) String dataJson,
+            @RequestParam(value = "observaciones", required = false) String observacionesRaw,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            Authentication authentication) {
+        PortalSolicitudRequest request = null;
+        if (dataJson != null && !dataJson.isBlank()) {
+            try {
+                request = objectMapper.readValue(dataJson, PortalSolicitudRequest.class);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato de datos de solicitud inválido", e);
+            }
+        } else {
+            request = new PortalSolicitudRequest(null, observacionesRaw, null);
+        }
+        return actualizarSolicitudPortal(id, request, file, authentication);
+    }
+
+    @PutMapping(value = "/solicitudes/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<Void> modificarSolicitudJson(
+            @PathVariable Long id,
+            @RequestBody PortalSolicitudRequest request,
+            Authentication authentication) {
+        return actualizarSolicitudPortal(id, request, null, authentication);
+    }
+
+    private ResponseEntity<Void> actualizarSolicitudPortal(Long id, PortalSolicitudRequest request, MultipartFile file, Authentication authentication) {
+        ClienteModel cliente = obtenerCliente(authentication);
+        SolicitudCotizacionModel solicitud = solicitudRepository.findById(id)
+                .filter(s -> s.getCliente() != null && s.getCliente().getIdCliente().equals(cliente.getIdCliente()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada"));
+
+        if (solicitud.getEstado() != SolicitudCotizacion.PENDIENTE && solicitud.getEstado() != SolicitudCotizacion.REVISION) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden editar solicitudes en estado pendiente o en revisión");
+        }
+
+        String observaciones = request != null && request.observaciones() != null ? request.observaciones().trim() : "";
+        String titulo = request != null && request.titulo() != null ? request.titulo().trim() : "";
+
+        String textoObservaciones = observaciones;
+        if (!titulo.isBlank() && !textoObservaciones.contains(titulo)) {
+            textoObservaciones = titulo + (!textoObservaciones.isBlank() ? ("\n" + textoObservaciones) : "");
+        }
+
+        if (!textoObservaciones.isBlank()) {
+            solicitud.setObservaciones(textoObservaciones);
+        }
+
+        if (file != null && !file.isEmpty()) {
+            String archivoUrl = cloudinaryService.uploadFile(file, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+            solicitud.setArchivoReferencia(archivoUrl);
+        }
+
+        if (request != null && request.trabajos() != null && !request.trabajos().isEmpty()) {
+            solicitudTrabajoRepository.deleteBySolicitudId(solicitud.getIdSolicitud());
+            solicitudTrabajoRepository.flush();
+
+            List<SolicitudTrabajoModel> trabajosGuardar = new ArrayList<>();
+            for (PortalSolicitudTrabajoRequest item : request.trabajos()) {
+                TrabajosModel trabajo = null;
+                if (item.idTrabajo() != null) {
+                    trabajo = trabajosRepository.findById(item.idTrabajo()).orElse(null);
+                }
+                if (trabajo == null && item.servicio() != null && !item.servicio().isBlank()) {
+                    trabajo = trabajosRepository.findFirstByNombreIgnoreCase(item.servicio().trim())
+                            .or(() -> trabajosRepository.findFirstByNombreContainingIgnoreCase(item.servicio().trim()))
+                            .orElse(null);
+                }
+                if (trabajo == null) {
+                    List<TrabajosModel> activos = trabajosRepository.findByEstadoTrueOrderByIdTrabajoAsc();
+                    if (!activos.isEmpty()) {
+                        trabajo = activos.get(0);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay servicios o trabajos disponibles en el catálogo");
+                    }
+                }
+
+                int cantidad = (item.cantidad() != null && item.cantidad() > 0) ? item.cantidad() : 1;
+                BigDecimal base = item.base() != null ? item.base() : BigDecimal.ZERO;
+                BigDecimal altura = item.altura() != null ? item.altura() : BigDecimal.ZERO;
+                BigDecimal areaTotal = (base != null && altura != null) ? base.multiply(altura) : BigDecimal.ZERO;
+
+                String desc = item.descripcion() != null ? item.descripcion().trim() : "";
+                if (desc.isBlank() && !titulo.isBlank()) {
+                    desc = titulo;
+                }
+                String material = item.material() != null && !item.material().isBlank() ? item.material().trim() : null;
+
+                SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
+                        .solicitud(solicitud)
+                        .trabajo(trabajo)
+                        .cantidad(cantidad)
+                        .base(base)
+                        .altura(altura)
+                        .areaTotal(areaTotal)
+                        .descripcion(desc)
+                        .material(material)
+                        .build();
+
+                trabajosGuardar.add(nuevoTrabajo);
+            }
+
+            solicitudTrabajoRepository.saveAll(trabajosGuardar);
+        }
+
+        solicitudRepository.save(solicitud);
+        return ResponseEntity.ok().build();
+    }
+
     private ClienteModel obtenerCliente(Authentication authentication) {
         return clienteRepository.findByUsuario_UserAcces(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -305,7 +473,9 @@ public class PortalClienteController {
     }
 
     private CotizacionModel obtenerCotizacionPropia(Long id, Authentication authentication) {
-        return cotizacionRepository.findByIdCotizacionAndSolicitud_Cliente_IdCliente(id, obtenerCliente(authentication).getIdCliente())
+        Long idCliente = obtenerCliente(authentication).getIdCliente();
+        return cotizacionRepository.findByIdCotizacionAndSolicitud_Cliente_IdCliente(id, idCliente)
+                .or(() -> cotizacionRepository.findBySolicitud_IdSolicitudAndSolicitud_Cliente_IdCliente(id, idCliente))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cotización no encontrada"));
     }
 
@@ -329,15 +499,18 @@ public class PortalClienteController {
         String obs = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getObservaciones() : "";
         String ref = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getArchivoReferencia() : null;
         String titulo = extraerTitulo(obs, "Cotización " + cotizacion.getCodCotizacion());
+        Long idSolicitud = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getIdSolicitud() : null;
 
         List<PortalCotizacionItemResponse> items = new ArrayList<>();
         if (cotizacion.getTrabajos() != null && !cotizacion.getTrabajos().isEmpty()) {
             for (CotizacionTrabajoModel ct : cotizacion.getTrabajos()) {
                 String serv = "Servicio cotizado";
                 String desc = null;
+                Long idTrabajo = null;
                 if (ct.getSolicitudTrabajo() != null) {
                     if (ct.getSolicitudTrabajo().getTrabajo() != null) {
                         serv = ct.getSolicitudTrabajo().getTrabajo().getNombre();
+                        idTrabajo = ct.getSolicitudTrabajo().getTrabajo().getIdTrabajo();
                     }
                     desc = ct.getSolicitudTrabajo().getDescripcion();
                 }
@@ -350,10 +523,16 @@ public class PortalClienteController {
                 Integer cant = ct.getCantidad() != null ? ct.getCantidad()
                         : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getCantidad() : 1);
 
+                String mat = (ct.getMaterial() != null && !ct.getMaterial().isBlank())
+                        ? ct.getMaterial()
+                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getMaterial() : null);
+
                 items.add(new PortalCotizacionItemResponse(
                         ct.getIdCotizacionTrabajo(),
+                        idTrabajo,
                         serv,
                         desc,
+                        mat,
                         cant,
                         base,
                         altura,
@@ -367,8 +546,10 @@ public class PortalClienteController {
             for (SolicitudTrabajoModel st : solicitudTrabajos) {
                 items.add(new PortalCotizacionItemResponse(
                         st.getIdSolicitudTrabajo(),
+                        st.getTrabajo() != null ? st.getTrabajo().getIdTrabajo() : null,
                         st.getTrabajo() != null ? st.getTrabajo().getNombre() : "Servicio solicitado",
                         st.getDescripcion(),
+                        st.getMaterial(),
                         st.getCantidad() != null ? st.getCantidad() : 1,
                         st.getBase(),
                         st.getAltura(),
@@ -381,7 +562,39 @@ public class PortalClienteController {
         String primerServicio = !items.isEmpty() ? items.get(0).servicio() : null;
         String servicio = primerServicio != null ? primerServicio : extraerServicio(obs, "Servicio cotizado");
 
+        LocalDate hoy = LocalDate.now(ZoneId.of("America/La_Paz"));
+        boolean solicitudCancelada = cotizacion.getSolicitud() != null
+                && cotizacion.getSolicitud().getEstado() == SolicitudCotizacion.CANCELADA;
+
+        String estado;
+        boolean cancelable = false;
+
+        if (solicitudCancelada) {
+            estado = "cancelled";
+        } else if (cotizacion.getEstado() == EstadoCotizacion.APROBADA) {
+            estado = "accepted";
+        } else if (cotizacion.getEstado() == EstadoCotizacion.CADUCADA) {
+            if (cotizacion.getFechaCaducado() != null && cotizacion.getFechaCaducado().isBefore(hoy)) {
+                estado = "expired";
+            } else {
+                estado = "rejected";
+            }
+        } else if (cotizacion.getEstado() == EstadoCotizacion.PENDIENTE) {
+            if (cotizacion.getFechaCaducado() != null && cotizacion.getFechaCaducado().isBefore(hoy)) {
+                estado = "expired";
+                cotizacion.setEstado(EstadoCotizacion.CADUCADA);
+                cotizacionRepository.save(cotizacion);
+            } else {
+                estado = "quoted";
+                cancelable = true;
+            }
+        } else {
+            estado = "quoted";
+        }
+
         return new PortalCotizacionResponse(
+                cotizacion.getIdCotizacion(),
+                idSolicitud,
                 cotizacion.getIdCotizacion(),
                 cotizacion.getCodCotizacion(),
                 titulo,
@@ -389,13 +602,11 @@ public class PortalClienteController {
                 obs,
                 cotizacion.getFechaEmision(),
                 cotizacion.getFechaCaducado(),
-                switch (cotizacion.getEstado()) {
-                    case PENDIENTE -> "quoted";
-                    case APROBADA -> "accepted";
-                    case CADUCADA -> "rejected";
-                },
+                estado,
                 cotizacion.getCostoTotal(),
                 ref,
+                false,
+                cancelable,
                 items);
     }
 
@@ -410,8 +621,10 @@ public class PortalClienteController {
             for (SolicitudTrabajoModel st : solicitudTrabajos) {
                 items.add(new PortalCotizacionItemResponse(
                         st.getIdSolicitudTrabajo(),
+                        st.getTrabajo() != null ? st.getTrabajo().getIdTrabajo() : null,
                         st.getTrabajo() != null ? st.getTrabajo().getNombre() : "Servicio solicitado",
                         st.getDescripcion(),
+                        st.getMaterial(),
                         st.getCantidad() != null ? st.getCantidad() : 1,
                         st.getBase(),
                         st.getAltura(),
@@ -423,14 +636,24 @@ public class PortalClienteController {
 
         String primerServicio = !items.isEmpty() ? items.get(0).servicio() : null;
         String servicio = primerServicio != null ? primerServicio : extraerServicio(obs, "Servicio solicitado");
-        String estado = switch (solicitud.getEstado()) {
-            case CANCELADA -> "rejected";
-            case COTIZADA -> "quoted";
-            default -> "review";
-        };
+        String estado;
+        boolean editable = false;
+        boolean cancelable = false;
+
+        if (solicitud.getEstado() == SolicitudCotizacion.CANCELADA) {
+            estado = "cancelled";
+        } else if (solicitud.getEstado() == SolicitudCotizacion.COTIZADA) {
+            estado = "quoted";
+        } else {
+            estado = "review";
+            editable = true;
+            cancelable = true;
+        }
 
         return new PortalCotizacionResponse(
                 solicitud.getIdSolicitud(),
+                solicitud.getIdSolicitud(),
+                null,
                 solicitud.getCodSolicitud(),
                 titulo,
                 servicio,
@@ -440,6 +663,8 @@ public class PortalClienteController {
                 estado,
                 null,
                 solicitud.getArchivoReferencia(),
+                editable,
+                cancelable,
                 items);
     }
 

@@ -53,6 +53,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         private final SolicitudCotizacionRepository solicitudeCotizacionRepo;
         private final SolicitudTrabajoRepository solicitudTrabajoRepository;
         private final MaterialProduccionRepository materialProduccionRepository;
+        private final com.example.urban_signs.Services.PortalNotificacionService portalNotificacionService;
 
         @Override
         @Transactional(readOnly = true)
@@ -79,25 +80,31 @@ public class CotizacionServiceImpl implements CotizacionService {
                         trabajo.setCantidad(t.getCantidad());
                         trabajo.setCostoUnitario(t.getCostoUnitario());
                         trabajo.setSubtotal(t.getSubtotal());
+                        if (t.getMaterial() != null) {
+                                trabajo.setMaterial(t.getMaterial().trim());
+                        }
 
-                        // CAMBIO IMPORTANTE: Limpiar la lista existente
+                        // Limpiar la lista existente
                         trabajo.getDetalles().clear();
 
-                        // Crear los nuevos detalles
-                        List<DetalleCotizacionModel> nuevosDetalles = t.getMateriales().stream()
-                                        .map(m -> {
-                                                MaterialProduccionModel material = materialProduccionRepository
-                                                                .findById(m.getIdMaterial())
-                                                                .orElseThrow(() -> new RuntimeException(
-                                                                                "Material no encontrado con ID: "
-                                                                                                + m.getIdMaterial()));
-                                                return DetalleCotizacionModel.builder()
-                                                                .cotizacionTrabajo(trabajo)
-                                                                .material(material)
-                                                                .build();
-                                        })
-                                        .collect(Collectors.toList());
-                        trabajo.getDetalles().addAll(nuevosDetalles);
+                        // Crear los nuevos detalles sólo si se proporcionaron
+                        if (t.getMateriales() != null && !t.getMateriales().isEmpty()) {
+                                List<DetalleCotizacionModel> nuevosDetalles = t.getMateriales().stream()
+                                                .filter(m -> m != null && m.getIdMaterial() != null)
+                                                .map(m -> {
+                                                        MaterialProduccionModel material = materialProduccionRepository
+                                                                        .findById(m.getIdMaterial())
+                                                                        .orElseThrow(() -> new RuntimeException(
+                                                                                        "Material no encontrado con ID: "
+                                                                                                        + m.getIdMaterial()));
+                                                        return DetalleCotizacionModel.builder()
+                                                                        .cotizacionTrabajo(trabajo)
+                                                                        .material(material)
+                                                                        .build();
+                                                })
+                                                .collect(Collectors.toList());
+                                trabajo.getDetalles().addAll(nuevosDetalles);
+                        }
                 }
 
                 BigDecimal total = cotizacion.getTrabajos().stream()
@@ -149,24 +156,31 @@ public class CotizacionServiceImpl implements CotizacionService {
                                         .areaTotal(solicitudTrabajo.getAreaTotal())
                                         .costoUnitario(t.getCostoUnitario())
                                         .subtotal(t.getSubtotal())
+                                        .material((t.getMaterial() != null && !t.getMaterial().isBlank())
+                                                        ? t.getMaterial().trim()
+                                                        : (solicitudTrabajo.getMaterial() != null ? solicitudTrabajo.getMaterial() : null))
                                         .build();
 
                         BigDecimal subtotalTrabajo = t.getSubtotal() != null ? t.getSubtotal() : BigDecimal.ZERO;
                         total = total.add(subtotalTrabajo);
 
                         List<DetalleCotizacionModel> detalles = new ArrayList<>();
-                        for (DetalleCotizacionRequest m : t.getMateriales()) {
-                                MaterialProduccionModel material = materialProduccionRepository
-                                                .findById(m.getIdMaterial())
-                                                .orElseThrow(() -> new RuntimeException(
-                                                                "Material no encontrado con ID: " + m.getIdMaterial()));
+                        if (t.getMateriales() != null && !t.getMateriales().isEmpty()) {
+                                for (DetalleCotizacionRequest m : t.getMateriales()) {
+                                        if (m != null && m.getIdMaterial() != null) {
+                                                MaterialProduccionModel material = materialProduccionRepository
+                                                                .findById(m.getIdMaterial())
+                                                                .orElseThrow(() -> new RuntimeException(
+                                                                                "Material no encontrado con ID: " + m.getIdMaterial()));
 
-                                DetalleCotizacionModel detalle = DetalleCotizacionModel.builder()
-                                                .cotizacionTrabajo(cotTrabajo)
-                                                .material(material)
-                                                .build();
+                                                DetalleCotizacionModel detalle = DetalleCotizacionModel.builder()
+                                                                .cotizacionTrabajo(cotTrabajo)
+                                                                .material(material)
+                                                                .build();
 
-                                detalles.add(detalle);
+                                                detalles.add(detalle);
+                                        }
+                                }
                         }
                         cotTrabajo.setDetalles(detalles);
                         trabajosCotizados.add(cotTrabajo);
@@ -179,6 +193,8 @@ public class CotizacionServiceImpl implements CotizacionService {
 
                 solicitud.setEstado(SolicitudCotizacion.COTIZADA);
                 solicitudeCotizacionRepo.save(solicitud);
+
+                portalNotificacionService.enviarNotificacionCotizacionLista(cotizacion);
 
                 return cotizacion;
         }
@@ -270,6 +286,11 @@ public class CotizacionServiceImpl implements CotizacionService {
         }
 
         private CotizacionTrabajoDTO convertirTrabajoDTO(CotizacionTrabajoModel trabajo) {
+                String materialTexto = (trabajo.getMaterial() != null && !trabajo.getMaterial().isBlank())
+                                ? trabajo.getMaterial()
+                                : (trabajo.getSolicitudTrabajo() != null ? trabajo.getSolicitudTrabajo().getMaterial() : null);
+                String descTexto = trabajo.getSolicitudTrabajo() != null ? trabajo.getSolicitudTrabajo().getDescripcion() : null;
+
                 return CotizacionTrabajoDTO.builder()
                                 .idCotizacionTrabajo(trabajo.getIdCotizacionTrabajo())
                                 .idSolicitudTrabajo(trabajo.getSolicitudTrabajo().getIdSolicitudTrabajo())
@@ -281,9 +302,11 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .base(trabajo.getBase())
                                 .area_total(trabajo.getAreaTotal())
                                 .subtotal(trabajo.getSubtotal())
-                                .materiales(trabajo.getDetalles().stream()
+                                .descripcion(descTexto)
+                                .material(materialTexto)
+                                .materiales(trabajo.getDetalles() != null ? trabajo.getDetalles().stream()
                                                 .map(this::convertirMaterialDTO)
-                                                .toList())
+                                                .toList() : java.util.Collections.emptyList())
                                 .build();
         }
 

@@ -31,4 +31,5 @@ public interface CotizacionRepository extends JpaRepository<CotizacionModel, Lon
 
         Optional<CotizacionModel> findByIdCotizacionAndSolicitud_Cliente_IdCliente(Long idCotizacion, Long idCliente);
 
+        Optional<CotizacionModel> findBySolicitud_IdSolicitudAndSolicitud_Cliente_IdCliente(Long idSolicitud, Long idCliente);
 }

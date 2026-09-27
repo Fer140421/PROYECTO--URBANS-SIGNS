@@ -6,6 +6,8 @@ import java.util.List;
 
 public record PortalCotizacionResponse(
         Long id,
+        Long idSolicitud,
+        Long idCotizacion,
         String codigo,
         String titulo,
         String servicio,
@@ -15,5 +17,7 @@ public record PortalCotizacionResponse(
         String estado,
         BigDecimal total,
         String archivoReferencia,
+        Boolean editable,
+        Boolean cancelable,
         List<PortalCotizacionItemResponse> items) {
 }

@@ -14,6 +14,8 @@ public interface SolicitudCotizacionRepository extends JpaRepository<SolicitudCo
 
   List<SolicitudCotizacionModel> findByCliente_IdClienteOrderByFechaSolicitudDesc(Long idCliente);
 
+  Optional<SolicitudCotizacionModel> findByIdSolicitudAndCliente_IdCliente(Long idSolicitud, Long idCliente);
+
   @Query(value = """
       SELECT *
       FROM solicitud_cotizacion

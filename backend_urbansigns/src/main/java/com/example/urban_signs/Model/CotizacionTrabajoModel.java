@@ -47,6 +47,9 @@ public class CotizacionTrabajoModel {
     @Column(name = "subtotal", precision = 12, scale = 2)
     private BigDecimal subtotal;
 
+    @Column(name = "material")
+    private String material;
+
     @OneToMany(mappedBy = "cotizacionTrabajo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleCotizacionModel> detalles = new ArrayList<>();
 }

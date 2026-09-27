@@ -43,4 +43,7 @@ public class SolicitudTrabajoModel {
 
   @Column(name = "descripcion")
   private String descripcion;
+
+  @Column(name = "material")
+  private String material;
 }
