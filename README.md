@@ -81,14 +81,12 @@ ng serve --port 4201
 > [!NOTE]
 > Los siguientes enlaces corresponden a las instancias de producción desplegadas en la nube para la evaluación final:
 
-- **API REST Backend (HTTPS):**  
-  `https://api-urbanworks.onrender.com` *(Placeholder)*
 
 - **Dashboard Administrativo (HTTPS):**  
-  `https://dashboard-urbanworks.vercel.app` *(Placeholder)*
+  `https://frontend-urban-signs-dashboard.vercel.app/login` *(Placeholder)*
 
 - **Website Portal de Consulta (HTTPS):**  
-  `https://urbanworks.vercel.app` *(Placeholder)*
+  `https://website-urban-signs.vercel.app/landing/home` *(Placeholder)*
 
 ---
 
