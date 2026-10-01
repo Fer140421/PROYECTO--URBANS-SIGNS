@@ -1,6 +1,5 @@
 export const environment = {
     production: true,
-    // Cambia esta URL por la URL generada de tu backend en producción (ej. Render, Railway o tu dominio)
-    API_URL: 'https://urban-signs-api.onrender.com',
-    WS_URL: 'https://urban-signs-api.onrender.com/ws'
+    API_URL: 'https://api-urbanworks.onrender.com',
+    WS_URL: 'https://api-urbanworks.onrender.com/ws'
 };
