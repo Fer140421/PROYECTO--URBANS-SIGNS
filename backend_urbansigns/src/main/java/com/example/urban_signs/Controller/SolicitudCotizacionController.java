@@ -33,7 +33,7 @@ public class SolicitudCotizacionController {
     private final SolicitudCotizacionService solicitudCotizacionService;
 
     @PostMapping(value = "/registrar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_CREAR')")
     public ResponseEntity<Void> registrarSolicitudMultipart(
             @RequestPart("data") SolicitudCotizacionRequest request,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -42,14 +42,14 @@ public class SolicitudCotizacionController {
     }
 
     @PostMapping(value = "/registrar", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_CREAR')")
     public ResponseEntity<Void> registrarSolicitudJson(@RequestBody SolicitudCotizacionRequest request) {
         solicitudCotizacionService.registrarSolicitud(request, null);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/listar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_VER')")
     public Page<SolicitudCotizacionModel> listarSolicitudes(
             @RequestParam int page,
             @RequestParam int size,
@@ -65,14 +65,14 @@ public class SolicitudCotizacionController {
     }
 
     @GetMapping("/detalle/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_VER')")
     public ResponseEntity<SolicitudCotizacionDTO> obtenerSolicitud(@PathVariable Long id) {
         SolicitudCotizacionDTO solicitud = solicitudCotizacionService.obtenerSolicitudConTrabajos(id);
         return ResponseEntity.ok(solicitud);
     }
 
     @PutMapping("/modificar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
     public ResponseEntity<SolicitudCotizacionModel> modificarSolicitud(
             @PathVariable Long id,
             @RequestBody SolicitudCotizacionRequest request) {
@@ -82,15 +82,16 @@ public class SolicitudCotizacionController {
     }
 
     @GetMapping("/det-mod/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_VER')")
     public ResponseEntity<SolicitudDetalleDTO> obtenerDetalle(@PathVariable Long id) {
         return ResponseEntity.ok(solicitudCotizacionService.obtenerDetalle(id));
     }
 
     @PutMapping("/cancelar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
     public ResponseEntity<Void> cancelarSolicitud(@PathVariable Long id) {
         solicitudCotizacionService.cancelarSolicitud(id);
         return ResponseEntity.ok().build();
     }
 }
+

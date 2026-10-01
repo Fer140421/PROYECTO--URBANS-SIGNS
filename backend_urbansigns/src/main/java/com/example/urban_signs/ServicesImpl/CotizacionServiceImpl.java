@@ -27,12 +27,9 @@ import com.example.urban_signs.DTO.Pedidos.confirmarPedidoList.TrabajoCotizadoDT
 import com.example.urban_signs.Model.ClienteModel;
 import com.example.urban_signs.Model.CotizacionModel;
 import com.example.urban_signs.Model.CotizacionTrabajoModel;
-import com.example.urban_signs.Model.DetalleCotizacionModel;
-import com.example.urban_signs.Model.MaterialProduccionModel;
 import com.example.urban_signs.Model.SolicitudCotizacionModel;
 import com.example.urban_signs.Model.SolicitudTrabajoModel;
 import com.example.urban_signs.Repository.CotizacionRepository;
-import com.example.urban_signs.Repository.MaterialProduccionRepository;
 import com.example.urban_signs.Repository.SolicitudCotizacionRepository;
 import com.example.urban_signs.Repository.SolicitudTrabajoRepository;
 import com.example.urban_signs.Services.CotizacionService;
@@ -52,7 +49,6 @@ public class CotizacionServiceImpl implements CotizacionService {
         private final CotizacionRepository cotizacionRepository;
         private final SolicitudCotizacionRepository solicitudeCotizacionRepo;
         private final SolicitudTrabajoRepository solicitudTrabajoRepository;
-        private final MaterialProduccionRepository materialProduccionRepository;
         private final com.example.urban_signs.Services.PortalNotificacionService portalNotificacionService;
 
         @Override
@@ -82,28 +78,6 @@ public class CotizacionServiceImpl implements CotizacionService {
                         trabajo.setSubtotal(t.getSubtotal());
                         if (t.getMaterial() != null) {
                                 trabajo.setMaterial(t.getMaterial().trim());
-                        }
-
-                        // Limpiar la lista existente
-                        trabajo.getDetalles().clear();
-
-                        // Crear los nuevos detalles sólo si se proporcionaron
-                        if (t.getMateriales() != null && !t.getMateriales().isEmpty()) {
-                                List<DetalleCotizacionModel> nuevosDetalles = t.getMateriales().stream()
-                                                .filter(m -> m != null && m.getIdMaterial() != null)
-                                                .map(m -> {
-                                                        MaterialProduccionModel material = materialProduccionRepository
-                                                                        .findById(m.getIdMaterial())
-                                                                        .orElseThrow(() -> new RuntimeException(
-                                                                                        "Material no encontrado con ID: "
-                                                                                                        + m.getIdMaterial()));
-                                                        return DetalleCotizacionModel.builder()
-                                                                        .cotizacionTrabajo(trabajo)
-                                                                        .material(material)
-                                                                        .build();
-                                                })
-                                                .collect(Collectors.toList());
-                                trabajo.getDetalles().addAll(nuevosDetalles);
                         }
                 }
 
@@ -163,26 +137,6 @@ public class CotizacionServiceImpl implements CotizacionService {
 
                         BigDecimal subtotalTrabajo = t.getSubtotal() != null ? t.getSubtotal() : BigDecimal.ZERO;
                         total = total.add(subtotalTrabajo);
-
-                        List<DetalleCotizacionModel> detalles = new ArrayList<>();
-                        if (t.getMateriales() != null && !t.getMateriales().isEmpty()) {
-                                for (DetalleCotizacionRequest m : t.getMateriales()) {
-                                        if (m != null && m.getIdMaterial() != null) {
-                                                MaterialProduccionModel material = materialProduccionRepository
-                                                                .findById(m.getIdMaterial())
-                                                                .orElseThrow(() -> new RuntimeException(
-                                                                                "Material no encontrado con ID: " + m.getIdMaterial()));
-
-                                                DetalleCotizacionModel detalle = DetalleCotizacionModel.builder()
-                                                                .cotizacionTrabajo(cotTrabajo)
-                                                                .material(material)
-                                                                .build();
-
-                                                detalles.add(detalle);
-                                        }
-                                }
-                        }
-                        cotTrabajo.setDetalles(detalles);
                         trabajosCotizados.add(cotTrabajo);
                 }
 
@@ -304,17 +258,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .subtotal(trabajo.getSubtotal())
                                 .descripcion(descTexto)
                                 .material(materialTexto)
-                                .materiales(trabajo.getDetalles() != null ? trabajo.getDetalles().stream()
-                                                .map(this::convertirMaterialDTO)
-                                                .toList() : java.util.Collections.emptyList())
-                                .build();
-        }
-
-        private DetalleMaterialDTO convertirMaterialDTO(DetalleCotizacionModel detalle) {
-                return DetalleMaterialDTO.builder()
-                                .idDetalleCotizacion(detalle.getIdDetalleCotizacion())
-                                .idMaterial(detalle.getMaterial().getIdMaterial())
-                                .nombreMaterial(detalle.getMaterial().getNombre())
+                                .materiales(java.util.Collections.emptyList())
                                 .build();
         }
 

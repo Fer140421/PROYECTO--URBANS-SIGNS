@@ -26,7 +26,7 @@ public class FacturacionController {
 	private final FacturacionRepository facturacionRepository;
 
 	@PostMapping("/emitir/{idPedido}")
-	@org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('FACTURACION_CREAR')")
+	@org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('FACTURACION_CREAR')")
 	public ResponseEntity<?> emitirFactura(@PathVariable Long idPedido) {
 		try {
 			FacturacionModel factura = facturacionService.emitirFactura(idPedido);
@@ -37,7 +37,7 @@ public class FacturacionController {
 	}
 
 	@GetMapping("/pedido/{idPedido}")
-	@org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('FACTURACION_VER')")
+	@org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('FACTURACION_VER')")
 	public ResponseEntity<?> obtenerFacturaPorPedido(@PathVariable Long idPedido) {
 		FacturacionModel factura = facturacionRepository.findByPedido_IdPedido(idPedido);
 
@@ -49,3 +49,4 @@ public class FacturacionController {
 	}
 
 }
+

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente')")
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA')")
 @RequestMapping("/role")
 @RequiredArgsConstructor
 public class RolesController {
@@ -22,3 +22,4 @@ public class RolesController {
     }
     
 }
+

@@ -20,7 +20,7 @@ import com.example.urban_signs.ServicesImpl.DashboardServiceImpl;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('DASHBOARD_VER')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('DASHBOARD_VER')")
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
@@ -60,3 +60,4 @@ public class DashboardController {
     }
 
 }
+

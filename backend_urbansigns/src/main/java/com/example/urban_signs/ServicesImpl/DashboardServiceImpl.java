@@ -20,14 +20,10 @@ import com.example.urban_signs.DTO.Dashboard.MetricasProduccionDTO;
 import com.example.urban_signs.DTO.Dashboard.ProximaEntregaDTO;
 import com.example.urban_signs.DTO.Dashboard.TopClienteDTO;
 import com.example.urban_signs.Model.ClienteModel;
-import com.example.urban_signs.Model.LoteMaterialModel;
-import com.example.urban_signs.Model.MaterialProduccionModel;
 import com.example.urban_signs.Model.PedidoModel;
 import com.example.urban_signs.Model.PeopleModel;
 import com.example.urban_signs.Repository.ClienteRepository;
 import com.example.urban_signs.Repository.CotizacionRepository;
-import com.example.urban_signs.Repository.LoteRepository;
-import com.example.urban_signs.Repository.MaterialProduccionRepository;
 import com.example.urban_signs.Repository.MaterialTrabajoRepository;
 import com.example.urban_signs.Repository.OrdenImpresionRepository;
 import com.example.urban_signs.Repository.PagosPedidoRepository;
@@ -46,8 +42,6 @@ public class DashboardServiceImpl {
 
     private final PedidosRepository pedidoRepository;
     private final ClienteRepository clienteRepository;
-    private final MaterialProduccionRepository materialRepository;
-    private final LoteRepository loteRepository;
     private final OrdenImpresionRepository ordenImpresionRepository;
     private final TrabajoProgramadoRepository trabajoProgramadoRepository;
     private final MaterialTrabajoRepository herramientaRepository;
@@ -71,7 +65,7 @@ public class DashboardServiceImpl {
 
     @Autowired
     public Long getMaterialesStockCritico() {
-        return materialRepository.countStockCritico();
+        return 0L;
     }
 
     @Autowired
@@ -94,31 +88,7 @@ public class DashboardServiceImpl {
     }
 
     public List<MaterialStockBajoDTO> getMaterialesStockBajo() {
-        return materialRepository.findMaterialesStockBajo().stream()
-                .map(this::convertirAStockBajoDTO)
-                .collect(Collectors.toList());
-    }
-
-    private MaterialStockBajoDTO convertirAStockBajoDTO(MaterialProduccionModel m) {
-        LoteMaterialModel lote = loteRepository.findByMaterialAndActivoTrue(m);
-
-        return MaterialStockBajoDTO.builder()
-                .nombre(m.getNombre())
-                .foto(m.getFoto())
-                .stockActual(lote.getCantidadActual())
-                .stockMinimo(m.getStockMinimo())
-                .unidad(m.getUnidad().getAbreviatura())
-                .estado(determinarEstado(lote.getCantidadActual(), m.getStockMinimo()))
-                .build();
-    }
-
-    private String determinarEstado(BigDecimal actual, BigDecimal minimo) {
-        if (actual.compareTo(BigDecimal.ZERO) == 0) {
-            return "AGOTADO";
-        } else if (actual.compareTo(minimo) < 0) {
-            return "BAJO STOCK";
-        }
-        return "NORMAL";
+        return java.util.Collections.emptyList();
     }
 
     public List<ProximaEntregaDTO> getProximasEntregas() {

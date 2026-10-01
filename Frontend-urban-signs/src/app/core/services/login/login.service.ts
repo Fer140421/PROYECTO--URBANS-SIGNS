@@ -253,14 +253,13 @@ export class LoginService {
   }
 
   private redirectByRole(roles: string[]): void {
-    const rolesPriority = ['ROLE_ADMIN', 'ROLE_ALMACEN', 'ROLE_VENDEDOR'];
+    const rolesPriority = ['ROLE_OFICINA', 'ROLE_TALLER'];
 
     for (const priority of rolesPriority) {
       if (roles.includes(priority)) {
         const routes: Record<string, string> = {
-          'ROLE_ADMIN': '/home',
-          'ROLE_ALMACEN': '/home',
-          'ROLE_VENDEDOR': '/home'
+          'ROLE_OFICINA': '/home',
+          'ROLE_TALLER': '/home'
         };
         this.router.navigate([routes[priority]]);
         return;

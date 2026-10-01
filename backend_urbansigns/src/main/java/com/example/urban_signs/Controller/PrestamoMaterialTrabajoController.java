@@ -24,14 +24,14 @@ public class PrestamoMaterialTrabajoController {
     private final PrestamoMaterialTrabajoService service;
 
     @PostMapping("/registrar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_CREAR')")
     public ResponseEntity<PrestamoMaterialTrabajoModel> registrar(@RequestBody RegistrarPrestamoDTO dto) {
         PrestamoMaterialTrabajoModel prestamo = service.registrar(dto);
         return ResponseEntity.ok(prestamo);
     }
 
     @PutMapping("/modificar/{idPrestamo}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_EDITAR')")
     public ResponseEntity<PrestamoMaterialTrabajoModel> modificar(
             @PathVariable Long idPrestamo,
             @RequestBody RegistrarPrestamoDTO dto) {
@@ -40,20 +40,20 @@ public class PrestamoMaterialTrabajoController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_ELIMINAR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/individual/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_VER')")
     public ResponseEntity<PrestamoMaterialTrabajoModel> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(service.obtenerPorId(id));
     }
 
     @GetMapping("/listPrestamos")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_VER')")
     public Page<PrestamoDTO> listarPrestamos(
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) String tipoPrestamo,
@@ -63,7 +63,7 @@ public class PrestamoMaterialTrabajoController {
     }
 
     @PutMapping("/devolucion/{idPrestamo}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_EDITAR')")
     public ResponseEntity<Void> registrarDevolucion(
             @PathVariable Long idPrestamo,
             @RequestParam String observacion) {
@@ -73,9 +73,10 @@ public class PrestamoMaterialTrabajoController {
     }
 
     @GetMapping("/por-pedido/{idPedido}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_VER')")
     public ResponseEntity<java.util.List<PrestamoMaterialTrabajoModel>> listarPorPedido(@PathVariable Long idPedido) {
         return ResponseEntity.ok(service.listarPorPedido(idPedido));
     }
 
 }
+

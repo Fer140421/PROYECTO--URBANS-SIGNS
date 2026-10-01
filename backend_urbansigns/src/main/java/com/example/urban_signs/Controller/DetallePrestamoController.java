@@ -22,33 +22,34 @@ public class DetallePrestamoController {
  private final DetallePrestamoService service;
 
     @PostMapping("/registrar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_CREAR')")
     public ResponseEntity<DetallePrestamoModel> registrar(@RequestBody DetallePrestamoModel detalle) {
         return ResponseEntity.ok(service.registrar(detalle));
     }
 
     @PutMapping("/modificar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_EDITAR')")
     public ResponseEntity<DetallePrestamoModel> modificar(@PathVariable Long id, @RequestBody DetallePrestamoModel detalle) {
         return ResponseEntity.ok(service.modificar(id, detalle));
     }
 
     @DeleteMapping("/eliminar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_ELIMINAR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/listar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_VER')")
     public ResponseEntity<List<DetallePrestamoModel>> listar() {
         return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/individual/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PRESTAMO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PRESTAMO_VER')")
     public ResponseEntity<DetallePrestamoModel> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(service.obtenerPorId(id));
     }
 }
+

@@ -39,7 +39,7 @@ public class OrdenImpresionController {
     private final OrdenImpresionService ordenService;
 
     @PatchMapping(value = "/{id}/modificar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_EDITAR')")
     public ResponseEntity<?> modificarOrden(
             @PathVariable Long id,
             @RequestPart("orden") OrdenImpresionModificarDTO request,
@@ -53,7 +53,7 @@ public class OrdenImpresionController {
     }
 
     @PostMapping(value = "/registrar-orden-impresion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_CREAR')")
     public ResponseEntity<?> crearOrden(
             @RequestPart("orden") ordenImpresionRegistrarDTO request,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
@@ -70,13 +70,13 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/listOrdenImpresion")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public Page<OrdenImpresionModel> obtenerOrdenesPaginadas(Pageable pageable) {
         return ordenService.obtenerOrdenesPaginadas(pageable);
     }
 
     @GetMapping("/detalle-orden-impresion/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<OrdenImpresionModel> obtenerPorId(@PathVariable Long id) {
         OrdenImpresionModel orden = ordenService.obtenerPorId(id);
         if (orden == null)
@@ -85,7 +85,7 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/{id}/descargar-archivo")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<Resource> descargarArchivo(@PathVariable Long id) {
         try {
             Resource archivo = ordenService.descargarArchivo(id);
@@ -104,7 +104,7 @@ public class OrdenImpresionController {
     }
 
     @PatchMapping("/{id}/cambiar-estado")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_EDITAR')")
     public ResponseEntity<?> cambiarEstado(
             @PathVariable Long id,
             @RequestBody Map<String, String> request) {
@@ -129,7 +129,7 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/por-estado")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<Page<OrdenImpresionModel>> obtenerPorEstado(
             @RequestParam estadoOrdenImpresion estado,
             @RequestParam(defaultValue = "0") int page,
@@ -140,7 +140,7 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/buscar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<List<OrdenImpresionModel>> buscarOrdenes(
             @RequestParam String termino) {
         List<OrdenImpresionModel> ordenes = ordenService.buscarOrdenes(termino);
@@ -148,7 +148,7 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/estadisticas")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<Map<String, Long>> obtenerEstadisticas() {
         Map<String, Long> estadisticas = new HashMap<>();
         estadisticas.put("pendientes", ordenService.contarPorEstado(estadoOrdenImpresion.PENDIENTE));
@@ -158,7 +158,7 @@ public class OrdenImpresionController {
     }
 
     @GetMapping("/{id}/tiene-archivo")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('ORDEN_IMPRESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('ORDEN_IMPRESION_VER')")
     public ResponseEntity<Map<String, Object>> tieneArchivo(@PathVariable Long id) {
         try {
             String nombreArchivo = ordenService.obtenerNombreArchivo(id);
@@ -171,3 +171,4 @@ public class OrdenImpresionController {
         }
     }
 }
+

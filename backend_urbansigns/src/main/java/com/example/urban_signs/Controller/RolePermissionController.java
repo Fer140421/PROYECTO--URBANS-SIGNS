@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/roles-permisos")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('Gerente')")
+@PreAuthorize("hasRole('OFICINA')")
 public class RolePermissionController {
 
     private final RolePermissionServiceImpl rolePermissionService;
@@ -38,3 +38,4 @@ public class RolePermissionController {
         return ResponseEntity.noContent().build();
     }
 }
+

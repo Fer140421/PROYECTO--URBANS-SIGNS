@@ -29,19 +29,19 @@ public class ClientesController {
     private final ClienteService clienteService;
 
     @GetMapping("/buscar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_VER')")
     public List<ClienteBusquedaDTO> buscarClientes(@RequestParam("q") String q) {
         return clienteService.buscarClientes(q);
     }
 
     @PostMapping("/registrar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_CREAR')")
     public ResponseEntity<ClienteModel> registrarCliente(@RequestBody ClienteModel cliente) {
         return ResponseEntity.ok(clienteService.registrarCliente(cliente));
     }
 
     @PutMapping("/actualizar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_EDITAR')")
     public ResponseEntity<ClienteModel> actualizarCliente(
             @PathVariable Long id,
             @RequestBody ClienteModel cliente) {
@@ -49,7 +49,7 @@ public class ClientesController {
     }
 
     @GetMapping("/paginado")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_VER')")
     public ResponseEntity<Page<ClienteModel>> listarClientesPaginados(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -63,21 +63,21 @@ public class ClientesController {
     }
 
     @DeleteMapping("/eliminar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_ELIMINAR')")
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long id) {
         clienteService.eliminarCliente(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/activar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_EDITAR')")
     public ResponseEntity<Void> activarCliente(@PathVariable Long id) {
         clienteService.activarCliente(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/cambiar-tipo/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('CLIENTE_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_EDITAR')")
     public ResponseEntity<?> cambiarTipoCliente(
             @PathVariable Long id,
             @RequestBody Map<String, String> request) {
@@ -103,3 +103,4 @@ public class ClientesController {
         }
     }
 }
+

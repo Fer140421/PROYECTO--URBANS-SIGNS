@@ -27,7 +27,7 @@ public class SessionController {
     private final SessionService sessionService;
 
     @GetMapping("/listSession")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SESION_VER')")
     public Page<SesionModel> listarSesiones(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -39,7 +39,7 @@ public class SessionController {
     }
 
     @GetMapping("/{idSesion}/detalle")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('SESION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SESION_VER')")
     public ResponseEntity<SesionDetalleDTO> obtenerDetalleSesion(@PathVariable Long idSesion) {
         try {
             SesionDetalleDTO detalle = sessionService.obtenerDetalleSesion(idSesion);
@@ -50,3 +50,4 @@ public class SessionController {
     }
 
 }
+

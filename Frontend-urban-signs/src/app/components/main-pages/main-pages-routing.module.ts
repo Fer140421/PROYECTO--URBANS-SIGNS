@@ -1,26 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ListSuppliersComponent } from './options/suppliers/list-suppliers/list-suppliers.component';
-import { RegisterSuppliersComponent } from './options/suppliers/register-suppliers/register-suppliers.component';
 import { ListClientsComponent } from './options/clients/list-clients/list-clients.component';
 import { ListInventoryMaterialsComponent } from './options/inventory-materials/list-inventory-materials/list-inventory-materials.component';
-import { ListInventoryProductionComponent } from './options/inventory-production/list-inventory-production/list-inventory-production.component';
 import { ListStaffComponent } from './options/staff/list-staff/list-staff.component';
 import { RegisterStaffComponent } from './options/staff/register-staff/register-staff.component';
-import { RegisterInventoryProductionComponent } from './options/inventory-production/register-inventory-production/register-inventory-production.component';
 import { RegisterInventoryMaterialsComponent } from './options/inventory-materials/register-inventory-materials/register-inventory-materials.component';
 import { RegisterClientsComponent } from './options/clients/register-clients/register-clients.component';
 import { WelcomeComponent } from './options/welcome/welcome/welcome.component';
-import { CategorysComponent } from './options/categorys/categorys.component';
 import { ListPrestamosComponent } from './options/prestamos/list-prestamos/list-prestamos.component';
 import { RegistroPrestamoComponent } from './options/prestamos/registro-prestamo/registro-prestamo.component';
 import { ListSolicitudesComponent } from './options/solicitud-cotizacion/list-solicitudes/list-solicitudes.component';
 import { RegistrarCotizacionComponent } from './options/solicitud-cotizacion/registrar-cotizacion/registrar-cotizacion.component';
-import { ListComprasComponent } from './options/compras/list-compras/list-compras.component';
-import { RegistrarCompraComponent } from './options/compras/registrar-compra/registrar-compra.component';
-import { ListStockComponent } from './options/stock/list-stock/list-stock.component';
 import { RolesComponent } from './options/roles/roles/roles.component';
-import { UnidadesComponent } from './options/unidades/unidades/unidades.component';
 import { TrabajosComponent } from './options/trabajos/trabajos/trabajos.component';
 import { SolicitudCotizacionComponent } from './options/solicitud-cotizacion/solicitud-cotizacion/solicitud-cotizacion.component';
 import { AprobarCotizacionComponent } from './options/cotizaciones/aprobar-cotizacion/aprobar-cotizacion.component';
@@ -42,9 +33,9 @@ import { FacturacionComponent } from './options/facturacion/facturacion/facturac
 import { ListFacturacionesComponent } from './options/facturacion/list-facturaciones/list-facturaciones.component';
 import { CompletarPedidoComponent } from './options/pedidos/completar-pedido/completar-pedido.component';
 import { DashboardComponent } from './options/reportes/dashboard/dashboard.component';
-import { RegistrarSobranteComponent } from './options/sobrantes/registrar-sobrante/registrar-sobrante.component';
 import { RolePermissionsComponent } from './options/role-permissions/role-permissions/role-permissions.component';
 import { permissionGuard } from '../../core/guards/permission.guard';
+
 const routes: Routes = [
   {
     path: '',
@@ -55,6 +46,7 @@ const routes: Routes = [
     path: 'welcome',
     component: WelcomeComponent
   },
+  // --- Personal y Seguridad (Oficina) ---
   {
     path: 'list-staff',
     component: ListStaffComponent,
@@ -68,87 +60,58 @@ const routes: Routes = [
   {
     path: 'list-users',
     component: ListUsuariosComponent,
-    canActivate: [permissionGuard], data: { roles: ['Gerente'] }
+    canActivate: [permissionGuard], data: { roles: ['OFICINA'] }
   },
   {
     path: 'roles',
     component: RolesComponent,
-    canActivate: [permissionGuard], data: { roles: ['Gerente'] }
+    canActivate: [permissionGuard], data: { roles: ['OFICINA'] }
   },
   {
     path: 'permisos-por-rol',
     component: RolePermissionsComponent,
-    canActivate: [permissionGuard], data: { roles: ['Gerente'] }
+    canActivate: [permissionGuard], data: { roles: ['OFICINA'] }
   },
   {
-    path: 'list-suppliers',
-    component: ListSuppliersComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PROVEEDOR_VER'] }
+    path: 'accesos',
+    component: AccesosComponent,
+    canActivate: [permissionGuard], data: { roles: ['OFICINA'] }
   },
-  {
-    path: 'register-suppliers',
-    component: RegisterSuppliersComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PROVEEDOR_CREAR'] }
-  },
-  {
-    path: 'list-compras',
-    component: ListComprasComponent,
-    canActivate: [permissionGuard], data: { permissions: ['COMPRA_VER', 'COMPRA_CREAR', 'COMPRA_EDITAR'] }
-  },
+
+  // --- Servicios / Catálogo de Trabajos (Oficina) ---
   {
     path: 'list-trabajos',
     component: TrabajosComponent,
     canActivate: [permissionGuard], data: { permissions: ['TRABAJO_VER'] }
   },
+
+  // --- Clientes (Oficina) ---
   {
-    path: 'registrar-compras',
-    component: RegistrarCompraComponent,
-    canActivate: [permissionGuard], data: { permissions: ['COMPRA_CREAR'] }
+    path: 'list-clients',
+    component: ListClientsComponent,
+    canActivate: [permissionGuard], data: { permissions: ['CLIENTE_VER'] }
   },
   {
-    path: 'list-category',
-    component: CategorysComponent,
-    canActivate: [permissionGuard], data: { permissions: ['CATEGORIA_VER'] }
+    path: 'register-clients',
+    component: RegisterClientsComponent,
+    canActivate: [permissionGuard], data: { permissions: ['CLIENTE_CREAR'] }
   },
-  {
-    path: 'list-inventory-production',
-    component: ListInventoryProductionComponent,
-    canActivate: [permissionGuard], data: { permissions: ['MATERIAL_VER'] }
-  },
-  {
-    path: 'register-inventory-production',
-    component: RegisterInventoryProductionComponent,
-    canActivate: [permissionGuard], data: { permissions: ['MATERIAL_CREAR'] }
-  },
-  {
-    path: 'list-inventory-materials',
-    component: ListInventoryMaterialsComponent,
-    canActivate: [permissionGuard], data: { permissions: ['HERRAMIENTA_VER'] }
-  },
-  {
-    path: 'list-stock',
-    component: ListStockComponent,
-    canActivate: [permissionGuard], data: { permissions: ['MATERIAL_VER', 'LOTE_VER'] }
-  },
-  {
-    path: 'register-inventory-materials',
-    component: RegisterInventoryMaterialsComponent,
-    canActivate: [permissionGuard], data: { permissions: ['HERRAMIENTA_CREAR'] }
-  },
-  {
-    path: 'list-prestamos',
-    component: ListPrestamosComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PRESTAMO_VER'] }
-  },
-  {
-    path: 'register-prestamo',
-    component: RegistroPrestamoComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PRESTAMO_CREAR'] }
-  },
+
+  // --- Solicitudes y Cotizaciones (Oficina) ---
   {
     path: 'list-solicitudes',
     component: ListSolicitudesComponent,
     canActivate: [permissionGuard], data: { permissions: ['SOLICITUD_COTIZACION_VER', 'SOLICITUD_COTIZACION_CREAR', 'SOLICITUD_COTIZACION_EDITAR'] }
+  },
+  {
+    path: 'solicitud-cotizacion',
+    component: SolicitudCotizacionComponent,
+    canActivate: [permissionGuard], data: { permissions: ['SOLICITUD_COTIZACION_CREAR'] }
+  },
+  {
+    path: 'modificar-solicitud',
+    component: ModificarSolicitudComponent,
+    canActivate: [permissionGuard], data: { permissions: ['SOLICITUD_COTIZACION_EDITAR'] }
   },
   {
     path: 'list-cotizaciones',
@@ -165,50 +128,34 @@ const routes: Routes = [
     component: AprobarCotizacionComponent,
     canActivate: [permissionGuard], data: { permissions: ['COTIZACION_EDITAR'] }
   },
-  {
-    path: 'solicitud-cotizacion',
-    component: SolicitudCotizacionComponent,
-    canActivate: [permissionGuard], data: { permissions: ['SOLICITUD_COTIZACION_CREAR'] }
-  },
-  {
-    path: 'modificar-solicitud',
-    component: ModificarSolicitudComponent,
-    canActivate: [permissionGuard], data: { permissions: ['SOLICITUD_COTIZACION_EDITAR'] }
-  },
-  {
-    path: 'seguimiento',
-    component: SeguimientoComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PLANIFICACION_VER'] }
-  },
-  {
-    path: 'list-clients',
-    component: ListClientsComponent,
-    canActivate: [permissionGuard], data: { permissions: ['CLIENTE_VER'] }
-  },
-  {
-    path: 'register-clients',
-    component: RegisterClientsComponent,
-    canActivate: [permissionGuard], data: { permissions: ['CLIENTE_CREAR'] }
-  },
-  {
-    path: 'list-unidades',
-    component: UnidadesComponent,
-    canActivate: [permissionGuard], data: { permissions: ['UNIDAD_MEDIDA_ACCESO'] }
-  },
+
+  // --- Pedidos y Entregas (Oficina y Taller) ---
   {
     path: 'list-pedidos',
     component: PedidosComponent,
     canActivate: [permissionGuard], data: { permissions: ['PEDIDO_VER'] }
   },
   {
-    path: 'list-ordenes-trabajo',
-    component: OrdenTrabajoComponent,
-    canActivate: [permissionGuard], data: { permissions: ['COTIZACION_VER'] }
+    path: 'ver-detalles-pedido',
+    component: VerDetallesComponent,
+    canActivate: [permissionGuard], data: { permissions: ['PEDIDO_VER'] }
   },
+  {
+    path: 'completar-pedido',
+    component: CompletarPedidoComponent,
+    canActivate: [permissionGuard], data: { permissions: ['PEDIDO_EDITAR'] }
+  },
+
+  // --- Órdenes de Impresión (Oficina y Taller) ---
   {
     path: 'emision-ordenes-impresion',
     component: EmisionOrdenImpresionComponent,
     canActivate: [permissionGuard], data: { permissions: ['ORDEN_IMPRESION_VER'] }
+  },
+  {
+    path: 'registrar-ordenes-impresion',
+    component: RegistrarOrdenImpresionComponent,
+    canActivate: [permissionGuard], data: { permissions: ['ORDEN_IMPRESION_CREAR'] }
   },
   {
     path: 'modificar-orden-impresion',
@@ -220,16 +167,42 @@ const routes: Routes = [
     component: RecepcionOrdenImpresionComponent,
     canActivate: [permissionGuard], data: { permissions: ['ORDEN_IMPRESION_VER'] }
   },
+
+  // --- Órdenes de Trabajo y Planner (Oficina y Taller) ---
   {
-    path: 'registrar-ordenes-impresion',
-    component: RegistrarOrdenImpresionComponent,
-    canActivate: [permissionGuard], data: { permissions: ['ORDEN_IMPRESION_CREAR'] }
+    path: 'list-ordenes-trabajo',
+    component: OrdenTrabajoComponent,
+    canActivate: [permissionGuard], data: { permissions: ['COTIZACION_VER'] }
   },
   {
-    path: 'ver-detalles-pedido',
-    component: VerDetallesComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PEDIDO_VER'] }
+    path: 'seguimiento',
+    component: SeguimientoComponent,
+    canActivate: [permissionGuard], data: { permissions: ['PLANIFICACION_VER'] }
   },
+
+  // --- Herramientas y Préstamos de Taller ---
+  {
+    path: 'list-inventory-materials',
+    component: ListInventoryMaterialsComponent,
+    canActivate: [permissionGuard], data: { permissions: ['HERRAMIENTA_VER'] }
+  },
+  {
+    path: 'register-inventory-materials',
+    component: RegisterInventoryMaterialsComponent,
+    canActivate: [permissionGuard], data: { permissions: ['HERRAMIENTA_CREAR'] }
+  },
+  {
+    path: 'list-prestamos',
+    component: ListPrestamosComponent,
+    canActivate: [permissionGuard], data: { permissions: ['PRESTAMO_VER'] }
+  },
+  {
+    path: 'register-prestamo',
+    component: RegistroPrestamoComponent,
+    canActivate: [permissionGuard], data: { permissions: ['PRESTAMO_CREAR'] }
+  },
+
+  // --- Facturación ---
   {
     path: 'list-facturacion',
     component: ListFacturacionesComponent,
@@ -240,16 +213,8 @@ const routes: Routes = [
     component: FacturacionComponent,
     canActivate: [permissionGuard], data: { permissions: ['FACTURACION_CREAR'] }
   },
-  {
-    path: 'completar-pedido',
-    component: CompletarPedidoComponent,
-    canActivate: [permissionGuard], data: { permissions: ['PEDIDO_EDITAR'] }
-  },
-  {
-    path: 'registrar-residuos-reutilizables',
-    component: RegistrarSobranteComponent,
-    canActivate: [permissionGuard], data: { permissions: ['RESIDUO_CREAR'] }
-  },
+
+  // --- Sistema y Perfil ---
   {
     path: 'perfil',
     component: PerfilComponent
@@ -257,11 +222,6 @@ const routes: Routes = [
   {
     path: 'ayuda',
     component: AyudaComponent
-  },
-  {
-    path: 'accesos',
-    component: AccesosComponent,
-    canActivate: [permissionGuard], data: { roles: ['Gerente'] }
   },
   {
     path: 'dashboard',

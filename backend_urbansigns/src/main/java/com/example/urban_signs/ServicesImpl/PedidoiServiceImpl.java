@@ -182,21 +182,7 @@ public class PedidoiServiceImpl implements PedidosService {
                                         trabajoDTO.setIdCotizacionTrabajo(trabajo.getIdCotizacionTrabajo());
                                         trabajoDTO.setSubtotal(trabajo.getSubtotal());
 
-                                        // Obtener detalles de cotización (detalles)
-                                        List<DetalleCotizacionDTO> detallesDTO = trabajo.getDetalles().stream()
-                                                        .map(detalle -> {
-                                                                DetalleCotizacionDTO detalleDTO = new DetalleCotizacionDTO();
-                                                                detalleDTO.setIdDetalleCotizacion(
-                                                                                detalle.getIdDetalleCotizacion());
-                                                                detalleDTO.setIdMaterial(
-                                                                                detalle.getMaterial().getIdMaterial());
-                                                                detalleDTO.setNombreMaterial(
-                                                                                detalle.getMaterial().getNombre());
-                                                                return detalleDTO;
-                                                        })
-                                                        .collect(Collectors.toList());
-
-                                        trabajoDTO.setDetalles(detallesDTO);
+                                        trabajoDTO.setDetalles(java.util.Collections.emptyList());
                                         return trabajoDTO;
                                 }).collect(Collectors.toList());
 

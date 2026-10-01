@@ -100,7 +100,7 @@ public class PasswordRecoveryService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('Gerente')")
+    @PreAuthorize("hasRole('OFICINA')")
     public void adminReset(Long userId, String password) {
         validatePassword(password);
         if (userId == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario requerido.");

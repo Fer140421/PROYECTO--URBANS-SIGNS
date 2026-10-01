@@ -31,14 +31,14 @@ public class CotizacionController {
     private final CotizacionService cotizacionService;
 
     @PostMapping("/registrar")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('COTIZACION_CREAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('COTIZACION_CREAR')")
     public ResponseEntity<Void> registrarCotizacion(@RequestBody CotizacionRequest request) {
         CotizacionModel cotizacion = cotizacionService.registrarCotizacion(request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/modificar-trabajos/{idCotizacion}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('COTIZACION_EDITAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('COTIZACION_EDITAR')")
     public ResponseEntity<Void> modificarTrabajosCotizacion(
             @PathVariable Long idCotizacion,
             @RequestBody ModificarCotizacionMod request) {
@@ -47,21 +47,21 @@ public class CotizacionController {
     }
 
     @GetMapping("/confirmacion/{idSolicitud}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('COTIZACION_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('COTIZACION_VER')")
     public ResponseEntity<ConfirmacionPedidoDTO> obtenerConfirmacionPedido(@PathVariable Long idSolicitud) {
         ConfirmacionPedidoDTO confirmacion = cotizacionService.obtenerConfirmacionPedidoPorSolicitud(idSolicitud);
         return ResponseEntity.ok(confirmacion);
     }
 
     @GetMapping("/detalles-cotizacion/{id}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('COTIZACION_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('COTIZACION_VER')")
     public ResponseEntity<CotizacionDetalleDTO> obtenerDetalleCotizacion(@PathVariable Long id) {
         CotizacionDetalleDTO detalle = cotizacionService.obtenerDetallePorId(id);
         return ResponseEntity.ok(detalle);
     }
 
     @GetMapping("/listar")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('COTIZACION_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('COTIZACION_VER')")
     public Page<cotizacionDTO> listarCotizaciones(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -85,3 +85,4 @@ public class CotizacionController {
     }
 
 }
+

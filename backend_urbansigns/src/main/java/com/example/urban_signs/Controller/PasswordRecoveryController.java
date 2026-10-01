@@ -34,7 +34,7 @@ public class PasswordRecoveryController {
     public record AdminResetRequest(Long userId, String newPassword) {}
 
     @PatchMapping("/admin/reset-password")
-    @PreAuthorize("hasRole('Gerente')")
+    @PreAuthorize("hasRole('OFICINA')")
     public Map<String, String> adminReset(@RequestBody AdminResetRequest request) {
         recovery.adminReset(request.userId(), request.newPassword());
         return Map.of("message", "Contraseña actualizada correctamente.");
@@ -44,3 +44,4 @@ public class PasswordRecoveryController {
         return ResponseEntity.status(error.getStatusCode()).body(Map.of("message", error.getReason()));
     }
 }
+

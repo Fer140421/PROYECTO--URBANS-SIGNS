@@ -49,7 +49,4 @@ public class CotizacionTrabajoModel {
 
     @Column(name = "material")
     private String material;
-
-    @OneToMany(mappedBy = "cotizacionTrabajo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetalleCotizacionModel> detalles = new ArrayList<>();
 }

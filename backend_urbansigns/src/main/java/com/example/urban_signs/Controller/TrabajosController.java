@@ -32,7 +32,7 @@ public class TrabajosController {
 
     // ✅ Crear
     @PostMapping("/registrar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_CREAR')")
     public ResponseEntity<TrabajosModel> crear(
             @RequestPart("data") RegistroTrabajoDTO dto,
             @RequestPart("file") MultipartFile file) {
@@ -41,7 +41,7 @@ public class TrabajosController {
 
     // ✅ Editar
     @PutMapping("modificar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_EDITAR')")
     public ResponseEntity<TrabajosModel> editar(
             @PathVariable Long id,
             @RequestPart("data") RegistroTrabajoDTO dto,
@@ -51,7 +51,7 @@ public class TrabajosController {
 
     // ✅ Listar con paginación
     @GetMapping("/listar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_VER')")
     public ResponseEntity<Page<TrabajosModel>> listar(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) Boolean estado,
@@ -63,22 +63,23 @@ public class TrabajosController {
 
     // ✅ Listar solo id y nombre
     @GetMapping("/simple")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_VER')")
     public ResponseEntity<List<TrabajoSimpleDTO>> listarSimple() {
         return ResponseEntity.ok(service.listarSimple());
     }
 
     // ✅ Eliminar lógico
     @PatchMapping("/eliminar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_ELIMINAR')")
     public ResponseEntity<TrabajosModel> eliminarLogico(@PathVariable Long id) {
         return ResponseEntity.ok(service.eliminarLogico(id));
     }
 
     // ✅ Activar lógico
     @PatchMapping("/activar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('TRABAJO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('TRABAJO_EDITAR')")
     public ResponseEntity<TrabajosModel> activar(@PathVariable Long id) {
         return ResponseEntity.ok(service.activar(id));
     }
 }
+

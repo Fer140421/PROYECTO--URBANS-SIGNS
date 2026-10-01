@@ -41,14 +41,14 @@ public class PedidosController {
     // En PedidosController.java
 
     @PostMapping("/generar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_CREAR')")
     public ResponseEntity<Void> generarPedido(@RequestBody PedidoRequestDTO request) {
         pedidoService.generarPedidoDesdeCotizacion(request);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/listPedidos")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_VER')")
     public ResponseEntity<Page<PedidoListDTO>> listarPedidos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -67,14 +67,14 @@ public class PedidosController {
     }
 
     @GetMapping("/detalle-pedido/{idPedido}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_VER')")
     public ResponseEntity<PedidoCotizacionDTO> obtenerDetallePedido(@PathVariable Long idPedido) {
         PedidoCotizacionDTO detallePedido = pedidoService.obtenerDetallePedido(idPedido);
         return ResponseEntity.ok(detallePedido);
     }
 
     @PutMapping("/completar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_EDITAR')")
     public ResponseEntity<?> completarPedido(
             @PathVariable Long id,
             @RequestBody CompletarPedidoRequestDTO request) {
@@ -93,26 +93,26 @@ public class PedidosController {
     }
 
     @GetMapping("/pendientes")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_VER')")
     public ResponseEntity<List<PedidoResumenDTO>> obtenerPedidosPendientes() {
         return ResponseEntity.ok(pedidoService.obtenerPedidosPendientes());
     }
 
     @GetMapping("/{idPedido}/trabajos-disponibles")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_VER')")
     public ResponseEntity<List<TrabajoDisponibleDTO>> obtenerTrabajosDelPedido(
             @PathVariable Long idPedido) {
         return ResponseEntity.ok(planificacionService.obtenerTrabajosDisponibles(idPedido));
     }
 
     @GetMapping("/listos-para-entrega")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_VER')")
     public ResponseEntity<List<com.example.urban_signs.DTO.Pedidos.entrega.PedidoListoEntregaDTO>> obtenerPedidosListosParaEntrega() {
         return ResponseEntity.ok(pedidoService.obtenerPedidosListosParaEntrega());
     }
 
     @PostMapping(value = "/{id}/registrar-entrega", consumes = { "multipart/form-data" })
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PEDIDO_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PEDIDO_EDITAR')")
     public ResponseEntity<?> registrarEntrega(
             @PathVariable Long id,
             @RequestParam(value = "foto", required = false) org.springframework.web.multipart.MultipartFile foto,
@@ -139,3 +139,4 @@ public class PedidosController {
     }
 
 }
+

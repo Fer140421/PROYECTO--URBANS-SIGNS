@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user_roles")
-@PreAuthorize("hasRole('Gerente')")
+@PreAuthorize("hasRole('OFICINA')")
 public class Users_rolesController {
 
     private final users_rolesService users_rolesService;
@@ -39,3 +39,4 @@ public class Users_rolesController {
     }
 
 }
+

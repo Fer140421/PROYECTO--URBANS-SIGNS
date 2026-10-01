@@ -34,7 +34,7 @@ public class PlanificacionController {
 
     // Crear nueva planificación semanal
     @PostMapping("/crear")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_CREAR')")
     public ResponseEntity<PlanificacionSemanalDTO> crearPlanificacion(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam Long usuarioId) {
@@ -43,7 +43,7 @@ public class PlanificacionController {
 
     // Obtener planificación actual (semana en curso)
     @GetMapping("/actual")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
     public ResponseEntity<?> obtenerPlanificacionActual() {
         try {
             return ResponseEntity.ok(planificacionService.obtenerPlanificacionActual());
@@ -62,7 +62,7 @@ public class PlanificacionController {
 
     // Obtener planificación por fecha
     @GetMapping("/por-fecha")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
     public ResponseEntity<PlanificacionSemanalDTO> obtenerPorFecha(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return ResponseEntity.ok(planificacionService.obtenerPlanificacionPorFecha(fecha));
@@ -70,21 +70,21 @@ public class PlanificacionController {
 
     // Listar todas las planificaciones
     @GetMapping("/listar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
     public ResponseEntity<List<PlanificacionSemanalDTO>> listarPlanificaciones() {
         return ResponseEntity.ok(planificacionService.listarPlanificaciones());
     }
 
     // Crear nuevo trabajo programado
     @PostMapping("/trabajos/crear")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_CREAR')")
     public ResponseEntity<TrabajoProgramadoDTO> crearTrabajo(@RequestBody CrearTrabajoRequestDTO request) {
         return ResponseEntity.ok(planificacionService.crearTrabajo(request));
     }
 
     // Actualizar trabajo
     @PutMapping("/trabajos/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_EDITAR')")
     public ResponseEntity<TrabajoProgramadoDTO> actualizarTrabajo(
             @PathVariable Long id,
             @RequestBody CrearTrabajoRequestDTO request) {
@@ -93,7 +93,7 @@ public class PlanificacionController {
 
     // Eliminar trabajo
     @DeleteMapping("/trabajos/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_ELIMINAR')")
     public ResponseEntity<Void> eliminarTrabajo(@PathVariable Long id) {
         planificacionService.eliminarTrabajo(id);
         return ResponseEntity.noContent().build();
@@ -101,14 +101,14 @@ public class PlanificacionController {
 
     // Marcar trabajo como completado
     @PutMapping("/trabajos/{id}/completar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_EDITAR')")
     public ResponseEntity<TrabajoProgramadoDTO> marcarCompletado(@PathVariable Long id) {
         return ResponseEntity.ok(planificacionService.marcarComoCompletado(id));
     }
 
     // Reprogramar trabajo
     @PutMapping("/trabajos/{id}/reprogramar")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_EDITAR')")
     public ResponseEntity<TrabajoProgramadoDTO> reprogramarTrabajo(
             @PathVariable Long id,
             @RequestBody ReprogramarTrabajoRequestDTO request,
@@ -118,14 +118,14 @@ public class PlanificacionController {
 
     // Obtener trabajos de una semana
     @GetMapping("/trabajos/semana/{idPlanificacion}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
     public ResponseEntity<List<TrabajoProgramadoDTO>> obtenerTrabajosSemana(@PathVariable Long idPlanificacion) {
         return ResponseEntity.ok(planificacionService.obtenerTrabajosPorSemana(idPlanificacion));
     }
 
     // Obtener trabajos vencidos
     @GetMapping("/trabajos/vencidos")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('PLANIFICACION_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
     public ResponseEntity<List<TrabajoProgramadoDTO>> obtenerTrabajosVencidos() {
         return ResponseEntity.ok(planificacionService.obtenerTrabajosVencidos());
     }
@@ -133,3 +133,4 @@ public class PlanificacionController {
     // En PlanificacionController.java
 
 }
+

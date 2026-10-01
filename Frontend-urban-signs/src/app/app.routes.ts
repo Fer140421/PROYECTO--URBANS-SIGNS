@@ -23,32 +23,32 @@ export const routes: Routes = [
         path: 'login',
         component: LoginComponent,
         canActivate: [noAuthGuard],
-        data: { roles: ['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR', 'ROLE_ALMACEN'] }
+        data: { roles: ['ROLE_OFICINA', 'ROLE_TALLER'] }
     },
     {
         path: 'solicitud-email',
         component: SolicitudEmailComponent,
         canActivate: [noAuthGuard],
-        data: { roles: ['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR', 'ROLE_ALMACEN'] }
+        data: { roles: ['ROLE_OFICINA', 'ROLE_TALLER'] }
     },
     {
         path: 'verification',
         component: VerificationComponent,
         canActivate: [noAuthGuard, passwordRecoveryGuard],
-        data: { roles: ['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR', 'ROLE_ALMACEN'] }
+        data: { roles: ['ROLE_OFICINA', 'ROLE_TALLER'] }
     },
     {
         path: 'new-contrasenia',
         component: NewContraseniaComponent,
         canActivate: [noAuthGuard, passwordRecoveryGuard],
-        data: { roles: ['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR', 'ROLE_ALMACEN'] }
+        data: { roles: ['ROLE_OFICINA', 'ROLE_TALLER'] }
     },
     {
         path: 'home',
         component: MainPagesComponent,
         loadChildren: () => import('./components/main-pages/main-pages.module').then((m) => m.MainPagesModule),
         canActivate: [verifyGuard],
-        data: { roles: ['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR', 'ROLE_ALMACEN'] }
+        data: { roles: ['ROLE_OFICINA', 'ROLE_TALLER'] }
     },
     /*{
         path: '**',

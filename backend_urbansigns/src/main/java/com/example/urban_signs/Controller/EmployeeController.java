@@ -40,7 +40,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping("/listEmployee")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_VER')")
     public Page<EmployyeDetailDTO> getEmployees(
             @RequestParam(required = false) Boolean status,
             @RequestParam(required = false) String search,
@@ -49,7 +49,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/employee/select/{id}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_VER')")
     public ResponseEntity<EmployeeModel> getById(@PathVariable Long id) {
         return employeeService.findById(id)
                 .map(ResponseEntity::ok)
@@ -57,7 +57,7 @@ public class EmployeeController {
     }
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_CREAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_CREAR')")
     public ResponseEntity<EmployeeResponseDTO> register(
             @RequestPart("employee") EmployeeRegistrationDTO dto,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -65,7 +65,7 @@ public class EmployeeController {
     }
 
     @PutMapping(value = "/mod/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_EDITAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_EDITAR')")
     public ResponseEntity<?> updateEmployee(
             @PathVariable Long id,
             @RequestPart("employee") EmployeeUpdateDTO dto,
@@ -74,27 +74,27 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/del/{id}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_ELIMINAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_ELIMINAR')")
     public ResponseEntity<?> deleteLogic(@PathVariable Long id) {
         employeeService.deleteEmployeeLogic(id);
         return ResponseEntity.ok().body(Map.of("message", "Empleado eliminado correctamente"));
     }
 
     @PutMapping("/activate/{id}")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_EDITAR')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_EDITAR')")
     public ResponseEntity<?> activateEmployee(@PathVariable Long id) {
         employeeService.activateEmployeeLogic(id);
         return ResponseEntity.ok().body(Map.of("message", "Empleado activado correctamente"));
     }
 
     @GetMapping("/activos")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_VER')")
     public List<ListEmpleadosProjection> getEmpleadosActivos() {
         return employeeService.obtenerEmpleadosActivos();
     }
 
     @GetMapping("/listUserEmployee")
-    @PreAuthorize("hasRole('Gerente') or hasAuthority('EMPLEADO_VER')")
+    @PreAuthorize("hasRole('OFICINA') or hasAuthority('EMPLEADO_VER')")
     public ResponseEntity<Page<UsuarioEmpleadoDTO>> getEmployeeList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -123,3 +123,4 @@ public class EmployeeController {
     }
 
 }
+

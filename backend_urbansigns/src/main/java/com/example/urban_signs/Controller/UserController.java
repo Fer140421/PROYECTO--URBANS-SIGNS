@@ -53,7 +53,7 @@ public class UserController {
     private final com.example.urban_signs.config.JwtCookieService jwtCookieService;
 
     @GetMapping("/listUsers")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA')")
     public List<UsersModel> listUsers() {
         return userServices.findAll();
     }
@@ -246,7 +246,7 @@ public class UserController {
     }
 
     @PostMapping("/reset-email")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA')")
     public ResponseEntity<Map<String, String>> resetEmail(@RequestBody Map<String, Object> request) {
         Map<String, String> response = new HashMap<>();
 
@@ -275,3 +275,4 @@ public class UserController {
     }
 
 }
+

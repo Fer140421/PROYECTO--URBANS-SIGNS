@@ -32,7 +32,7 @@ public class HerramientasController {
     private final MaterialTrabajoService service;
 
     @GetMapping("/listHerramientas")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_VER')")
     public ResponseEntity<Page<HerramientaListDTO>> listar(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -44,7 +44,7 @@ public class HerramientasController {
     }
 
     @GetMapping("/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_VER')")
     public ResponseEntity<HerramientasModel> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
@@ -52,7 +52,7 @@ public class HerramientasController {
     }
 
     @PostMapping("/RegistrarMaterial")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_CREAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_CREAR')")
     public ResponseEntity<?> create(
             @RequestPart("material") MaterialTrabajoRegistrarDTO dto,
             @RequestPart("file") MultipartFile file) {
@@ -61,7 +61,7 @@ public class HerramientasController {
     }
 
     @PutMapping("/modificar-Material/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_EDITAR')")
     public ResponseEntity<HerramientasModel> update(
             @PathVariable Long id,
             @RequestPart("material") MaterialTrabajoRegistrarDTO dto,
@@ -75,7 +75,7 @@ public class HerramientasController {
     }
 
     @DeleteMapping("/eliminar/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_ELIMINAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_ELIMINAR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         try {
             service.delete(id);
@@ -86,13 +86,13 @@ public class HerramientasController {
     }
 
     @GetMapping("/activos")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_VER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_VER')")
     public List<MaterialListProjection> listarMaterialesActivos() {
         return service.obtenerMaterialesActivos();
     }
 
     @PutMapping("/actualizar-estado/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasRole('Gerente') or hasAuthority('HERRAMIENTA_EDITAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('HERRAMIENTA_EDITAR')")
     public ResponseEntity<HerramientasModel> actualizarEstado(
             @PathVariable Long id,
             @RequestParam("estado") EstadoHerramienta estado) {
@@ -105,3 +105,4 @@ public class HerramientasController {
     }
 
 }
+

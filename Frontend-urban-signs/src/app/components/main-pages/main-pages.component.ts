@@ -33,7 +33,7 @@ export class MainPagesComponent {
   }
 
   canAccessPersonal(): boolean {
-    return this.loginService.hasRole('Gerente') || this.loginService.hasPermission('EMPLEADO_VER');
+    return this.loginService.hasRole('OFICINA') || this.loginService.hasPermission('EMPLEADO_VER');
   }
 
   toggleSidebar(): void {
