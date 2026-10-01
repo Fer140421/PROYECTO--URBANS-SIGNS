@@ -66,6 +66,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
                     auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();
                     auth.requestMatchers("/error").permitAll();
                     // Rutas públicas
@@ -86,9 +87,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
                     corsConfig.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
-                    corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                    corsConfig.setAllowedHeaders(Arrays.asList("Content-Type", "Accept", "Authorization"));
-                    corsConfig.setExposedHeaders(Arrays.asList("Set-Cookie", "Retry-After"));
+                    corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
+                    corsConfig.setAllowedHeaders(Arrays.asList("*"));
+                    corsConfig.setExposedHeaders(Arrays.asList("Set-Cookie", "Retry-After", "Authorization"));
                     corsConfig.setAllowCredentials(true);
                     corsConfig.setMaxAge(3600L);
                     return corsConfig;
