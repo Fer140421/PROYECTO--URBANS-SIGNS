@@ -104,14 +104,21 @@ export class RegistrarCotizacionComponent implements OnInit {
     });
   }
 
+  private formatFechaLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   private configurarFechasAutomaticas(): void {
     const hoy = new Date();
     const caducidad = new Date();
     caducidad.setDate(hoy.getDate() + 15);
 
     this.cotizacionForm.patchValue({
-      fecha_emision: hoy.toISOString().split('T')[0],
-      fecha_caducado: caducidad.toISOString().split('T')[0]
+      fecha_emision: this.formatFechaLocal(hoy),
+      fecha_caducado: this.formatFechaLocal(caducidad)
     });
   }
 
