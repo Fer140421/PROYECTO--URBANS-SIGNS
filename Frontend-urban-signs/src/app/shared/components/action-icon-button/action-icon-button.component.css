@@ -1,3 +1,7 @@
+:host[hidden] {
+  display: none !important;
+}
+
 .action-icon-button {
   display: inline-flex;
   width: 2.25rem;

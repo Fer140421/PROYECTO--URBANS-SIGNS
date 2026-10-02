@@ -120,20 +120,33 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
                         <div class="inline-flex items-center justify-end gap-1">
-                            <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'" [hidden]="data.estado === 'CANCELADA'"
-                                label="Editar" icon="ph ph-pencil-simple text-lg" variant="primary"
-                                (action)="abrirModal(data)"></app-action-icon-button>
+                            <!-- Ver detalles: Disponible en todos los estados -->
                             <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_VER'" label="Ver detalles"
                                 icon="ph ph-eye text-lg" (action)="visualizarModal(data)"></app-action-icon-button>
-                            <app-action-icon-button *hasPermission="'COTIZACION_CREAR'" [hidden]="data.estado !== 'PENDIENTE'"
-                                label="Registrar cotización" icon="ph ph-file-plus text-lg" variant="success"
-                                [routerLink]="['/home/registrar-cotizacion', data.idSolicitud]"></app-action-icon-button>
-                            <app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado !== 'COTIZADA'"
-                                label="Confirmar aceptación" icon="ph ph-check-circle text-lg" variant="success"
-                                [routerLink]="['/home/confirmar-cotizacion', data.idSolicitud]"></app-action-icon-button>
-                            <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'" [hidden]="data.estado === 'CANCELADA'"
-                                label="Anular" icon="ph ph-x-circle text-lg" variant="danger"
-                                (action)="openDeleteModal(data)"></app-action-icon-button>
+
+                            <!-- Acciones exclusivas para estado PENDIENTE -->
+                            <ng-container *ngIf="data.estado === 'PENDIENTE'">
+                                <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'"
+                                    label="Editar solicitud" icon="ph ph-pencil-simple text-lg" variant="primary"
+                                    (action)="abrirModal(data)"></app-action-icon-button>
+
+                                <app-action-icon-button *hasPermission="'COTIZACION_CREAR'"
+                                    label="Registrar cotización" icon="ph ph-file-plus text-lg" variant="success"
+                                    [routerLink]="['/home/registrar-cotizacion', data.idSolicitud]"></app-action-icon-button>
+
+                                <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'"
+                                    label="Anular solicitud" icon="ph ph-x-circle text-lg" variant="danger"
+                                    (action)="openDeleteModal(data)"></app-action-icon-button>
+                            </ng-container>
+
+                            <!-- Acciones para estado COTIZADA (Ir a cotización) -->
+                            <ng-container *ngIf="data.estado === 'COTIZADA'">
+                                <app-action-icon-button *hasPermission="'COTIZACION_VER'"
+                                    label="Ver en Cotizaciones" icon="ph ph-receipt text-lg" variant="primary"
+                                    routerLink="/home/list-cotizaciones"></app-action-icon-button>
+                            </ng-container>
+
+                            <!-- Imprimir: Disponible en todos los estados -->
                             <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_VER'" label="Imprimir"
                                 icon="ph ph-printer text-lg" variant="warning"
                                 (action)="imprimirSolicitud(data)"></app-action-icon-button>
@@ -196,20 +209,33 @@
                     </div>
 
                     <footer class="px-4 py-3 border-t border-gray-100 bg-gray-50 flex flex-wrap items-center justify-end gap-1">
-                        <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'" [hidden]="data.estado === 'CANCELADA'"
-                            label="Editar" icon="ph ph-pencil-simple text-lg" variant="primary"
-                            (action)="abrirModal(data)"></app-action-icon-button>
+                        <!-- Ver detalles: En todos los estados -->
                         <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_VER'" label="Ver detalles"
                             icon="ph ph-eye text-lg" (action)="visualizarModal(data)"></app-action-icon-button>
-                        <app-action-icon-button *hasPermission="'COTIZACION_CREAR'" [hidden]="data.estado !== 'PENDIENTE'"
-                            label="Registrar cotización" icon="ph ph-file-plus text-lg" variant="success"
-                            [routerLink]="['/home/registrar-cotizacion', data.idSolicitud]"></app-action-icon-button>
-                        <app-action-icon-button *hasPermission="'COTIZACION_EDITAR'" [hidden]="data.estado !== 'COTIZADA'"
-                            label="Confirmar aceptación" icon="ph ph-check-circle text-lg" variant="success"
-                            [routerLink]="['/home/confirmar-cotizacion', data.idSolicitud]"></app-action-icon-button>
-                        <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'" [hidden]="data.estado === 'CANCELADA'"
-                            label="Anular" icon="ph ph-x-circle text-lg" variant="danger"
-                            (action)="openDeleteModal(data)"></app-action-icon-button>
+
+                        <!-- Acciones exclusivas para estado PENDIENTE -->
+                        <ng-container *ngIf="data.estado === 'PENDIENTE'">
+                            <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'"
+                                label="Editar solicitud" icon="ph ph-pencil-simple text-lg" variant="primary"
+                                (action)="abrirModal(data)"></app-action-icon-button>
+
+                            <app-action-icon-button *hasPermission="'COTIZACION_CREAR'"
+                                label="Registrar cotización" icon="ph ph-file-plus text-lg" variant="success"
+                                [routerLink]="['/home/registrar-cotizacion', data.idSolicitud]"></app-action-icon-button>
+
+                            <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_EDITAR'"
+                                label="Anular solicitud" icon="ph ph-x-circle text-lg" variant="danger"
+                                (action)="openDeleteModal(data)"></app-action-icon-button>
+                        </ng-container>
+
+                        <!-- Acciones para estado COTIZADA (Ir a cotización) -->
+                        <ng-container *ngIf="data.estado === 'COTIZADA'">
+                            <app-action-icon-button *hasPermission="'COTIZACION_VER'"
+                                label="Ver en Cotizaciones" icon="ph ph-receipt text-lg" variant="primary"
+                                routerLink="/home/list-cotizaciones"></app-action-icon-button>
+                        </ng-container>
+
+                        <!-- Imprimir: En todos los estados -->
                         <app-action-icon-button *hasPermission="'SOLICITUD_COTIZACION_VER'" label="Imprimir"
                             icon="ph ph-printer text-lg" variant="warning"
                             (action)="imprimirSolicitud(data)"></app-action-icon-button>
