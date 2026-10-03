@@ -13,6 +13,9 @@ export interface FormTrabajoItem {
   base: number;
   altura: number;
   descripcion: string;
+  file?: File | null;
+  imagePreview?: string | null;
+  isDragging?: boolean;
 }
 
 @Component({
@@ -43,7 +46,10 @@ export class PagesCotizaciones implements OnInit {
       cantidad: 1,
       base: 2.0,
       altura: 1.0,
-      descripcion: ''
+      descripcion: '',
+      file: null,
+      imagePreview: null,
+      isDragging: false
     }
   ];
 
@@ -55,10 +61,6 @@ export class PagesCotizaciones implements OnInit {
     'Señalización',
     'BTL y eventos'
   ];
-
-  selectedFile: File | null = null;
-  imagePreview: string | null = null;
-  isDragging = false;
 
   ngOnInit(): void {
     this.auth.restoreSession().subscribe();
@@ -103,7 +105,10 @@ export class PagesCotizaciones implements OnInit {
       cantidad: 1,
       base: 1.5,
       altura: 1.0,
-      descripcion: ''
+      descripcion: '',
+      file: null,
+      imagePreview: null,
+      isDragging: false
     };
     this.trabajos.push(item);
   }
@@ -147,57 +152,69 @@ export class PagesCotizaciones implements OnInit {
     return found ? found.idTrabajo : undefined;
   }
 
-  onFileSelected(event: Event): void {
+  onTrabajoFileSelected(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.processFile(input.files[0]);
+      this.processFileForTrabajo(input.files[0], index);
     }
   }
 
-  onDragOver(event: DragEvent): void {
+  onTrabajoDragOver(event: DragEvent, index: number): void {
     event.preventDefault();
     event.stopPropagation();
-    this.isDragging = true;
-  }
-
-  onDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.isDragging = false;
-  }
-
-  onFileDrop(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.isDragging = false;
-    if (event.dataTransfer?.files && event.dataTransfer.files[0]) {
-      this.processFile(event.dataTransfer.files[0]);
+    if (this.trabajos[index]) {
+      this.trabajos[index].isDragging = true;
     }
   }
 
-  processFile(file: File): void {
+  onTrabajoDragLeave(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.trabajos[index]) {
+      this.trabajos[index].isDragging = false;
+    }
+  }
+
+  onTrabajoFileDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.trabajos[index]) {
+      this.trabajos[index].isDragging = false;
+      if (event.dataTransfer?.files && event.dataTransfer.files[0]) {
+        this.processFileForTrabajo(event.dataTransfer.files[0], index);
+      }
+    }
+  }
+
+  processFileForTrabajo(file: File, index: number): void {
     this.submitError = '';
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type.toLowerCase())) {
-      this.submitError = 'Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.';
+      this.submitError = `Trabajo #${index + 1}: Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.`;
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.submitError = 'La imagen no debe superar los 5 MB.';
+      this.submitError = `Trabajo #${index + 1}: La imagen no debe superar los 5 MB.`;
       return;
     }
 
-    this.selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.imagePreview = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    const t = this.trabajos[index];
+    if (t) {
+      t.file = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        t.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
-  removeFile(): void {
-    this.selectedFile = null;
-    this.imagePreview = null;
+  removeTrabajoFile(index: number): void {
+    const t = this.trabajos[index];
+    if (t) {
+      t.file = null;
+      t.imagePreview = null;
+    }
   }
 
   submit(): void {
@@ -246,9 +263,10 @@ export class PagesCotizaciones implements OnInit {
         cantidad: Number(t.cantidad) || 1,
         base: Number(t.base) || 0,
         altura: Number(t.altura) || 0,
-        descripcion: t.descripcion || ''
+        descripcion: t.descripcion || '',
+        file: t.file
       }))
-    }, this.selectedFile).subscribe({
+    }).subscribe({
       next: () => {
         this.submitted = true;
         this.isSubmitting = false;

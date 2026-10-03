@@ -450,15 +450,27 @@
                   @for (item of quote.items; track item.id || $index) {
                     <tr class="hover:bg-gray-800/30 transition">
                       <td class="py-3 px-4">
-                        <p class="font-semibold text-white">{{ item.service }}</p>
-                        @if (item.material) {
-                          <span class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded bg-[#FFD000]/15 text-[#FFD000] border border-[#FFD000]/30">
-                            Material: {{ item.material }}
-                          </span>
-                        }
-                        @if (item.description && item.description !== item.service) {
-                          <p class="text-xs text-gray-400 mt-0.5">{{ item.description }}</p>
-                        }
+                        <div class="flex items-center gap-3">
+                          @if (item.referenceImage) {
+                            <a [href]="item.referenceImage" target="_blank" rel="noopener noreferrer" title="Ver imagen de referencia" class="shrink-0 group relative">
+                              <img [src]="item.referenceImage" alt="Referencia" class="h-11 w-11 rounded-lg object-cover border border-gray-700 group-hover:border-[#FFD000] transition" />
+                              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-lg transition-opacity">
+                                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                              </div>
+                            </a>
+                          }
+                          <div>
+                            <p class="font-semibold text-white">{{ item.service }}</p>
+                            @if (item.material) {
+                              <span class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded bg-[#FFD000]/15 text-[#FFD000] border border-[#FFD000]/30">
+                                Material: {{ item.material }}
+                              </span>
+                            }
+                            @if (item.description && item.description !== item.service) {
+                              <p class="text-xs text-gray-400 mt-0.5">{{ item.description }}</p>
+                            }
+                          </div>
+                        </div>
                       </td>
                       <td class="py-3 px-3 text-center font-semibold text-gray-300">{{ item.quantity }}</td>
                       <td class="py-3 px-3 text-center text-xs text-gray-300 font-mono">
@@ -726,9 +738,38 @@
                   <div>
                     <label class="block text-[11px] font-semibold text-gray-400 mb-1">Material o acabado sugerido (opcional)</label>
                     <input type="text" [(ngModel)]="item.material" [name]="'createMat_' + $index"
-                           placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner, Vinil..."
-                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                            placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner, Vinil..."
+                            class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
                   </div>
+                </div>
+
+                <!-- Imagen o diseño de referencia por trabajo -->
+                <div class="pt-2 border-t border-gray-800/60">
+                  <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">
+                    Diseño o imagen de referencia (opcional)
+                  </label>
+                  @if (item.imagePreview) {
+                    <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black/60 p-2 flex items-center gap-3">
+                      <img [src]="item.imagePreview" alt="Previsualización" class="h-16 w-20 object-cover rounded-lg" />
+                      <div class="pr-2">
+                        <p class="text-xs font-medium text-white truncate max-w-[12rem]">{{ item.file?.name || 'Imagen de referencia' }}</p>
+                        <p class="text-[10px] text-gray-400" *ngIf="item.file">{{ ((item.file.size / 1024).toFixed(0) + ' KB') }}</p>
+                        <button type="button" (click)="removeCreateTrabajoFile(item)"
+                                class="mt-1 text-xs text-red-400 hover:text-red-300 font-semibold transition">
+                          Quitar imagen
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="flex items-center gap-3">
+                      <label [for]="'createTrabajoFile_' + $index" class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-xs font-medium text-gray-200 transition">
+                        <svg class="w-3.5 h-3.5 text-[#FFD000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Subir imagen para este trabajo
+                      </label>
+                      <input type="file" [id]="'createTrabajoFile_' + $index" (change)="onCreateTrabajoFileSelected($event, item)" accept="image/*" class="hidden" />
+                      <span class="text-[11px] text-gray-500">JPG, PNG, WEBP (hasta 5 MB)</span>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -749,37 +790,6 @@
           <textarea [(ngModel)]="createForm.notes" name="createNotes" rows="3"
                     placeholder="Indica detalles de instalación, lugar, colores corporativos o cualquier instrucción técnica..."
                     class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition resize-none"></textarea>
-        </div>
-
-        <!-- Archivo o Imagen de Referencia -->
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
-            Imagen o diseño de referencia (opcional)
-          </label>
-          @if (createImagePreview) {
-            <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black p-2 flex items-center gap-3">
-              <img [src]="createImagePreview" alt="Previsualización" class="h-20 w-28 object-cover rounded-lg" />
-              <div class="pr-3">
-                <p class="text-xs font-medium text-white">{{ createSelectedFile?.name || 'Imagen seleccionada' }}</p>
-                <p class="text-[11px] text-gray-400 mt-0.5">{{ createSelectedFile ? ((createSelectedFile.size / 1024).toFixed(0) + ' KB') : '' }}</p>
-                <button type="button" (click)="removeCreateFile()"
-                        class="mt-2 text-xs text-red-400 hover:text-red-300 font-semibold transition">
-                  Eliminar archivo
-                </button>
-              </div>
-            </div>
-          } @else {
-            <div class="rounded-xl border border-dashed border-gray-800 bg-black/40 p-5 text-center">
-              <input type="file" id="createFileInput" (change)="onCreateFileSelected($event)" accept="image/*" class="hidden" />
-              <label for="createFileInput" class="cursor-pointer">
-                <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <p class="text-xs font-semibold text-gray-300"><span class="text-[#FFD000]">Haz clic aquí</span> para subir un logo, boceto o foto</p>
-                <p class="text-[11px] text-gray-500 mt-1">Formatos soportados: JPG, PNG, WEBP (hasta 5 MB)</p>
-              </label>
-            </div>
-          }
         </div>
 
         <!-- Footer del Modal -->
@@ -915,9 +925,44 @@
                   <div>
                     <label class="block text-[11px] font-semibold text-gray-400 mb-1">Material o acabado sugerido (opcional)</label>
                     <input type="text" [(ngModel)]="item.material" [name]="'editMat_' + $index"
-                           placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner..."
-                           class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
+                            placeholder="Ej: Acrílico 3mm, Alucobond, Lona banner..."
+                            class="w-full rounded-xl border border-gray-800 bg-black/80 px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#FFD000] focus:outline-none transition" />
                   </div>
+                </div>
+
+                <!-- Imagen o diseño de referencia por trabajo -->
+                <div class="pt-2 border-t border-gray-800/60">
+                  <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">
+                    Diseño o imagen de referencia (opcional)
+                  </label>
+                  @if (item.imagePreview) {
+                    <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black/60 p-2 flex items-center gap-3">
+                      <img [src]="item.imagePreview" alt="Previsualización" class="h-16 w-20 object-cover rounded-lg" />
+                      <div class="pr-2">
+                        <p class="text-xs font-medium text-white truncate max-w-[12rem]">{{ item.file?.name || 'Imagen actual' }}</p>
+                        <p class="text-[10px] text-gray-400" *ngIf="item.file">{{ ((item.file.size / 1024).toFixed(0) + ' KB') }}</p>
+                        <div class="mt-1 flex items-center gap-2">
+                          <label [for]="'editTrabajoFile_' + $index" class="text-xs text-[#FFD000] hover:underline cursor-pointer font-semibold">
+                            Cambiar
+                          </label>
+                          <input type="file" [id]="'editTrabajoFile_' + $index" (change)="onEditTrabajoFileSelected($event, item)" accept="image/*" class="hidden" />
+                          <button type="button" (click)="removeEditTrabajoFile(item)"
+                                  class="text-xs text-red-400 hover:text-red-300 font-semibold transition">
+                            Quitar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="flex items-center gap-3">
+                      <label [for]="'editTrabajoFile_' + $index" class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800/80 hover:bg-gray-700 text-xs font-medium text-gray-200 transition">
+                        <svg class="w-3.5 h-3.5 text-[#FFD000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Subir imagen para este trabajo
+                      </label>
+                      <input type="file" [id]="'editTrabajoFile_' + $index" (change)="onEditTrabajoFileSelected($event, item)" accept="image/*" class="hidden" />
+                      <span class="text-[11px] text-gray-500">JPG, PNG, WEBP (hasta 5 MB)</span>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -937,42 +982,6 @@
           </label>
           <textarea [(ngModel)]="editForm.notes" name="editNotes" rows="3"
                     class="w-full rounded-xl border border-gray-800 bg-black/60 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#FFD000] focus:outline-none transition resize-none"></textarea>
-        </div>
-
-        <!-- Archivo o Imagen de Referencia -->
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5">
-            Imagen o diseño de referencia
-          </label>
-          @if (editImagePreview) {
-            <div class="relative w-fit rounded-xl border border-gray-700 overflow-hidden bg-black p-2 flex items-center gap-3">
-              <img [src]="editImagePreview" alt="Previsualización" class="h-20 w-28 object-cover rounded-lg" />
-              <div class="pr-3">
-                <p class="text-xs font-medium text-white">{{ editSelectedFile?.name || 'Imagen actual' }}</p>
-                <div class="mt-2 flex items-center gap-3">
-                  <input type="file" id="editFileInput" (change)="onEditFileSelected($event)" accept="image/*" class="hidden" />
-                  <label for="editFileInput" class="text-xs text-[#FFD000] hover:underline cursor-pointer font-semibold">
-                    Reemplazar imagen
-                  </label>
-                  <button type="button" (click)="removeEditFile()"
-                          class="text-xs text-red-400 hover:text-red-300 font-semibold transition">
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          } @else {
-            <div class="rounded-xl border border-dashed border-gray-800 bg-black/40 p-5 text-center">
-              <input type="file" id="editFileInputEmpty" (change)="onEditFileSelected($event)" accept="image/*" class="hidden" />
-              <label for="editFileInputEmpty" class="cursor-pointer">
-                <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <p class="text-xs font-semibold text-gray-300"><span class="text-[#FFD000]">Haz clic aquí</span> para subir una nueva imagen</p>
-                <p class="text-[11px] text-gray-500 mt-1">Formatos soportados: JPG, PNG, WEBP (hasta 5 MB)</p>
-              </label>
-            </div>
-          }
         </div>
 
         <!-- Footer del Modal -->

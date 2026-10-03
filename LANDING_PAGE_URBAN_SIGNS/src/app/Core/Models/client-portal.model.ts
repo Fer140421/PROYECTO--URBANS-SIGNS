@@ -23,6 +23,7 @@ export interface QuoteItem {
   areaTotal?: number;
   unitPrice?: number;
   subtotal?: number;
+  referenceImage?: string;
 }
 
 export interface CreateQuoteTrabajoPayload {
@@ -33,6 +34,8 @@ export interface CreateQuoteTrabajoPayload {
   altura: number;
   descripcion?: string;
   material?: string;
+  file?: File | null;
+  archivoReferencia?: string;
 }
 
 export interface Quote {

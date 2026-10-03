@@ -78,13 +78,20 @@ export class PortalDataService {
     },
     file?: File | null
   ): Observable<void> {
-    const { dataObj, formattedObservations } = this.buildQuoteRequest(payload);
+    const { dataObj, formattedObservations, hasTrabajoFiles, rawTrabajos } = this.buildQuoteRequest(payload);
 
-    if (file) {
+    if (file || hasTrabajoFiles) {
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataObj));
       formData.append('observaciones', formattedObservations);
-      formData.append('file', file);
+      if (file) {
+        formData.append('file', file);
+      }
+      rawTrabajos.forEach((t, i) => {
+        if (t.file) {
+          formData.append(`trabajo_file_${i}`, t.file);
+        }
+      });
       return this.http.post<void>(`${API_URL}/portal/solicitudes`, formData, { withCredentials: true });
     }
 
@@ -102,13 +109,20 @@ export class PortalDataService {
     },
     file?: File | null
   ): Observable<void> {
-    const { dataObj, formattedObservations } = this.buildQuoteRequest(payload);
+    const { dataObj, formattedObservations, hasTrabajoFiles, rawTrabajos } = this.buildQuoteRequest(payload);
 
-    if (file) {
+    if (file || hasTrabajoFiles) {
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataObj));
       formData.append('observaciones', formattedObservations);
-      formData.append('file', file);
+      if (file) {
+        formData.append('file', file);
+      }
+      rawTrabajos.forEach((t, i) => {
+        if (t.file) {
+          formData.append(`trabajo_file_${i}`, t.file);
+        }
+      });
       return this.http.put<void>(`${API_URL}/portal/solicitudes/${id}`, formData, { withCredentials: true });
     }
 
@@ -131,14 +145,27 @@ export class PortalDataService {
         base: item.base || 0,
         altura: item.altura || 0,
         descripcion: item.description || '',
-        material: item.material || ''
+        material: item.material || '',
+        archivoReferencia: item.referenceImage
       }));
     }
+
+    const hasTrabajoFiles = trabajos.some(t => !!t.file);
+    const cleanTrabajos = trabajos.map(t => ({
+      idTrabajo: t.idTrabajo,
+      servicio: t.servicio,
+      cantidad: t.cantidad,
+      base: t.base,
+      altura: t.altura,
+      descripcion: t.descripcion,
+      material: t.material,
+      archivoReferencia: t.archivoReferencia
+    }));
 
     const formattedObservations = [
       payload.title ? `Proyecto: ${payload.title}` : '',
       payload.service ? `Servicio principal: ${payload.service}.` : '',
-      ...trabajos.map(t => {
+      ...cleanTrabajos.map(t => {
         const dims = (t.base && t.altura) ? `${t.base}m × ${t.altura}m (${(t.base * t.altura).toFixed(2)} m²)` : '';
         const mat = t.material ? ` (Material: ${t.material})` : '';
         return `${t.cantidad} × ${t.servicio}${dims ? ` [${dims}]` : ''}${mat}${t.descripcion ? ` - ${t.descripcion}` : ''}`;
@@ -149,10 +176,10 @@ export class PortalDataService {
     const dataObj = {
       titulo: payload.title,
       observaciones: formattedObservations,
-      trabajos: trabajos
+      trabajos: cleanTrabajos
     };
 
-    return { dataObj, formattedObservations };
+    return { dataObj, formattedObservations, hasTrabajoFiles, rawTrabajos: trabajos };
   }
 
   private toQuote(quote: PortalQuoteDto): Quote {
@@ -187,7 +214,8 @@ export class PortalDataService {
         altura: item.altura,
         areaTotal: item.areaTotal,
         unitPrice: item.costoUnitario,
-        subtotal: item.subtotal
+        subtotal: item.subtotal,
+        referenceImage: item.archivoReferencia
       })),
       referenceImage: quote.archivoReferencia
     };
@@ -221,6 +249,7 @@ interface PortalCotizacionItemDto {
   areaTotal?: number;
   costoUnitario?: number;
   subtotal?: number;
+  archivoReferencia?: string;
 }
 
 interface PortalQuoteDto {

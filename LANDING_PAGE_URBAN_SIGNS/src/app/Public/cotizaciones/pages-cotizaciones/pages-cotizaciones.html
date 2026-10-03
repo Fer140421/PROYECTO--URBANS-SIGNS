@@ -120,6 +120,55 @@
                              placeholder="Ej. Con acrílico opalino 3mm, perfil de aluminio color negro e iluminación LED"
                              class="w-full rounded-xl border border-gray-700 bg-gray-900 px-3.5 py-2 text-sm text-white outline-none focus:border-[#FFD000]">
                     </div>
+
+                    <!-- Imagen de referencia para este trabajo -->
+                    <div class="sm:col-span-12">
+                      <label class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        Foto o diseño de referencia para este trabajo <span class="text-gray-500 font-normal normal-case">(Opcional)</span>
+                      </label>
+
+                      @if (!trabajo.file) {
+                        <div
+                          (dragover)="onTrabajoDragOver($event, i)"
+                          (dragleave)="onTrabajoDragLeave($event, i)"
+                          (drop)="onTrabajoFileDrop($event, i)"
+                          [class.border-[#FFD000]]="trabajo.isDragging"
+                          [class.bg-[#FFD000]/10]="trabajo.isDragging"
+                          class="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-700 bg-gray-900/60 p-4 text-center transition hover:border-[#FFD000]/60 hover:bg-gray-900">
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            (change)="onTrabajoFileSelected($event, i)"
+                            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            [attr.aria-label]="'Subir foto de referencia para trabajo ' + (i + 1)"
+                          />
+                          <div class="flex items-center gap-2 text-xs text-gray-400">
+                            <svg class="h-5 w-5 text-[#FFD000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span><strong class="text-[#FFD000] font-medium">Adjuntar imagen de referencia</strong> para este trabajo (JPG, PNG, WEBP, máx. 5 MB)</span>
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="flex items-center justify-between rounded-xl border border-gray-700 bg-gray-900/90 p-3">
+                          <div class="flex items-center gap-3">
+                            @if (trabajo.imagePreview) {
+                              <img [src]="trabajo.imagePreview" alt="Vista previa" class="h-12 w-12 rounded-lg object-cover border border-gray-600 shadow" />
+                            }
+                            <div class="text-left">
+                              <p class="text-xs font-semibold text-white truncate max-w-xs">{{ trabajo.file.name }}</p>
+                              <p class="text-[11px] text-gray-400">{{ (trabajo.file.size / 1024 / 1024) | number:'1.2-2' }} MB · Imagen adjunta al Trabajo #{{ i + 1 }}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            (click)="removeTrabajoFile(i)"
+                            class="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-500 hover:text-white">
+                            Quitar foto
+                          </button>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
               }
@@ -137,58 +186,6 @@
             <span class="mb-2 block text-sm font-medium text-gray-300">Instrucciones u observaciones adicionales</span>
             <textarea [(ngModel)]="form.notes" name="notes" rows="3" placeholder="Lugar de instalación, accesibilidad, fecha límite requerida u otros detalles..." class="w-full rounded-xl border border-gray-700 bg-black/40 px-4 py-3 text-white outline-none focus:border-[#FFD000]"></textarea>
           </label>
-
-          <!-- Zona para subir foto o diseño de referencia -->
-          <div class="sm:col-span-2">
-            <span class="mb-2 block text-sm font-medium text-gray-300">
-              Foto o diseño de referencia <span class="text-xs text-gray-400 font-normal">(Opcional - Imagen de lo que quieres cotizar)</span>
-            </span>
-
-            @if (!selectedFile) {
-              <div
-                (dragover)="onDragOver($event)"
-                (dragleave)="onDragLeave($event)"
-                (drop)="onFileDrop($event)"
-                [class.border-[#FFD000]]="isDragging"
-                [class.bg-[#FFD000]/10]="isDragging"
-                class="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-700 bg-black/30 p-6 text-center transition hover:border-[#FFD000]/60 hover:bg-black/50">
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  (change)="onFileSelected($event)"
-                  class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  aria-label="Subir foto de referencia"
-                />
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-800 text-[#FFD000]">
-                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                  </svg>
-                </div>
-                <p class="mt-3 text-sm font-medium text-gray-300">
-                  <span class="text-[#FFD000] underline">Haz clic para seleccionar una foto</span> o arrástrala aquí
-                </p>
-                <p class="mt-1 text-xs text-gray-500">Formatos soportados: PNG, JPG, WEBP o GIF (Máx. 5 MB)</p>
-              </div>
-            } @else {
-              <div class="flex items-center justify-between rounded-2xl border border-gray-700 bg-gray-800/80 p-4">
-                <div class="flex items-center gap-4">
-                  @if (imagePreview) {
-                    <img [src]="imagePreview" alt="Vista previa de referencia" class="h-16 w-16 rounded-xl object-cover border border-gray-600 shadow" />
-                  }
-                  <div class="text-left">
-                    <p class="text-sm font-semibold text-white truncate max-w-xs">{{ selectedFile.name }}</p>
-                    <p class="text-xs text-gray-400">{{ (selectedFile.size / 1024 / 1024) | number:'1.2-2' }} MB · Archivo listo para enviar</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  (click)="removeFile()"
-                  class="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300 transition hover:bg-red-500 hover:text-white">
-                  Quitar foto
-                </button>
-              </div>
-            }
-          </div>
         </div>
 
         <button [disabled]="isSubmitting" class="mt-7 w-full rounded-xl bg-[#FFD000] px-6 py-4 font-bold text-black transition hover:bg-[#ffdc40] disabled:opacity-50 disabled:cursor-not-allowed">

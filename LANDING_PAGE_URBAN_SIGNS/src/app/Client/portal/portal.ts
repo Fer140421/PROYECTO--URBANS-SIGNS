@@ -16,6 +16,9 @@ export interface FormTrabajoItem {
   altura: number;
   descripcion: string;
   material?: string;
+  file?: File | null;
+  imagePreview?: string | null;
+  archivoReferencia?: string;
 }
 
 @Component({
@@ -253,6 +256,38 @@ export class Portal implements OnInit, OnDestroy {
     this.createImagePreview = null;
   }
 
+  onCreateTrabajoFileSelected(event: Event, item: FormTrabajoItem): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.processFileForTrabajo(input.files[0], item, this.createError);
+    }
+  }
+
+  removeCreateTrabajoFile(item: FormTrabajoItem): void {
+    item.file = null;
+    item.imagePreview = null;
+    item.archivoReferencia = undefined;
+  }
+
+  private processFileForTrabajo(file: File, item: FormTrabajoItem, errorSignal: any): void {
+    errorSignal.set('');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      errorSignal.set('Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      errorSignal.set('La imagen no debe superar los 5 MB.');
+      return;
+    }
+    item.file = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      item.imagePreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
   private processFileForCreate(file: File): void {
     this.createError.set('');
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -307,7 +342,9 @@ export class Portal implements OnInit, OnDestroy {
         base: Number(t.base) || 0,
         altura: Number(t.altura) || 0,
         descripcion: t.descripcion || '',
-        material: t.material ? t.material.trim() : ''
+        material: t.material ? t.material.trim() : '',
+        file: t.file,
+        archivoReferencia: t.archivoReferencia
       }))
     }, this.createSelectedFile).subscribe({
       next: () => {
@@ -345,7 +382,10 @@ export class Portal implements OnInit, OnDestroy {
         base: it.base || 1.0,
         altura: it.altura || 1.0,
         descripcion: it.description || '',
-        material: it.material || ''
+        material: it.material || '',
+        archivoReferencia: it.referenceImage,
+        imagePreview: it.referenceImage || null,
+        file: null
       })));
     } else {
       const primerServicio = this.serviciosNombres()[0] || 'Letreros luminosos';
@@ -397,6 +437,19 @@ export class Portal implements OnInit, OnDestroy {
   removeEditTrabajo(index: number): void {
     if (this.editTrabajos().length <= 1) return;
     this.editTrabajos.update(items => items.filter((_, i) => i !== index));
+  }
+
+  onEditTrabajoFileSelected(event: Event, item: FormTrabajoItem): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.processFileForTrabajo(input.files[0], item, this.editError);
+    }
+  }
+
+  removeEditTrabajoFile(item: FormTrabajoItem): void {
+    item.file = null;
+    item.imagePreview = null;
+    item.archivoReferencia = undefined;
   }
 
   onEditFileSelected(event: Event): void {
@@ -470,7 +523,9 @@ export class Portal implements OnInit, OnDestroy {
         base: Number(t.base) || 0,
         altura: Number(t.altura) || 0,
         descripcion: t.descripcion || '',
-        material: t.material ? t.material.trim() : ''
+        material: t.material ? t.material.trim() : '',
+        file: t.file,
+        archivoReferencia: t.archivoReferencia
       }))
     }, this.editSelectedFile).subscribe({
       next: () => {
