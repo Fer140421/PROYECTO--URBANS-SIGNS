@@ -11,5 +11,6 @@ public record PortalSolicitudTrabajoRequest(
         BigDecimal base,
         BigDecimal altura,
         String descripcion,
-        String material) {
+        String material,
+        String archivoReferencia) {
 }

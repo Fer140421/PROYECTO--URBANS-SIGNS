@@ -46,4 +46,7 @@ public class SolicitudTrabajoModel {
 
   @Column(name = "material")
   private String material;
+
+  @Column(name = "archivo_referencia", length = 500)
+  private String archivoReferencia;
 }

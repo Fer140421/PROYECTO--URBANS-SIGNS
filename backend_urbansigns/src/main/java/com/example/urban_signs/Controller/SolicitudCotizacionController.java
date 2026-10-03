@@ -36,8 +36,9 @@ public class SolicitudCotizacionController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_CREAR')")
     public ResponseEntity<Void> registrarSolicitudMultipart(
             @RequestPart("data") SolicitudCotizacionRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
-        solicitudCotizacionService.registrarSolicitud(request, file);
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest) {
+        solicitudCotizacionService.registrarSolicitud(request, file, multipartRequest);
         return ResponseEntity.ok().build();
     }
 

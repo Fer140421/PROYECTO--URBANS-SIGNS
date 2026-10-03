@@ -376,6 +376,8 @@ CREATE TABLE solicitud_trabajo (
     altura DECIMAL(10,2),
     area_total DECIMAL(10,2),
     descripcion TEXT,
+    material VARCHAR(255),
+    archivo_referencia VARCHAR(500),
     CONSTRAINT fk_solicitud_trabajo_solicitud FOREIGN KEY (id_solicitud) REFERENCES solicitud_cotizacion(id_solicitud) ON DELETE CASCADE,
     CONSTRAINT fk_solicitud_trabajo_trabajo FOREIGN KEY (id_trabajo) REFERENCES trabajos(id_trabajo)
 );

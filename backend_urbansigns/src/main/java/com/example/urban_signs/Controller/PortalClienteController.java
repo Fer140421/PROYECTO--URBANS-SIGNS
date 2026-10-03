@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.urban_signs.DTO.Portal.PortalCotizacionItemResponse;
@@ -218,6 +219,7 @@ public class PortalClienteController {
             @RequestParam(value = "data", required = false) String dataJson,
             @RequestParam(value = "observaciones", required = false) String observacionesRaw,
             @RequestParam(value = "file", required = false) MultipartFile file,
+            MultipartHttpServletRequest multipartRequest,
             Authentication authentication) {
         PortalSolicitudRequest request = null;
         if (dataJson != null && !dataJson.isBlank()) {
@@ -229,7 +231,7 @@ public class PortalClienteController {
         } else {
             request = new PortalSolicitudRequest(null, observacionesRaw, null);
         }
-        return registrarSolicitudPortal(request, file, authentication);
+        return registrarSolicitudPortal(request, file, multipartRequest, authentication);
     }
 
     @PostMapping(value = "/solicitudes", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -237,10 +239,10 @@ public class PortalClienteController {
     public ResponseEntity<Void> crearSolicitudJson(
             @RequestBody PortalSolicitudRequest request,
             Authentication authentication) {
-        return registrarSolicitudPortal(request, null, authentication);
+        return registrarSolicitudPortal(request, null, null, authentication);
     }
 
-    private ResponseEntity<Void> registrarSolicitudPortal(PortalSolicitudRequest request, MultipartFile file, Authentication authentication) {
+    private ResponseEntity<Void> registrarSolicitudPortal(PortalSolicitudRequest request, MultipartFile file, MultipartHttpServletRequest multipartRequest, Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
 
         String observaciones = request != null && request.observaciones() != null ? request.observaciones().trim() : "";
@@ -276,7 +278,8 @@ public class PortalClienteController {
         // Guardar trabajos en solicitud_trabajo para que aparezcan en el dashboard con medidas completas
         if (request != null && request.trabajos() != null && !request.trabajos().isEmpty()) {
             List<SolicitudTrabajoModel> trabajosGuardar = new ArrayList<>();
-            for (PortalSolicitudTrabajoRequest item : request.trabajos()) {
+            for (int i = 0; i < request.trabajos().size(); i++) {
+                PortalSolicitudTrabajoRequest item = request.trabajos().get(i);
                 TrabajosModel trabajo = null;
                 if (item.idTrabajo() != null) {
                     trabajo = trabajosRepository.findById(item.idTrabajo()).orElse(null);
@@ -306,6 +309,23 @@ public class PortalClienteController {
                 }
                 String material = item.material() != null && !item.material().isBlank() ? item.material().trim() : null;
 
+                String trabajoArchivoUrl = item.archivoReferencia();
+                if (multipartRequest != null) {
+                    MultipartFile tFile = multipartRequest.getFile("trabajo_file_" + i);
+                    if (tFile == null || tFile.isEmpty()) {
+                        tFile = multipartRequest.getFile("file_" + i);
+                    }
+                    if (tFile == null || tFile.isEmpty()) {
+                        tFile = multipartRequest.getFile("trabajos[" + i + "].file");
+                    }
+                    if (tFile != null && !tFile.isEmpty()) {
+                        trabajoArchivoUrl = cloudinaryService.uploadFile(tFile, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                    }
+                }
+                if (trabajoArchivoUrl == null && request.trabajos().size() == 1 && archivoUrl != null) {
+                    trabajoArchivoUrl = archivoUrl;
+                }
+
                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                         .solicitud(solicitud)
                         .trabajo(trabajo)
@@ -315,12 +335,18 @@ public class PortalClienteController {
                         .areaTotal(areaTotal)
                         .descripcion(desc)
                         .material(material)
+                        .archivoReferencia(trabajoArchivoUrl)
                         .build();
 
                 trabajosGuardar.add(nuevoTrabajo);
             }
 
             solicitudTrabajoRepository.saveAll(trabajosGuardar);
+
+            if (archivoUrl == null && !trabajosGuardar.isEmpty() && trabajosGuardar.get(0).getArchivoReferencia() != null) {
+                solicitud.setArchivoReferencia(trabajosGuardar.get(0).getArchivoReferencia());
+                solicitudRepository.save(solicitud);
+            }
         } else if (!textoObservaciones.isBlank()) {
             // Retrocompatibilidad: asegurar que siempre exista al menos 1 trabajo asociado en el dashboard
             String servicioNombre = extraerServicio(textoObservaciones, null);
@@ -360,6 +386,7 @@ public class PortalClienteController {
             @RequestParam(value = "data", required = false) String dataJson,
             @RequestParam(value = "observaciones", required = false) String observacionesRaw,
             @RequestParam(value = "file", required = false) MultipartFile file,
+            MultipartHttpServletRequest multipartRequest,
             Authentication authentication) {
         PortalSolicitudRequest request = null;
         if (dataJson != null && !dataJson.isBlank()) {
@@ -371,7 +398,7 @@ public class PortalClienteController {
         } else {
             request = new PortalSolicitudRequest(null, observacionesRaw, null);
         }
-        return actualizarSolicitudPortal(id, request, file, authentication);
+        return actualizarSolicitudPortal(id, request, file, multipartRequest, authentication);
     }
 
     @PutMapping(value = "/solicitudes/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -380,10 +407,10 @@ public class PortalClienteController {
             @PathVariable Long id,
             @RequestBody PortalSolicitudRequest request,
             Authentication authentication) {
-        return actualizarSolicitudPortal(id, request, null, authentication);
+        return actualizarSolicitudPortal(id, request, null, null, authentication);
     }
 
-    private ResponseEntity<Void> actualizarSolicitudPortal(Long id, PortalSolicitudRequest request, MultipartFile file, Authentication authentication) {
+    private ResponseEntity<Void> actualizarSolicitudPortal(Long id, PortalSolicitudRequest request, MultipartFile file, MultipartHttpServletRequest multipartRequest, Authentication authentication) {
         ClienteModel cliente = obtenerCliente(authentication);
         SolicitudCotizacionModel solicitud = solicitudRepository.findById(id)
                 .filter(s -> s.getCliente() != null && s.getCliente().getIdCliente().equals(cliente.getIdCliente()))
@@ -415,7 +442,8 @@ public class PortalClienteController {
             solicitudTrabajoRepository.flush();
 
             List<SolicitudTrabajoModel> trabajosGuardar = new ArrayList<>();
-            for (PortalSolicitudTrabajoRequest item : request.trabajos()) {
+            for (int i = 0; i < request.trabajos().size(); i++) {
+                PortalSolicitudTrabajoRequest item = request.trabajos().get(i);
                 TrabajosModel trabajo = null;
                 if (item.idTrabajo() != null) {
                     trabajo = trabajosRepository.findById(item.idTrabajo()).orElse(null);
@@ -445,6 +473,20 @@ public class PortalClienteController {
                 }
                 String material = item.material() != null && !item.material().isBlank() ? item.material().trim() : null;
 
+                String trabajoArchivoUrl = item.archivoReferencia();
+                if (multipartRequest != null) {
+                    MultipartFile tFile = multipartRequest.getFile("trabajo_file_" + i);
+                    if (tFile == null || tFile.isEmpty()) {
+                        tFile = multipartRequest.getFile("file_" + i);
+                    }
+                    if (tFile == null || tFile.isEmpty()) {
+                        tFile = multipartRequest.getFile("trabajos[" + i + "].file");
+                    }
+                    if (tFile != null && !tFile.isEmpty()) {
+                        trabajoArchivoUrl = cloudinaryService.uploadFile(tFile, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                    }
+                }
+
                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                         .solicitud(solicitud)
                         .trabajo(trabajo)
@@ -454,12 +496,17 @@ public class PortalClienteController {
                         .areaTotal(areaTotal)
                         .descripcion(desc)
                         .material(material)
+                        .archivoReferencia(trabajoArchivoUrl)
                         .build();
 
                 trabajosGuardar.add(nuevoTrabajo);
             }
 
             solicitudTrabajoRepository.saveAll(trabajosGuardar);
+
+            if (solicitud.getArchivoReferencia() == null && !trabajosGuardar.isEmpty() && trabajosGuardar.get(0).getArchivoReferencia() != null) {
+                solicitud.setArchivoReferencia(trabajosGuardar.get(0).getArchivoReferencia());
+            }
         }
 
         solicitudRepository.save(solicitud);
@@ -527,6 +574,7 @@ public class PortalClienteController {
                         ? ct.getMaterial()
                         : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getMaterial() : null);
 
+                String fotoRef = ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getArchivoReferencia() : null;
                 items.add(new PortalCotizacionItemResponse(
                         ct.getIdCotizacionTrabajo(),
                         idTrabajo,
@@ -538,7 +586,8 @@ public class PortalClienteController {
                         altura,
                         area,
                         ct.getCostoUnitario(),
-                        ct.getSubtotal()));
+                        ct.getSubtotal(),
+                        fotoRef));
             }
         } else if (cotizacion.getSolicitud() != null && cotizacion.getSolicitud().getIdSolicitud() != null) {
             List<SolicitudTrabajoModel> solicitudTrabajos = solicitudTrabajoRepository
@@ -555,7 +604,8 @@ public class PortalClienteController {
                         st.getAltura(),
                         st.getAreaTotal(),
                         null,
-                        null));
+                        null,
+                        st.getArchivoReferencia()));
             }
         }
 
@@ -630,7 +680,8 @@ public class PortalClienteController {
                         st.getAltura(),
                         st.getAreaTotal(),
                         null,
-                        null));
+                        null,
+                        st.getArchivoReferencia()));
             }
         }
 

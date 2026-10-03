@@ -21,4 +21,5 @@ public class SolicitudTrabajoDetlDTO {
     private BigDecimal areaTotal;
     private String descripcion;
     private String material;
+    private String archivoReferencia;
 }

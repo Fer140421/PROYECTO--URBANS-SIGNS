@@ -254,6 +254,7 @@ Table solicitud_trabajo {
   area_total decimal(10,2)
   descripcion text
   material varchar(255)
+  archivo_referencia varchar(500)
 }
 
 Table cotizaciones {

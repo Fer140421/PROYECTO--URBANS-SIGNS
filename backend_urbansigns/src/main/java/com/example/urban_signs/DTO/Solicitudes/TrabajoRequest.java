@@ -18,4 +18,5 @@ public class TrabajoRequest {
     private Double altura;
     private String descripcion;
     private String material;
+    private String archivoReferencia;
 }

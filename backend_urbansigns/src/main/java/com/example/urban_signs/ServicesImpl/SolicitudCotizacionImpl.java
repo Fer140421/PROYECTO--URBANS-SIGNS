@@ -33,6 +33,7 @@ import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,12 +49,18 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
         @Override
         @Transactional
         public SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request) {
-                return registrarSolicitud(request, null);
+                return registrarSolicitud(request, null, null);
         }
 
         @Override
         @Transactional
         public SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file) {
+                return registrarSolicitud(request, file, null);
+        }
+
+        @Override
+        @Transactional
+        public SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file, MultipartHttpServletRequest multipartRequest) {
                 if (solicitudCotizacionRepository.existsByCodSolicitud(request.getCodSolicitud())) {
                         throw new RuntimeException("El código de solicitud ya existe: " + request.getCodSolicitud());
                 }
@@ -83,10 +90,29 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                 if (request.getTrabajos() != null && !request.getTrabajos().isEmpty()) {
                         List<SolicitudTrabajoModel> trabajos = new ArrayList<>();
 
-                        for (TrabajoRequest t : request.getTrabajos()) {
+                        for (int i = 0; i < request.getTrabajos().size(); i++) {
+                                TrabajoRequest t = request.getTrabajos().get(i);
                                 TrabajosModel trabajo = trabajoRepository.findById(t.getIdTrabajo())
                                                 .orElseThrow(() -> new RuntimeException(
                                                                 "Trabajo no encontrado con ID: " + t.getIdTrabajo()));
+
+                                String trabajoArchivoUrl = t.getArchivoReferencia();
+                                if (multipartRequest != null) {
+                                        MultipartFile tFile = multipartRequest.getFile("trabajo_file_" + i);
+                                        if (tFile == null || tFile.isEmpty()) {
+                                                tFile = multipartRequest.getFile("file_" + i);
+                                        }
+                                        if (tFile == null || tFile.isEmpty()) {
+                                                tFile = multipartRequest.getFile("trabajos[" + i + "].file");
+                                        }
+                                        if (tFile != null && !tFile.isEmpty()) {
+                                                trabajoArchivoUrl = cloudinaryService.uploadFile(tFile, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                                        }
+                                }
+
+                                if (trabajoArchivoUrl == null && request.getTrabajos().size() == 1 && archivoUrl != null) {
+                                        trabajoArchivoUrl = archivoUrl;
+                                }
 
                                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                                                 .solicitud(solicitud)
@@ -100,12 +126,18 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                                 : null)
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
+                                                .archivoReferencia(trabajoArchivoUrl)
                                                 .build();
 
                                 trabajos.add(nuevoTrabajo);
                         }
 
                         solicitudTrabajoRepository.saveAll(trabajos);
+
+                        if (archivoUrl == null && !trabajos.isEmpty() && trabajos.get(0).getArchivoReferencia() != null) {
+                                solicitud.setArchivoReferencia(trabajos.get(0).getArchivoReferencia());
+                                solicitudCotizacionRepository.save(solicitud);
+                        }
                 }
 
                 return solicitud;
@@ -156,6 +188,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .areaTotal(trabajo.getAreaTotal())
                                                 .descripcion(trabajo.getDescripcion())
                                                 .material(trabajo.getMaterial())
+                                                .archivoReferencia(trabajo.getArchivoReferencia())
                                                 .build())
                                 .toList();
 
@@ -222,6 +255,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                                 : null)
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
+                                                .archivoReferencia(t.getArchivoReferencia())
                                                 .build();
 
                                 nuevosTrabajos.add(nuevoTrabajo);
@@ -251,6 +285,8 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .altura(t.getAltura())
                                                 .areaTotal(t.getAreaTotal())
                                                 .descripcion(t.getDescripcion())
+                                                .material(t.getMaterial())
+                                                .archivoReferencia(t.getArchivoReferencia())
                                                 .build())
                                 .toList();
 

@@ -13,5 +13,6 @@ public record PortalCotizacionItemResponse(
         BigDecimal altura,
         BigDecimal areaTotal,
         BigDecimal costoUnitario,
-        BigDecimal subtotal) {
+        BigDecimal subtotal,
+        String archivoReferencia) {
 }

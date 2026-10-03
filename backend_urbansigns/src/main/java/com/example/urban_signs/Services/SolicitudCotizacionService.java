@@ -16,6 +16,9 @@ public interface SolicitudCotizacionService {
 
     SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file);
 
+    SolicitudCotizacionModel registrarSolicitud(SolicitudCotizacionRequest request, MultipartFile file,
+            org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest);
+
     Page<SolicitudCotizacionModel> listarSolicitudes(SolicitudCotizacion estado, String codSolicitud,
             Pageable pageable);
 
