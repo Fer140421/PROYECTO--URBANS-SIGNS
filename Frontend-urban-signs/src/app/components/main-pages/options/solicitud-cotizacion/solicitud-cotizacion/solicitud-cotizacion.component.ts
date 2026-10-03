@@ -63,10 +63,10 @@ export class SolicitudCotizacionComponent {
   isLoading = false;
   cotizacionResultado?: any;
   mostrarErrores = false;
-  selectedFile: File | null = null;
-  imagePreview: string | null = null;
+  trabajoFiles: (File | null)[] = [null];
+  trabajoPreviews: (string | null)[] = [null];
 
-  onFileSelected(event: Event): void {
+  onTrabajoFileSelected(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
@@ -79,18 +79,18 @@ export class SolicitudCotizacionComponent {
         this.notificationService.error('La imagen no debe superar los 5 MB.');
         return;
       }
-      this.selectedFile = file;
+      this.trabajoFiles[index] = file;
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreview = e.target?.result as string;
+        this.trabajoPreviews[index] = e.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  removeFile(): void {
-    this.selectedFile = null;
-    this.imagePreview = null;
+  removeTrabajoFile(index: number): void {
+    this.trabajoFiles[index] = null;
+    this.trabajoPreviews[index] = null;
   }
 
   constructor(
@@ -395,7 +395,7 @@ export class SolicitudCotizacionComponent {
         }))
       };
       console.log(cotizacionData)
-      this.solicitud.registrarSolicitud(cotizacionData, this.selectedFile).pipe(
+      this.solicitud.registrarSolicitud(cotizacionData, null, this.trabajoFiles).pipe(
         finalize(() => this.isLoading = false)
       ).subscribe({
         next: (result) => {
@@ -477,6 +477,8 @@ export class SolicitudCotizacionComponent {
 
   agregarTrabajo(): void {
     this.trabajos.push(this.crearTrabajoFormGroup());
+    this.trabajoFiles.push(null);
+    this.trabajoPreviews.push(null);
     // Actualizar trabajos disponibles después de agregar
     this.actualizarTrabajosDisponibles();
   }
@@ -487,6 +489,8 @@ export class SolicitudCotizacionComponent {
   removerTrabajo(index: number): void {
     if (this.trabajos.length > 1) {
       this.trabajos.removeAt(index);
+      this.trabajoFiles.splice(index, 1);
+      this.trabajoPreviews.splice(index, 1);
       // Actualizar trabajos disponibles después de remover
       this.actualizarTrabajosDisponibles();
     }
@@ -557,6 +561,8 @@ export class SolicitudCotizacionComponent {
     this.cotizacionForm.reset();
     this.trabajos.clear();
     this.trabajos.push(this.crearTrabajoFormGroup());
+    this.trabajoFiles = [null];
+    this.trabajoPreviews = [null];
 
     this.currentStep = 0;
     this.clienteSeleccionado = null;
@@ -569,8 +575,6 @@ export class SolicitudCotizacionComponent {
     this.nuevoCliente = { tipo_cliente: 'normal', email: '' };
     this.nuevaPersona = { nombre: '', ap: '', am: '', ci: '', celular: '', direccion: '' };
     this.nuevaEmpresa = { razon_social: '', nit: '', direccion: '', telefono: '' };
-    this.selectedFile = null;
-    this.imagePreview = null;
 
     this.autoSeleccionarFechas();
 

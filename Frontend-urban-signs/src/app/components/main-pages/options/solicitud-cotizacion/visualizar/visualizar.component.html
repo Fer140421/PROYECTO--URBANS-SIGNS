@@ -275,6 +275,32 @@
                             </div>
                         </div>
 
+                        <!-- Imagen de referencia del trabajo -->
+                        <div class="mb-4 p-4 bg-white rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center gap-4" *ngIf="trabajo.archivoReferencia">
+                            <a [href]="trabajo.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                               class="group relative block overflow-hidden rounded-lg border-2 border-gray-300 hover:border-yellow-400 transition-all shadow-sm bg-gray-100 flex-shrink-0">
+                                <img [src]="trabajo.archivoReferencia" [alt]="'Diseño de referencia para ' + (trabajo.nombreTrabajo || 'trabajo ' + (i + 1))"
+                                     class="h-28 w-28 object-cover group-hover:scale-105 transition-transform duration-200" />
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                                    <span class="inline-flex items-center gap-1 bg-black/70 px-2 py-1 rounded text-xs font-semibold">
+                                        <i class="ph ph-magnifying-glass-plus text-sm"></i> Ver
+                                    </span>
+                                </div>
+                            </a>
+                            <div class="flex-1 space-y-1 text-sm">
+                                <p class="font-bold text-gray-800 flex items-center gap-1.5">
+                                    <i class="ph ph-image text-yellow-600 text-base"></i> Foto de Referencia de este Trabajo
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Imagen o diseño adjuntado como referencia técnica para este ítem.
+                                </p>
+                                <a [href]="trabajo.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-600 hover:text-yellow-700 underline mt-1">
+                                    <i class="ph ph-arrow-square-out text-sm"></i> Abrir imagen en tamaño completo
+                                </a>
+                            </div>
+                        </div>
+
                         <!-- Información de Costos -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border-2 border-yellow-400">
                             <div class="text-center">

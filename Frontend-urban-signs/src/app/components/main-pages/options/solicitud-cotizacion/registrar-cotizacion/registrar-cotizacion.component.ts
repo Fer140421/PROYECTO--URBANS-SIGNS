@@ -14,6 +14,7 @@ interface TrabajoSolicitud {
   trabajoNombre: string;
   descripcion: string;
   material?: string;
+  archivoReferencia?: string;
   cantidad: number;
   base: number;
   altura: number;
