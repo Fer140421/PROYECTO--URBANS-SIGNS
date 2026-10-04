@@ -1,0 +1,72 @@
+<div *ngIf="state.isOpen" 
+     class="app-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50 transition-opacity"
+     (click)="onCancel()">
+  
+  <div class="app-modal-panel w-full max-w-md bg-white rounded-xl shadow-2xl p-6 overflow-hidden relative animate-fade-in-modal border border-slate-200"
+       (click)="$event.stopPropagation()"
+       role="dialog"
+       aria-modal="true"
+       [attr.aria-label]="state.options.title || 'Modal de confirmación'">
+       
+    <!-- Botón cerrar (X) -->
+    <button (click)="onCancel()" 
+            type="button" 
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+            aria-label="Cerrar">
+      <i class="ph ph-x text-lg"></i>
+    </button>
+
+    <div class="flex items-start gap-4">
+      <!-- Ícono según tipo -->
+      <div [ngSwitch]="state.options.type" class="flex-shrink-0">
+        <div *ngSwitchCase="'danger'" class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+          <i class="ph-bold ph-warning-circle text-2xl"></i>
+        </div>
+        <div *ngSwitchCase="'warning'" class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+          <i class="ph-bold ph-warning text-2xl"></i>
+        </div>
+        <div *ngSwitchCase="'success'" class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+          <i class="ph-bold ph-check-circle text-2xl"></i>
+        </div>
+        <div *ngSwitchDefault class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+          <i class="ph-bold ph-info text-2xl"></i>
+        </div>
+      </div>
+
+      <!-- Contenido textual -->
+      <div class="flex-1 pr-4">
+        <h3 class="text-lg font-bold text-gray-900 leading-snug">
+          {{ state.options.title || 'Confirmación' }}
+        </h3>
+        <p class="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+          {{ state.options.message }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="mt-6 flex justify-end items-center gap-3">
+      <button *ngIf="state.options.showCancel"
+              (click)="onCancel()"
+              type="button"
+              data-action="cancel"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+        {{ state.options.cancelText || 'Cancelar' }}
+      </button>
+
+      <button (click)="onConfirm()"
+              type="button"
+              data-action="confirm"
+              [ngClass]="{
+                'bg-red-600 hover:bg-red-700 text-white focus:ring-red-400': state.options.type === 'danger',
+                'bg-amber-500 hover:bg-amber-600 text-white focus:ring-amber-300': state.options.type === 'warning',
+                'bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-400': state.options.type === 'success',
+                'bg-[#facc15] hover:bg-yellow-400 text-gray-900 font-semibold focus:ring-yellow-300': !state.options.type || state.options.type === 'info'
+              }"
+              class="px-5 py-2 text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2">
+        {{ state.options.confirmText || 'Confirmar' }}
+      </button>
+    </div>
+
+  </div>
+</div>

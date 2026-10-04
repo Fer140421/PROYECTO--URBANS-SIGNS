@@ -4,6 +4,7 @@ import { NotificationService } from '../../../../../../core/services/notificatio
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CotizacionService } from '../../../../../../core/services/cotizacion/cotizacion.service';
+import { ConfirmModalService } from '../../../../../../core/services/confirm-modal/confirm-modal.service';
 interface ArchivoAdjunto {
   nombre: string;
   tipo: string;
@@ -44,6 +45,7 @@ export class ModificarOrdenImpresionComponent {
   private ordenImpresionService = inject(OrdenImpresionService);
   private cotizacionService = inject(CotizacionService);
   private notificacionService = inject(NotificationService);
+  private confirmService = inject(ConfirmModalService);
 
   @Input() mostrar: boolean = false;
   @Input() orden: any | null = null;  // Solo recibe { idOrden, nroOrden, etc. }
@@ -419,8 +421,15 @@ export class ModificarOrdenImpresionComponent {
     return partes.join(' | ');
   }
 
-  limpiarCamposEditables(): void {
-    if (confirm('¿Deseas limpiar solo los campos editados? Los datos originales se mantendrán.')) {
+  async limpiarCamposEditables(): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Limpiar campos',
+      message: '¿Deseas limpiar solo los campos editados? Los datos originales se mantendrán.',
+      confirmText: 'Limpiar campos',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    });
+    if (confirmed) {
       this.ordenImpresion.trabajos.forEach(trabajo => {
         trabajo.descripcion = '';
         trabajo.resolucion = '';
@@ -550,8 +559,15 @@ export class ModificarOrdenImpresionComponent {
     return tipos[extension] || 'application/octet-stream';
   }
 
-  eliminarArchivo(index: number): void {
-    if (confirm('¿Estás seguro de eliminar este archivo?')) {
+  async eliminarArchivo(index: number): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Eliminar archivo',
+      message: '¿Estás seguro de eliminar este archivo?',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.ordenImpresion.archivos.splice(index, 1);
     }
   }

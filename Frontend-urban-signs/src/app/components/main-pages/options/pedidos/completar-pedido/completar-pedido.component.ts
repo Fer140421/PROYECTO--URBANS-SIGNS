@@ -3,6 +3,8 @@ import { Component, EventEmitter, Input, Output, SimpleChanges, inject } from '@
 import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../../../../../core/services/employee/employee.service';
 import { Empleado } from '../../../../../core/models/employee/ListEmpleadosActivos.model';
+import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { ConfirmModalService } from '../../../../../core/services/confirm-modal/confirm-modal.service';
 
 interface PagoRegistro {
   monto: number;
@@ -19,6 +21,8 @@ interface PagoRegistro {
 })
 export class CompletarPedidoComponent {
   private employeeService = inject(EmployeeService);
+  private notificationService = inject(NotificationService);
+  private confirmService = inject(ConfirmModalService);
 
   @Input() mostrar: boolean = false;
   @Input() pedido: any | null = null;
@@ -111,21 +115,21 @@ export class CompletarPedidoComponent {
   }
 
 
-  procesarCompletacion(): void {
+  async procesarCompletacion(): Promise<void> {
     if (this.procesando) return;
 
     if (!this.puedeCompletar()) {
-      alert('Por favor complete todos los campos requeridos y confirme la entrega');
+      this.notificationService.warning('Por favor complete todos los campos requeridos y confirme la entrega');
       return;
     }
 
     if (this.pedido.estadoPedido === 'ENTREGADO') {
-      alert('Este pedido ya está marcado como ENTREGADO');
+      this.notificationService.warning('Este pedido ya está marcado como ENTREGADO');
       return;
     }
 
     if (this.pedido.estadoPedido === 'CANCELADO') {
-      alert('No se puede completar un pedido CANCELADO');
+      this.notificationService.error('No se puede completar un pedido CANCELADO');
       return;
     }
 
@@ -133,7 +137,15 @@ export class CompletarPedidoComponent {
       ? `¿Confirma la entrega del pedido y el registro del pago de ${this.pagoFinal.monto} Bs?`
       : '¿Confirma la entrega del pedido al cliente?';
 
-    if (!confirm(mensajeConfirmacion)) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Confirmar entrega',
+      message: mensajeConfirmacion,
+      confirmText: 'Confirmar entrega',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -156,13 +168,13 @@ export class CompletarPedidoComponent {
 
   completacionExitosa(): void {
     this.procesando = false;
-    alert('¡Pedido completado exitosamente!');
+    this.notificationService.success('¡Pedido completado exitosamente!');
     this.cerrarModal();
   }
 
   completacionFallida(mensaje: string): void {
     this.procesando = false;
-    alert(`Error al completar pedido: ${mensaje}`);
+    this.notificationService.error(`Error al completar pedido: ${mensaje}`);
   }
 
   getCostoTotal(): number {

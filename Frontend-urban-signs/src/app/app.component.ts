@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { NotificationComponent } from "./shared/notification/notificacion/notificacion.component";
 import { ExpiracionComponent } from './components/main-pages/options/expiracion/expiracion/expiracion.component';
 import { TransactionOverlayComponent } from './shared/components/transaction-overlay/transaction-overlay.component';
+import { ConfirmModalComponent } from './shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NotificationComponent, ExpiracionComponent, TransactionOverlayComponent],
+  imports: [RouterOutlet, NotificationComponent, ExpiracionComponent, TransactionOverlayComponent, ConfirmModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

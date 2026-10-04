@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ScrollRevealDirectiveDirective } from '../../../shared/directives/scroll-reveal-directive.directive';
+import { NotificationService } from '../../../../core/services/notification/notification.service';
 
 @Component({
   selector: 'app-contact',
@@ -11,6 +12,8 @@ import { ScrollRevealDirectiveDirective } from '../../../shared/directives/scrol
   styleUrl: './contact.component.css'
 })
 export class ContactComponent {
+  private notificationService = inject(NotificationService);
+
   formData: any = {
     name: '',
     email: '',
@@ -39,7 +42,7 @@ export class ContactComponent {
   onSubmit() {
     if (this.formData.name && this.formData.email && this.formData.message) {
       console.log('Form submitted:', this.formData);
-      alert('¡Gracias por contactarnos! Te responderemos pronto.');
+      this.notificationService.success('¡Gracias por contactarnos! Te responderemos pronto.');
       this.resetForm();
     }
   }

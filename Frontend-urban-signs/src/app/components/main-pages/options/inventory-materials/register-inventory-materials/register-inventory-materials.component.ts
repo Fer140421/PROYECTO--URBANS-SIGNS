@@ -7,6 +7,7 @@ import { MaterialTrabajoRegistroDTO } from '../../../../../core/models/materialT
 import { MaterialService } from '../../../../../core/services/materials/material.service';
 import imageCompression from 'browser-image-compression';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { ConfirmModalService } from '../../../../../core/services/confirm-modal/confirm-modal.service';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -23,6 +24,7 @@ export class RegisterInventoryMaterialsComponent implements OnInit {
   form!: FormGroup;
   fb = inject(FormBuilder);
   notificactionService = inject(NotificationService);
+  confirmService = inject(ConfirmModalService);
   materialService = inject(MaterialService);
   router = inject(Router);
 
@@ -311,12 +313,18 @@ export class RegisterInventoryMaterialsComponent implements OnInit {
     });
   }
 
-  cancel(): void {
+  async cancel(): Promise<void> {
     if (this.isProcessing) return;
 
     if (this.form.dirty || this.imagePreview) {
-      // Si hay cambios, pedir confirmación
-      if (confirm('¿Está seguro de cancelar? Se perderán todos los datos ingresados.')) {
+      const confirmed = await this.confirmService.confirm({
+        title: 'Cancelar registro',
+        message: '¿Está seguro de cancelar? Se perderán todos los datos ingresados.',
+        confirmText: 'Sí, cancelar',
+        cancelText: 'Continuar editando',
+        type: 'warning'
+      });
+      if (confirmed) {
         this.limpiarFormulario();
         this.notificactionService.show('Registro cancelado');
         this.router.navigate(['/home/list-inventory-materials']);

@@ -5,6 +5,7 @@ import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.
 import { FormsModule } from '@angular/forms';
 import { PedidoResumen, PlanificacionSemanal, PlanificacionService, TrabajoDisponible, TrabajoProgramado, CrearTrabajoRequest } from '../../../../../core/services/planificacion/planificacion.service';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { ConfirmModalService } from '../../../../../core/services/confirm-modal/confirm-modal.service';
 import { PedidosService } from '../../../../../core/services/pedidos/pedidos.service';
 import { EmployeeService } from '../../../../../core/services/employee/employee.service';
 import { Empleado } from '../../../../../core/models/employee/ListEmpleadosActivos.model';
@@ -62,6 +63,7 @@ export class SeguimientoComponent {
   private pedidosService = inject(PedidosService);
   private employeeService = inject(EmployeeService);
   private notificationService = inject(NotificationService);
+  private confirmService = inject(ConfirmModalService);
   private router = inject(Router);
 
   // Datos principales
@@ -406,10 +408,18 @@ export class SeguimientoComponent {
     });
   }
 
-  eliminarTrabajo(trabajo: TrabajoProgramado): void {
+  async eliminarTrabajo(trabajo: TrabajoProgramado): Promise<void> {
     if (this.isProcessing) return;
 
-    if (!confirm(`¿Está seguro de eliminar el trabajo "${trabajo.descripcionTrabajo}"?`)) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Eliminar trabajo',
+      message: `¿Está seguro de eliminar el trabajo "${trabajo.descripcionTrabajo}"?`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -430,10 +440,18 @@ export class SeguimientoComponent {
     });
   }
 
-  marcarCompletado(trabajo: TrabajoProgramado): void {
+  async marcarCompletado(trabajo: TrabajoProgramado): Promise<void> {
     if (this.isProcessing) return;
 
-    if (!confirm(`¿Marcar como completado: "${trabajo.descripcionTrabajo}"?`)) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Completar trabajo',
+      message: `¿Marcar como completado: "${trabajo.descripcionTrabajo}"?`,
+      confirmText: 'Completar',
+      cancelText: 'Cancelar',
+      type: 'success'
+    });
+
+    if (!confirmed) {
       return;
     }
 

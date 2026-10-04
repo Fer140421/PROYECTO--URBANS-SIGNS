@@ -301,7 +301,7 @@ export class RegisterStaffComponent implements OnInit, OnDestroy {
     const MAX_FILE_SIZE_MB = 2; // puedes ajustarlo aquí
 
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      alert(`El archivo supera el tamaño máximo de ${MAX_FILE_SIZE_MB} MB`);
+      this.notificationService.show(`El archivo supera el tamaño máximo de ${MAX_FILE_SIZE_MB} MB`, 'error');
       return;
     }
 
@@ -315,7 +315,7 @@ export class RegisterStaffComponent implements OnInit, OnDestroy {
       const compressedFile = await imageCompression(file, options);
 
       if (compressedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        alert('No se pudo comprimir la imagen a un tamaño adecuado');
+        this.notificationService.show('No se pudo comprimir la imagen a un tamaño adecuado', 'error');
         return;
       }
 
@@ -327,7 +327,7 @@ export class RegisterStaffComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Error al comprimir imagen:', error);
-      alert('Error al procesar la imagen');
+      this.notificationService.show('Error al procesar la imagen', 'error');
     }
   }
 

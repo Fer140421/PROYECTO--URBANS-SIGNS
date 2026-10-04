@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CotizacionService } from '../../../../../../core/services/cotizacion/cotizacion.service';
 import { NotificationService } from '../../../../../../core/services/notification/notification.service';
 import { OrdenImpresionService } from '../../../../../../core/services/orden-impresion/orden-impresion.service';
+import { ConfirmModalService } from '../../../../../../core/services/confirm-modal/confirm-modal.service';
 interface ArchivoAdjunto {
   nombre: string;
   tipo: string;
@@ -48,6 +49,7 @@ export class RegistrarOrdenImpresionComponent {
   private cotizacionService = inject(CotizacionService);
   private notificacionService = inject(NotificationService);
   private ordenImpresionService = inject(OrdenImpresionService);
+  private confirmService = inject(ConfirmModalService);
 
   ordenImpresion: OrdenImpresion = {
     numeroOrden: '',
@@ -110,7 +112,7 @@ export class RegistrarOrdenImpresionComponent {
       },
       error: (error) => {
         console.error('Error al cargar cotización:', error);
-        alert('Error al cargar la cotización');
+        this.notificacionService.error('Error al cargar la cotización');
       }
     });
   }
@@ -342,8 +344,15 @@ export class RegistrarOrdenImpresionComponent {
     return partes.join(' | ');
   }
 
-  limpiarCamposEditables() {
-    if (confirm('¿Deseas limpiar solo los campos editados? Los datos de la cotización se mantendrán.')) {
+  async limpiarCamposEditables() {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Limpiar campos',
+      message: '¿Deseas limpiar solo los campos editados? Los datos de la cotización se mantendrán.',
+      confirmText: 'Limpiar campos',
+      cancelText: 'Cancelar',
+      type: 'warning'
+    });
+    if (confirmed) {
       this.ordenImpresion.trabajos.forEach(detalle => {
         detalle.descripcion = '';
         detalle.tipoTrabajo = this.inferirTipoTrabajo(detalle.nombreTrabajo);
@@ -468,8 +477,15 @@ export class RegistrarOrdenImpresionComponent {
     return tipos[extension] || 'application/octet-stream';
   }
 
-  eliminarArchivo(index: number) {
-    if (confirm('¿Estás seguro de eliminar este archivo?')) {
+  async eliminarArchivo(index: number) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Eliminar archivo',
+      message: '¿Estás seguro de eliminar este archivo?',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.ordenImpresion.archivos.splice(index, 1);
     }
   }

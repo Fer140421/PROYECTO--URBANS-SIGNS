@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NotificationService } from '../../../../../core/services/notification/notification.service';
 
 @Component({
   selector: 'app-facturacion',
@@ -10,6 +11,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
   styleUrl: './facturacion.component.css'
 })
 export class FacturacionComponent {
+  private notificationService = inject(NotificationService);
   facturaForm: FormGroup;
   pedidosPendientes: any[] = [];
   tiposDocumento = [
@@ -71,10 +73,10 @@ export class FacturacionComponent {
     if (this.facturaForm.valid) {
       console.log('Datos de factura:', this.facturaForm.value);
       // Aquí iría la lógica para guardar la factura
-      alert('Factura registrada correctamente');
+      this.notificationService.success('Factura registrada correctamente');
       this.facturaForm.reset();
     } else {
-      alert('Por favor, complete todos los campos requeridos');
+      this.notificationService.warning('Por favor, complete todos los campos requeridos');
     }
   }
 

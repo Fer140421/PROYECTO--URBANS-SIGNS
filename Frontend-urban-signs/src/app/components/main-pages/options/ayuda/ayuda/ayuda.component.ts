@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../../../../core/services/notification/notification.service';
 interface FAQ {
   question: string;
   answer: string;
@@ -22,6 +23,7 @@ interface HelpCategory {
   styleUrl: './ayuda.component.css'
 })
 export class AyudaComponent {
+  private notificationService = inject(NotificationService);
   searchQuery = '';
   selectedCategory = '';
 
@@ -136,6 +138,10 @@ export class AyudaComponent {
 
   sendFeedback(type: 'positive' | 'negative'): void {
     console.log('Feedback:', type);
-    alert(type === 'positive' ? '¡Gracias por tu feedback positivo!' : 'Gracias por tu feedback. Trabajaremos para mejorar.');
+    if (type === 'positive') {
+      this.notificationService.success('¡Gracias por tu feedback positivo!');
+    } else {
+      this.notificationService.info('Gracias por tu feedback. Trabajaremos para mejorar.');
+    }
   }
 }

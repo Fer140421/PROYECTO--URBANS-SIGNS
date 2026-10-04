@@ -1,0 +1,4 @@
+/* Estilos específicos para app-confirm-modal complementando styles.css */
+:host {
+  display: contents;
+}
