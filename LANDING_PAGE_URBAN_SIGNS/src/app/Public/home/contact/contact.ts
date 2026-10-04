@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './contact.css',
 })
 export class Contact {
+  showSuccessModal = signal(false);
+
   formData: any = {
     name: '',
     email: '',
@@ -37,9 +39,13 @@ export class Contact {
   onSubmit() {
     if (this.formData.name && this.formData.email && this.formData.message) {
       console.log('Form submitted:', this.formData);
-      alert('¡Gracias por contactarnos! Te responderemos pronto.');
+      this.showSuccessModal.set(true);
       this.resetForm();
     }
+  }
+
+  closeModal() {
+    this.showSuccessModal.set(false);
   }
 
   resetForm() {

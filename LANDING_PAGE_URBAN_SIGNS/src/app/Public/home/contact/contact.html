@@ -105,4 +105,27 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de éxito -->
+      @if (showSuccessModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn"
+             (click)="closeModal()">
+          <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative"
+               (click)="$event.stopPropagation()">
+            <div class="w-16 h-16 bg-amber-400/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2">¡Mensaje Enviado!</h3>
+            <p class="text-zinc-300 mb-6">
+              ¡Gracias por contactarnos! Te responderemos pronto a tu correo o teléfono.
+            </p>
+            <button (click)="closeModal()" 
+                    class="w-full bg-amber-400 hover:bg-amber-500 text-black font-bold py-3 px-6 rounded-xl transition duration-200">
+              Entendido
+            </button>
+          </div>
+        </div>
+      }
     </section>

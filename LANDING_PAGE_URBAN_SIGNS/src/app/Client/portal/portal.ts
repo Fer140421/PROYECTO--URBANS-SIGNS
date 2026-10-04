@@ -104,6 +104,29 @@ export class Portal implements OnInit, OnDestroy {
   readonly approvingQuote = signal<Quote | null>(null);
   readonly isApprovalModalOpen = signal<boolean>(false);
 
+  // Modal de confirmación para acciones críticas (cancelar, rechazar)
+  readonly confirmModal = signal<{
+    title: string;
+    message: string;
+    confirmText: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning';
+    action: () => void;
+  } | null>(null);
+
+  closeConfirmModal(): void {
+    this.confirmModal.set(null);
+  }
+
+  onExecuteModalConfirm(): void {
+    const data = this.confirmModal();
+    if (data) {
+      const action = data.action;
+      this.closeConfirmModal();
+      action();
+    }
+  }
+
   // ==========================================
   // MODAL DE REGISTRO (CREAR SOLICITUD)
   // ==========================================
@@ -559,8 +582,18 @@ export class Portal implements OnInit, OnDestroy {
   cancelQuote(quote: Quote): void {
     if (this.isActionLoading()) return;
     const confirmMsg = `¿Confirmas que deseas cancelar la solicitud "${quote.id} - ${quote.title}"?\n\nAl cancelarla, no se podrá proceder con este trabajo y no avanzará al flujo de producción.`;
-    if (!confirm(confirmMsg)) return;
 
+    this.confirmModal.set({
+      title: 'Cancelar solicitud',
+      message: confirmMsg,
+      confirmText: 'Sí, cancelar solicitud',
+      cancelText: 'Volver',
+      type: 'danger',
+      action: () => this.executeCancelQuote(quote)
+    });
+  }
+
+  private executeCancelQuote(quote: Quote): void {
     this.isActionLoading.set(true);
     this.actionFeedback.set(null);
 
@@ -664,8 +697,18 @@ export class Portal implements OnInit, OnDestroy {
 
   rejectQuote(quote: Quote): void {
     if (this.isActionLoading()) return;
-    if (!confirm('¿Confirmas que deseas rechazar esta cotización?')) return;
 
+    this.confirmModal.set({
+      title: 'Rechazar cotización',
+      message: '¿Confirmas que deseas rechazar esta cotización formal? Esta acción notificará al equipo y no se podrá deshacer.',
+      confirmText: 'Rechazar cotización',
+      cancelText: 'Volver',
+      type: 'danger',
+      action: () => this.executeRejectQuote(quote)
+    });
+  }
+
+  private executeRejectQuote(quote: Quote): void {
     this.isActionLoading.set(true);
     this.actionFeedback.set(null);
 
