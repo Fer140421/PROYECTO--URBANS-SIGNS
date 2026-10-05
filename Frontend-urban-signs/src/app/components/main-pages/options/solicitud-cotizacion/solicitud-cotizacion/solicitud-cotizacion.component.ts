@@ -3,7 +3,7 @@ import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.
 import { ClientesService } from '../../../../../core/services/clientes/clientes.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteBusquedaDTO } from '../../../../../core/models/Clientes/busqueda.model';
-import { CotizacionService, Material } from '../../../../../core/services/cotizacion/cotizacion.service';
+import { CotizacionService } from '../../../../../core/services/cotizacion/cotizacion.service';
 import { CommonModule } from '@angular/common';
 import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
@@ -58,13 +58,13 @@ export class SolicitudCotizacionComponent {
     telefono: ''
   };
 
-  // Materiales y detalles
-  materiales: Material[] = [];
   isLoading = false;
   cotizacionResultado?: any;
   mostrarErrores = false;
   trabajoFiles: (File | null)[] = [null];
   trabajoPreviews: (string | null)[] = [null];
+  clienteDetalle: any | null = null;
+  imagenModalUrl: string | null = null;
 
   onTrabajoFileSelected(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
@@ -130,23 +130,12 @@ export class SolicitudCotizacionComponent {
       id_trabajo: ['', Validators.required],
       cantidad: [1, [Validators.required, Validators.min(1)]],
       dpis: [0, [Validators.min(0)]],
-      base: [0, [Validators.required, Validators.min(0.1)]],
-      altura: [0, [Validators.required, Validators.min(0.1)]],
+      unidad_medida: ['m', Validators.required],
+      base: [0, [Validators.required, Validators.min(0.01)]],
+      altura: [0, [Validators.required, Validators.min(0.01)]],
       area_total: [{ value: 0, disabled: true }],
-      descripcion: ['', Validators.required],
-      material: ['']
+      descripcion: ['']
     });
-  }
-
-  getMaterialesDelTrabajo(trabajoIndex: number): FormArray {
-    return this.trabajos.at(trabajoIndex).get('materiales') as FormArray;
-  }
-
-  removerMaterialDeTrabajo(trabajoIndex: number, materialIndex: number): void {
-    const materiales = this.getMaterialesDelTrabajo(trabajoIndex);
-    if (materiales.length > 1) {
-      materiales.removeAt(materialIndex);
-    }
   }
 
   autoSeleccionarFechas(): void {
@@ -216,14 +205,28 @@ export class SolicitudCotizacionComponent {
 
   seleccionarCliente(cliente: any): void {
     this.clienteSeleccionado = cliente;
+    this.clienteDetalle = null;
     this.cotizacionForm.patchValue({
-      id_cliente: cliente.idCliente
+      id_cliente: cliente.idCliente || cliente.id_cliente
     });
     this.mostrarErrores = false;
+
+    const id = cliente.idCliente || cliente.id_cliente;
+    if (id) {
+      this.clienteService.obtenerClientePorId(id).subscribe({
+        next: (detalle) => {
+          this.clienteDetalle = detalle;
+        },
+        error: (err) => {
+          console.warn('No se pudo cargar detalle completo del cliente, usando datos básicos:', err);
+        }
+      });
+    }
   }
 
   deseleccionarCliente(): void {
     this.clienteSeleccionado = null;
+    this.clienteDetalle = null;
     this.cotizacionForm.patchValue({
       id_cliente: ''
     });
@@ -250,16 +253,45 @@ export class SolicitudCotizacionComponent {
     const nuevoCliente: any = {
       id_cliente: Math.max(0, ...this.clientes.map(c => c.id_cliente)) + 1,
       nombre: this.tipoCliente === 'Persona'
-        ? `${this.nuevaPersona.nombre} ${this.nuevaPersona.ap} ${this.nuevaPersona.am}`
+        ? `${this.nuevaPersona.nombre} ${this.nuevaPersona.ap} ${this.nuevaPersona.am}`.trim()
+        : this.nuevaEmpresa.razon_social,
+      displayName: this.tipoCliente === 'Persona'
+        ? `${this.nuevaPersona.nombre} ${this.nuevaPersona.ap} ${this.nuevaPersona.am}`.trim()
         : this.nuevaEmpresa.razon_social,
       email: this.nuevoCliente.email,
       telefono: this.tipoCliente === 'Persona' ? this.nuevaPersona.celular : this.nuevaEmpresa.telefono,
       tipo: this.tipoCliente,
-      tipo_cliente: this.nuevoCliente.tipo_cliente
+      tipo_cliente: this.nuevoCliente.tipo_cliente,
+      direccion: this.tipoCliente === 'Persona' ? this.nuevaPersona.direccion : this.nuevaEmpresa.direccion,
+      ci: this.nuevaPersona.ci,
+      nit: this.nuevaEmpresa.nit
+    };
+
+    this.clienteDetalle = {
+      tipoClientePersonaEmpresa: this.tipoCliente,
+      tipoCliente: this.nuevoCliente.tipo_cliente,
+      correo: this.nuevoCliente.email,
+      persona: this.tipoCliente === 'Persona' ? {
+        name_people: this.nuevaPersona.nombre,
+        ap: this.nuevaPersona.ap,
+        am: this.nuevaPersona.am,
+        ci: this.nuevaPersona.ci,
+        phone_number: this.nuevaPersona.celular,
+        address: this.nuevaPersona.direccion
+      } : null,
+      empresa: this.tipoCliente === 'Empresa' ? {
+        razonSocial: this.nuevaEmpresa.razon_social,
+        nit: this.nuevaEmpresa.nit,
+        telefono: this.nuevaEmpresa.telefono,
+        direccion: this.nuevaEmpresa.direccion
+      } : null
     };
 
     this.clientes.push(nuevoCliente);
-    this.seleccionarCliente(nuevoCliente);
+    this.clienteSeleccionado = nuevoCliente;
+    this.cotizacionForm.patchValue({
+      id_cliente: nuevoCliente.id_cliente
+    });
 
     this.nuevaPersona = { nombre: '', ap: '', am: '', ci: '', celular: '', direccion: '' };
     this.nuevaEmpresa = { razon_social: '', nit: '', direccion: '', telefono: '' };
@@ -285,11 +317,6 @@ export class SolicitudCotizacionComponent {
     detalle.patchValue({ subtotal: subtotal });
   }
 
-  getNombreMaterial(idMaterial: number): string {
-    const material = this.materiales.find(m => m.id_material === idMaterial);
-    return material ? material.nombre : 'Material no encontrado';
-  }
-
   getNombreCliente(idCliente: number): string {
     if (this.clienteSeleccionado && this.clienteSeleccionado.idCliente === idCliente) {
       return this.clienteSeleccionado.displayName;
@@ -306,46 +333,44 @@ export class SolicitudCotizacionComponent {
     this.mostrarErrores = true;
   }
 
-  onMaterialChange(trabajoIndex: number, materialIndex: number): void {
-    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
-    const idMaterial = material.get('id_material')?.value;
-    const materialData = this.materiales.find(m => m.id_material === parseInt(idMaterial));
+  cambiarUnidadMedida(trabajoIndex: number, nuevaUnidad: 'm' | 'cm'): void {
+    const trabajo = this.trabajos.at(trabajoIndex);
+    if (!trabajo) return;
+    const unidadActual = trabajo.get('unidad_medida')?.value || 'm';
+    if (unidadActual === nuevaUnidad) return;
 
-    if (materialData) {
-      material.patchValue({
-        precio_unitario: materialData.precio_unitario
-      });
-      this.calcularSubtotalMaterial(trabajoIndex, materialIndex);
-    }
-  }
-
-  calcularSubtotalMaterial(trabajoIndex: number, materialIndex: number): void {
-    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
-    const ancho = material.get('ancho')?.value || 0;
-    const alto = material.get('alto')?.value || 0;
-    const precio = material.get('precio_unitario')?.value || 0;
-
-    const subtotal = ancho * alto * precio;
-    material.patchValue({ subtotal: subtotal });
-    this.calcularSubtotalTrabajo(trabajoIndex);
-  }
-
-  calcularAreaMaterial(trabajoIndex: number, materialIndex: number): number {
-    const material = this.getMaterialesDelTrabajo(trabajoIndex).at(materialIndex);
-    const ancho = material.get('ancho')?.value || 0;
-    const alto = material.get('alto')?.value || 0;
-    return ancho * alto;
+    trabajo.patchValue({ unidad_medida: nuevaUnidad });
+    this.onDimensionesChange(trabajoIndex);
   }
 
   onDimensionesChange(trabajoIndex: number): void {
     const trabajo = this.trabajos.at(trabajoIndex);
-    const base = trabajo.get('base')?.value || 0;
-    const altura = trabajo.get('altura')?.value || 0;
+    if (!trabajo) return;
+    const base = Number(trabajo.get('base')?.value) || 0;
+    const altura = Number(trabajo.get('altura')?.value) || 0;
+    const unidad = trabajo.get('unidad_medida')?.value || 'm';
 
-    const areaTotal = base * altura;
+    let areaTotal = 0;
+    if (unidad === 'cm') {
+      areaTotal = (base * altura) / 10000;
+    } else {
+      areaTotal = base * altura;
+    }
+
+    areaTotal = Number(areaTotal.toFixed(4));
     trabajo.patchValue({ area_total: areaTotal });
 
     this.calcularSubtotalTrabajo(trabajoIndex);
+  }
+
+  calcularAreaTrabajoConfirmacion(trabajo: any): number {
+    const base = Number(trabajo.base) || 0;
+    const altura = Number(trabajo.altura) || 0;
+    const unidad = trabajo.unidad_medida || 'm';
+    if (unidad === 'cm') {
+      return Number(((base * altura) / 10000).toFixed(4));
+    }
+    return Number((base * altura).toFixed(4));
   }
 
   validarPasoActual(): boolean {
@@ -390,8 +415,8 @@ export class SolicitudCotizacionComponent {
           cantidad: trabajo.cantidad,
           base: trabajo.base,
           altura: trabajo.altura,
-          descripcion: trabajo.descripcion,
-          material: trabajo.material ? trabajo.material.trim() : ''
+          unidadMedida: trabajo.unidad_medida || 'm',
+          descripcion: trabajo.descripcion ? trabajo.descripcion.trim() : ''
         }))
       };
       console.log(cotizacionData)
@@ -425,28 +450,50 @@ export class SolicitudCotizacionComponent {
     trabajo.patchValue({ subtotal: subtotal });
   }
 
-  getTotalMateriales(): number {
-    return this.trabajos.controls.reduce((total, trabajo, index) => {
-      return total + this.getMaterialesDelTrabajo(index).length;
-    }, 0);
-  }
-
   getTrabajoSeleccionado(trabajoIndex: number): any {
     const idTrabajo = this.trabajos.at(trabajoIndex).get('id_trabajo')?.value;
     return this.listTrabajos.find(t => t.id === parseInt(idTrabajo));
   }
 
-  getNombreTrabajo(idTrabajo: number): string {
-    const trabajo = this.listTrabajos.find(t => t.idTrabajo === idTrabajo);
-    return trabajo ? trabajo.nombre : 'Trabajo no encontrado';
+  getNombreTrabajo(idTrabajo: any): string {
+    if (!idTrabajo) return 'Trabajo sin especificar';
+    const numId = Number(idTrabajo);
+    const trabajo = this.listTrabajos.find(t => (t.id === numId || t.idTrabajo === numId));
+    return trabajo ? (trabajo.nombre || trabajo.nombreTrabajo) : `Trabajo #${idTrabajo}`;
   }
 
-  getTotalMaterialesConfirmacion(): number {
-    if (!this.cotizacionForm.value.trabajos) return 0;
+  irAPaso(paso: number): void {
+    if (paso >= 0 && paso < this.totalSteps) {
+      this.currentStep = paso;
+    }
+  }
 
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
+  }
+
+  calcularAreaTotalGeneral(): number {
+    if (!this.cotizacionForm?.value?.trabajos) return 0;
     return this.cotizacionForm.value.trabajos.reduce((total: number, trabajo: any) => {
-      return total + (trabajo.materiales?.length || 0);
+      const areaUnitaria = this.calcularAreaTrabajoConfirmacion(trabajo);
+      const cantidad = Number(trabajo.cantidad) || 1;
+      return total + (areaUnitaria * cantidad);
     }, 0);
+  }
+
+  calcularTotalUnidades(): number {
+    if (!this.cotizacionForm?.value?.trabajos) return 0;
+    return this.cotizacionForm.value.trabajos.reduce((total: number, trabajo: any) => {
+      return total + (Number(trabajo.cantidad) || 1);
+    }, 0);
+  }
+
+  getTotalImagenesAdjuntas(): number {
+    return this.trabajoPreviews.filter(p => !!p).length;
   }
 
   generarCodigoTemporal(): string {
@@ -566,6 +613,8 @@ export class SolicitudCotizacionComponent {
 
     this.currentStep = 0;
     this.clienteSeleccionado = null;
+    this.clienteDetalle = null;
+    this.imagenModalUrl = null;
     this.modoCliente = 'buscar';
     this.tipoCliente = 'Persona';
     this.terminoBusqueda = false;

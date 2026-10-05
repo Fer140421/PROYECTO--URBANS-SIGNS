@@ -435,62 +435,6 @@
     </div>
 </div>
 
-<!-- Modal de Detalles -->
-<div *ngIf="isModalOpen"
-    class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out">
-
-    <div class="bg-white rounded-lg p-6 shadow-lg w-11/12 max-w-2xl animate-fade-in-modal">
-
-        <!-- Título -->
-        <h2 class="text-xl font-bold mb-4 text-gray-800">
-            Detalles de Cotización - {{ cotizacion?.cod_cotizacion }}
-        </h2>
-
-        <!-- Información general -->
-        <div class="mb-4 text-gray-700">
-            <p><strong>Cliente:</strong> {{ cotizacion?.cliente }}</p>
-            <p><strong>Fecha:</strong> {{ cotizacion?.fecha_emision }}</p>
-            <p><strong>Estado:</strong> {{ cotizacion?.estado }}</p>
-            <p><strong>Observaciones:</strong> {{ cotizacion?.detalles }}</p>
-        </div>
-
-        <!-- Tabla de detalles -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border border-gray-200">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="p-2 border-b">Descripción</th>
-                        <th class="p-2 border-b">Cantidad</th>
-                        <th class="p-2 border-b">Unidad</th>
-                        <th class="p-2 border-b">Precio Unitario</th>
-                        <th class="p-2 border-b">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let det of cotizacion?.detalles">
-                        <td class="p-2 border-b">{{ det.material }}</td>
-                        <td class="p-2 border-b">cantidad</td>
-                        <td class="p-2 border-b">unidad de medida</td>
-                        <td class="p-2 border-b">{{ det.precio_unitario}} Bs</td>
-                        <td class="p-2 border-b">{{ det.subtotal}} Bs</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Total de la cotización -->
-        <div class="mt-4 text-right font-bold text-gray-800">
-            Total: {{ cotizacion?.costo_total}} Bs
-        </div>
-
-        <!-- Botón cerrar -->
-        <div class="flex justify-end mt-4">
-            <button (click)="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
-                Cerrar
-            </button>
-        </div>
-    </div>
-</div>
 
 <!-- Modal Eliminar Orden de Compra -->
 <div *ngIf="isDeleteModalOpen"

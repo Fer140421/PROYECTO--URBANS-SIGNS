@@ -139,6 +139,7 @@ export class RegistrarOrdenImpresionComponent {
           cantidad: trabajo.cantidad,
           base: trabajo.base,
           altura: trabajo.altura,
+          unidadMedida: trabajo.unidadMedida || 'm',
           areaTotal: trabajo.area_total,
 
           // Campos editables por el usuario

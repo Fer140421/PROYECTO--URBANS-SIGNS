@@ -18,6 +18,7 @@ interface TrabajoSolicitud {
   cantidad: number;
   base: number;
   altura: number;
+  unidadMedida?: string;
   areaTotal: number;
 }
 
@@ -61,6 +62,27 @@ export class RegistrarCotizacionComponent implements OnInit {
   preciosUnitariosPersonalizados: { [key: number]: number } = {};
   materialesPersonalizados: { [key: number]: string } = {};
   private readonly COSTO_BASE_POR_M2 = 0;
+  imagenModalUrl: string | null = null;
+
+  abrirModalImagen(url?: string | null): void {
+    if (url) {
+      this.imagenModalUrl = url;
+    }
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
+  }
+
+  getTotalUnidades(): number {
+    if (!this.solicitud?.trabajos) return 0;
+    return this.solicitud.trabajos.reduce((total, t) => total + (Number(t.cantidad) || 0), 0);
+  }
+
+  getAreaTotalGeneral(): number {
+    if (!this.solicitud?.trabajos) return 0;
+    return this.solicitud.trabajos.reduce((total, t) => total + (Number(t.areaTotal) || 0), 0);
+  }
 
   ngOnInit(): void {
     this.inicializarFormulario();
@@ -177,6 +199,7 @@ export class RegistrarCotizacionComponent implements OnInit {
           costoUnitario: this.getCostoUnitarioTrabajo(index),
           subtotal: this.getSubtotalTrabajo(index),
           material: this.getMaterialTrabajo(index),
+          unidadMedida: trabajo.unidadMedida || 'm',
           materiales: []
         }))
       };

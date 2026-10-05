@@ -66,13 +66,24 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
     return this.fb.group({
       id_trabajo: ['', Validators.required],
       cantidad: [1, [Validators.required, Validators.min(1)]],
-      base: [0, [Validators.required, Validators.min(0.1)]],
-      altura: [0, [Validators.required, Validators.min(0.1)]],
+      unidad_medida: ['m', Validators.required],
+      base: [0, [Validators.required, Validators.min(0.01)]],
+      altura: [0, [Validators.required, Validators.min(0.01)]],
       descripcion: [''],
       area_total: [0],
       costo_unitario: [0],
       subtotal: [0]
     });
+  }
+
+  cambiarUnidadMedida(index: number, nuevaUnidad: 'm' | 'cm'): void {
+    const trabajo = this.trabajos.at(index);
+    if (!trabajo) return;
+    const unidadActual = trabajo.get('unidad_medida')?.value || 'm';
+    if (unidadActual === nuevaUnidad) return;
+
+    trabajo.patchValue({ unidad_medida: nuevaUnidad });
+    this.calcularAreaTrabajo(index);
   }
 
   private cargarTrabajos(): void {
@@ -103,11 +114,20 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
 
   calcularAreaTrabajo(index: number): void {
     const trabajo = this.trabajos.at(index);
-    const base = trabajo.get('base')?.value || 0;
-    const altura = trabajo.get('altura')?.value || 0;
-    const cantidad = trabajo.get('cantidad')?.value || 1;
+    if (!trabajo) return;
+    const base = Number(trabajo.get('base')?.value) || 0;
+    const altura = Number(trabajo.get('altura')?.value) || 0;
+    const cantidad = Number(trabajo.get('cantidad')?.value) || 1;
+    const unidad = trabajo.get('unidad_medida')?.value || 'm';
 
-    const areaTotal = base * altura * cantidad;
+    let areaTotal = 0;
+    if (unidad === 'cm') {
+      areaTotal = ((base * altura) / 10000) * cantidad;
+    } else {
+      areaTotal = base * altura * cantidad;
+    }
+
+    areaTotal = Number(areaTotal.toFixed(4));
     trabajo.patchValue({ area_total: areaTotal });
   }
 
@@ -152,6 +172,7 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
         trabajoForm.patchValue({
           id_trabajo: trabajo.idTrabajo,
           cantidad: trabajo.cantidad,
+          unidad_medida: trabajo.unidadMedida || 'm',
           base: trabajo.base,
           altura: trabajo.altura,
           descripcion: trabajo.descripcion,
@@ -177,6 +198,7 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
         cantidad: t.cantidad,
         base: t.base,
         altura: t.altura,
+        unidadMedida: t.unidad_medida || 'm',
         descripcion: t.descripcion
       }))
     };

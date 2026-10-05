@@ -186,7 +186,8 @@ export class ModificarOrdenImpresionComponent {
           cantidad: trabajoCotizacion?.cantidad || 0,
           base: trabajoCotizacion?.base || 0,
           altura: trabajoCotizacion?.altura || 0,
-          areaTotal: trabajoCotizacion?.area_total || 0,
+          unidadMedida: trabajoCotizacion?.unidadMedida || 'm',
+          areaTotal: trabajoCotizacion?.area_total || trabajoCotizacion?.areaTotal || 0,
           materiales: this.mapearMateriales(trabajoCotizacion?.materiales || []),
 
           // Campos editables (extraídos de observaciones)

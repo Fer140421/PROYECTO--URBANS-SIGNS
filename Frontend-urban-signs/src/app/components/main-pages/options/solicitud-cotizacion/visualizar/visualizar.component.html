@@ -1,312 +1,229 @@
 <!-- Modal de Visualización -->
-<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out"
     *ngIf="mostrar">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-gray-200 animate-fade-in-modal">
 
         <!-- Header del Modal -->
-        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-5 relative overflow-hidden">
-            <div class="absolute inset-0 bg-black/5"></div>
-            <div class="flex justify-between items-center relative z-10">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Detalles de Solicitud</h2>
-                    <p class="text-gray-800 text-sm mt-1 font-medium">Código: {{solicitud?.codSolicitud}}</p>
+        <div class="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700">
+                    <i class="ph ph-file-text text-xl"></i>
                 </div>
-                <button (click)="cerrar.emit()" class="text-gray-900 hover:text-gray-700 transition-colors p-2 hover:bg-black/10 rounded-lg">
-                    <i class="ph ph-x text-2xl"></i>
-                </button>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-lg font-bold text-gray-900">Detalles de Solicitud</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200 font-mono">
+                            {{ solicitud?.codSolicitud }}
+                        </span>
+                    </div>
+                    <p class="text-gray-500 text-xs mt-0.5">Información registrada para esta solicitud de cotización</p>
+                </div>
             </div>
+            <button (click)="cerrar.emit()" class="text-gray-400 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <i class="ph ph-x text-xl"></i>
+            </button>
         </div>
 
         <!-- Contenido del Modal -->
-        <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
-            <!-- Información General -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1">
+
+            <!-- Fila de Metadatos Rápidos -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <!-- Estado -->
-                <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-info text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Estado</h3>
-                    </div>
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Estado</span>
                     <span [ngClass]="{
-                        'bg-yellow-100 text-yellow-800 border-yellow-400': solicitud?.estado === 'PENDIENTE',
-                        'bg-blue-100 text-blue-800 border-blue-400': solicitud?.estado === 'EN_PROCESO',
-                        'bg-green-100 text-green-800 border-green-400': solicitud?.estado === 'APROBADO',
-                        'bg-red-100 text-red-800 border-red-400': solicitud?.estado === 'RECHAZADO',
-                        'bg-gray-100 text-gray-800 border-gray-400': solicitud?.estado === 'CANCELADO'
-                    }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
-                        {{ solicitud?.estado }}
+                        'bg-amber-50 text-amber-800 border-amber-200': solicitud?.estado === 'PENDIENTE' || solicitud?.estado === 'Pendiente',
+                        'bg-blue-50 text-blue-800 border-blue-200': solicitud?.estado === 'EN_PROCESO' || solicitud?.estado === 'REVISION',
+                        'bg-emerald-50 text-emerald-800 border-emerald-200': solicitud?.estado === 'APROBADO' || solicitud?.estado === 'COTIZADA',
+                        'bg-rose-50 text-rose-800 border-rose-200': solicitud?.estado === 'RECHAZADO' || solicitud?.estado === 'CANCELADA',
+                        'bg-gray-50 text-gray-800 border-gray-200': !solicitud?.estado
+                    }" class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold border">
+                        {{ solicitud?.estado || 'PENDIENTE' }}
                     </span>
                 </div>
 
                 <!-- Origen -->
-                <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
-                             [ngClass]="solicitud?.origen === 'LANDING' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'">
-                            <i class="ph text-xl" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Origen</h3>
-                    </div>
-                    <span [ngClass]="solicitud?.origen === 'LANDING' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-blue-100 text-blue-800 border-blue-400'"
-                          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold border-2">
-                        <i class="ph text-base" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
-                        {{ solicitud?.origen === 'LANDING' ? 'Web / Landing' : 'Dashboard' }}
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Origen</span>
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-800">
+                        <i class="ph text-sm text-gray-600" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
+                        {{ solicitud?.origen === 'LANDING' ? 'Web / Portal' : 'Sistema Interno' }}
                     </span>
                 </div>
 
-                <!-- Fecha de Creación -->
-                <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-calendar text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Fecha de Creación</h3>
-                    </div>
-                    <p class="text-gray-700 text-lg font-medium">{{ solicitud?.fechaSolicitud | date:'dd/MM/yyyy' }}</p>
+                <!-- Fecha de Registro -->
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Fecha Registro</span>
+                    <p class="text-xs font-semibold text-gray-900 font-mono">
+                        {{ solicitud?.fechaSolicitud ? (solicitud.fechaSolicitud | date:'dd/MM/yyyy') : '—' }}
+                    </p>
                 </div>
 
                 <!-- Prioridad -->
-                <div class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm" *ngIf="solicitud?.prioridad">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-warning text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Prioridad</h3>
-                    </div>
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Prioridad</span>
                     <span [ngClass]="{
-                        'bg-green-100 text-green-800 border-green-400': solicitud?.prioridad === 'BAJA',
-                        'bg-yellow-100 text-yellow-800 border-yellow-400': solicitud?.prioridad === 'MEDIA',
-                        'bg-red-100 text-red-800 border-red-400': solicitud?.prioridad === 'ALTA'
-                    }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
-                        {{ solicitud?.prioridad }}
+                        'text-emerald-700': solicitud?.prioridad === 'BAJA',
+                        'text-amber-700': solicitud?.prioridad === 'MEDIA',
+                        'text-rose-700 font-bold': solicitud?.prioridad === 'ALTA'
+                    }" class="text-xs font-semibold">
+                        {{ solicitud?.prioridad || 'Normal' }}
                     </span>
                 </div>
             </div>
 
-            <!-- Información del Cliente -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm">
-                <h3 class="font-bold text-gray-900 mb-5 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
-                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                        <i class="ph ph-user-circle text-gray-900 text-xl"></i>
-                    </div>
-                    Información del Cliente
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <!-- Tipo de cliente -->
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">Tipo de Cliente</label>
-                        <p class="text-gray-900 text-lg font-medium">{{ solicitud?.cliente?.tipoClientePersonaEmpresa }}</p>
-                    </div>
-
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">Correo</label>
-                        <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.correo }}</p>
-                    </div>
-                </div>
-
-                <div class="h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent my-5"></div>
-
-                <!-- Si es Persona -->
-                <div *ngIf="solicitud?.cliente?.tipoClientePersonaEmpresa === 'Persona'; else empresaInfo">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">Nombre Completo</label>
-                            <p class="text-gray-900 text-lg font-medium">
-                                {{ solicitud?.cliente?.persona?.name_people }} {{ solicitud?.cliente?.persona?.ap }}
-                                {{ solicitud?.cliente?.persona?.am }}
-                            </p>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">CI</label>
-                            <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.persona?.ci }}</p>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">Teléfono</label>
-                            <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.persona?.phone_number }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Si es Empresa -->
-                <ng-template #empresaInfo>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">Razón Social</label>
-                            <p class="text-gray-900 text-lg font-medium">{{ solicitud?.cliente?.empresa?.razonSocial }}</p>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">NIT</label>
-                            <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.empresa?.nit }}</p>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">Teléfono</label>
-                            <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.empresa?.telefono }}</p>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">Dirección</label>
-                            <p class="text-gray-900 text-lg">{{ solicitud?.cliente?.empresa?.direccion }}</p>
-                        </div>
-                    </div>
-                </ng-template>
-            </div>
-
-            <!-- Observaciones -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm" *ngIf="solicitud?.observaciones">
-                <h3 class="font-bold text-gray-900 mb-4 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
-                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                        <i class="ph ph-note text-gray-900 text-xl"></i>
-                    </div>
-                    Observaciones
-                </h3>
-                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ solicitud?.observaciones }}</p>
-                </div>
-            </div>
-
-            <!-- Foto / Archivo de Referencia -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm" *ngIf="solicitud?.archivoReferencia">
-                <div class="flex items-center justify-between border-b-2 border-yellow-400 pb-3 mb-4">
-                    <h3 class="font-bold text-gray-900 flex items-center text-xl">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-image text-gray-900 text-xl"></i>
-                        </div>
-                        Foto / Archivo de Referencia
+            <!-- Ficha 1: Información del Cliente -->
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                        <i class="ph ph-user-circle text-base text-gray-500"></i>
+                        Información del Cliente
                     </h3>
-                    <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-900 rounded-lg font-semibold text-xs border border-yellow-300 transition-colors">
-                        <i class="ph ph-arrow-square-out text-sm"></i>
-                        Ver tamaño completo
-                    </a>
+                    <span class="text-xs font-medium text-gray-500">
+                        {{ solicitud?.cliente?.tipoClientePersonaEmpresa || 'Cliente Registrado' }}
+                    </span>
                 </div>
-                <div class="flex flex-col md:flex-row items-center gap-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
-                       class="group relative block overflow-hidden rounded-xl border-2 border-gray-300 hover:border-yellow-400 transition-all shadow-md max-w-sm flex-shrink-0 bg-white">
-                        <img [src]="solicitud?.archivoReferencia" alt="Foto de referencia del cliente"
-                             class="h-52 w-auto max-w-full object-contain mx-auto group-hover:scale-105 transition-transform duration-200 p-1" />
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                            <span class="inline-flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-lg text-xs font-semibold">
-                                <i class="ph ph-magnifying-glass-plus text-base"></i> Ampliar
-                            </span>
-                        </div>
-                    </a>
-                    <div class="flex-1 space-y-2 text-sm text-gray-600">
-                        <p class="font-bold text-gray-800 text-base flex items-center gap-2">
-                            <i class="ph ph-info text-yellow-600"></i> Archivo adjunto a la solicitud
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs">
+                    <!-- Nombre / Razón Social -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">
+                            {{ solicitud?.cliente?.tipoClientePersonaEmpresa === 'Empresa' ? 'Razón Social' : 'Nombre Completo' }}
+                        </span>
+                        <p class="font-bold text-gray-900 text-sm">
+                            <ng-container *ngIf="solicitud?.cliente?.tipoClientePersonaEmpresa === 'Persona'">
+                                {{ solicitud?.cliente?.persona?.name_people }} {{ solicitud?.cliente?.persona?.ap }} {{ solicitud?.cliente?.persona?.am }}
+                            </ng-container>
+                            <ng-container *ngIf="solicitud?.cliente?.tipoClientePersonaEmpresa === 'Empresa'">
+                                {{ solicitud?.cliente?.empresa?.razonSocial }}
+                            </ng-container>
+                            <ng-container *ngIf="!solicitud?.cliente?.tipoClientePersonaEmpresa">
+                                {{ solicitud?.cliente?.displayName || 'Cliente sin registrar' }}
+                            </ng-container>
                         </p>
-                        <p class="leading-relaxed">
-                            Esta imagen fue adjuntada como referencia del diseño, letrero o especificación solicitada por el cliente.
+                    </div>
+
+                    <!-- Tipo de Cliente -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">Tipo de Cliente</span>
+                        <p class="text-gray-800 font-medium">
+                            {{ solicitud?.cliente?.tipoClientePersonaEmpresa || 'Persona' }}
+                            <span *ngIf="solicitud?.cliente?.tipoCliente === 'destacado'" class="ml-1 text-[11px] text-amber-700 font-semibold">(Destacado)</span>
                         </p>
-                        <div class="pt-2">
-                            <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
-                               class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 rounded-lg font-medium text-xs shadow-sm transition-colors">
-                                <i class="ph ph-arrow-square-out text-sm"></i>
-                                Abrir imagen en una pestaña nueva
-                            </a>
-                        </div>
+                    </div>
+
+                    <!-- Documento (CI o NIT) -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">
+                            {{ solicitud?.cliente?.tipoClientePersonaEmpresa === 'Empresa' ? 'NIT' : 'Carnet de Identidad (CI)' }}
+                        </span>
+                        <p class="text-gray-900 font-medium font-mono">
+                            {{ solicitud?.cliente?.empresa?.nit || solicitud?.cliente?.persona?.ci || '—' }}
+                        </p>
+                    </div>
+
+                    <!-- Teléfono / Celular -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">Teléfono / Celular</span>
+                        <p class="text-gray-900 font-medium font-mono">
+                            {{ solicitud?.cliente?.empresa?.telefono || solicitud?.cliente?.persona?.phone_number || '—' }}
+                        </p>
+                    </div>
+
+                    <!-- Correo Electrónico -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">Correo Electrónico</span>
+                        <p class="text-gray-900 font-medium">
+                            {{ solicitud?.cliente?.correo || '—' }}
+                        </p>
+                    </div>
+
+                    <!-- Dirección -->
+                    <div>
+                        <span class="text-gray-500 block mb-0.5 font-medium">Dirección</span>
+                        <p class="text-gray-900 font-medium">
+                            {{ solicitud?.cliente?.empresa?.direccion || solicitud?.cliente?.persona?.address || '—' }}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Sección de Trabajos -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center mb-6 border-b-2 border-yellow-400 pb-3">
-                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                        <i class="ph ph-hammer text-gray-900 text-xl"></i>
-                    </div>
-                    Trabajos Solicitados
-                </h3>
+            <!-- Ficha 2: Trabajos Solicitados (Sin materiales) -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                        <i class="ph ph-hammer text-base text-gray-500"></i>
+                        Trabajos Solicitados ({{ solicitud?.trabajos?.length || 0 }})
+                    </h3>
+                    <span class="text-xs text-gray-500">Medidas y especificaciones requeridas</span>
+                </div>
 
                 <!-- Lista de Trabajos -->
-                <div class="space-y-5">
-                    <div *ngFor="let trabajo of solicitud?.trabajos; let i = index" 
-                         class="border-2 border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-yellow-400 transition-all">
-                        <!-- Header del Trabajo -->
-                        <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-yellow-400">
-                            <h4 class="font-bold text-gray-900 text-lg flex items-center">
-                                <span class="bg-yellow-400 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">{{i + 1}}</span>
-                                Trabajo {{i + 1}}
-                            </h4>
-                            <span class="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg border border-gray-300 font-medium">
-                                {{ trabajo.nombreTrabajo || getNombreTrabajo(trabajo.idTrabajo) || 'Trabajo solicitado' }}
+                <div class="divide-y divide-gray-100" *ngIf="solicitud?.trabajos && solicitud.trabajos.length > 0; else sinTrabajos">
+                    <div *ngFor="let trabajo of solicitud.trabajos; let i = index" class="p-5 space-y-3">
+                        <!-- Cabecera del Trabajo -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-800 font-bold text-xs flex items-center justify-center border border-gray-300">
+                                    {{ i + 1 }}
+                                </span>
+                                <h4 class="font-bold text-gray-900 text-sm sm:text-base">
+                                    {{ trabajo.nombreTrabajo || getNombreTrabajo(trabajo.idTrabajo) || 'Trabajo #' + (i + 1) }}
+                                </h4>
+                            </div>
+                            <span class="self-start sm:self-auto inline-flex items-center px-2.5 py-0.5 rounded bg-gray-100 text-gray-800 text-xs font-semibold">
+                                Cantidad: {{ trabajo.cantidad }} unid.
                             </span>
                         </div>
 
-                        <!-- Campos del Trabajo -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <!-- Cantidad -->
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Cantidad</label>
-                                <p class="text-gray-900 text-lg font-bold">{{ trabajo.cantidad }}</p>
+                        <!-- Grilla de Medidas Sobria -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                            <div>
+                                <span class="text-gray-500 block mb-0.5">Unidad</span>
+                                <span class="font-medium text-gray-800">{{ trabajo.unidadMedida === 'cm' ? 'Centímetros (cm)' : 'Metros (m)' }}</span>
                             </div>
-
-                            <!-- Base -->
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Base (m)</label>
-                                <p class="text-gray-900 text-lg font-bold">{{ trabajo.base }}</p>
+                            <div>
+                                <span class="text-gray-500 block mb-0.5">Base</span>
+                                <span class="font-semibold text-gray-900 font-mono">{{ trabajo.base }} {{ trabajo.unidadMedida || 'm' }}</span>
                             </div>
-
-                            <!-- Altura -->
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Altura (m)</label>
-                                <p class="text-gray-900 text-lg font-bold">{{ trabajo.altura }}</p>
+                            <div>
+                                <span class="text-gray-500 block mb-0.5">Altura</span>
+                                <span class="font-semibold text-gray-900 font-mono">{{ trabajo.altura }} {{ trabajo.unidadMedida || 'm' }}</span>
                             </div>
-
-                            <!-- Área Total -->
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Área Total</label>
-                                <p class="text-gray-900 text-lg font-bold">{{ trabajo.areaTotal }} m²</p>
+                            <div>
+                                <span class="text-gray-500 block mb-0.5">Área Calculada</span>
+                                <span class="font-bold text-gray-900 font-mono">
+                                    {{ trabajo.areaTotal || 0 }} m²
+                                    <span *ngIf="trabajo.unidadMedida === 'cm'" class="text-[11px] font-normal text-gray-500">
+                                        ({{ (trabajo.base * trabajo.altura) | number:'1.0-2' }} cm²)
+                                    </span>
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Descripción y Material -->
-                        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="trabajo.descripcion || trabajo.material">
-                            <div class="bg-white rounded-lg p-4 border border-gray-200" *ngIf="trabajo.descripcion">
-                                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Descripción</label>
-                                <p class="text-gray-700 leading-relaxed">{{ trabajo.descripcion }}</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-amber-200 bg-amber-50/40" *ngIf="trabajo.material">
-                                <label class="block text-xs font-semibold text-amber-800 mb-2 uppercase tracking-wide flex items-center gap-1">
-                                    <i class="ph ph-package text-base text-amber-600"></i> Material / Acabado Sugerido
-                                </label>
-                                <p class="text-gray-800 font-medium leading-relaxed">{{ trabajo.material }}</p>
-                            </div>
+                        <!-- Descripción específica si fue registrada -->
+                        <div *ngIf="trabajo.descripcion" class="text-xs text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <span class="font-bold text-gray-700 block mb-1">Descripción / Especificaciones:</span>
+                            <p class="whitespace-pre-line leading-relaxed font-normal">{{ trabajo.descripcion }}</p>
                         </div>
 
                         <!-- Imagen de referencia del trabajo -->
-                        <div class="mb-4 p-4 bg-white rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center gap-4" *ngIf="trabajo.archivoReferencia">
-                            <a [href]="trabajo.archivoReferencia" target="_blank" rel="noopener noreferrer"
-                               class="group relative block overflow-hidden rounded-lg border-2 border-gray-300 hover:border-yellow-400 transition-all shadow-sm bg-gray-100 flex-shrink-0">
-                                <img [src]="trabajo.archivoReferencia" [alt]="'Diseño de referencia para ' + (trabajo.nombreTrabajo || 'trabajo ' + (i + 1))"
-                                     class="h-28 w-28 object-cover group-hover:scale-105 transition-transform duration-200" />
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                                    <span class="inline-flex items-center gap-1 bg-black/70 px-2 py-1 rounded text-xs font-semibold">
-                                        <i class="ph ph-magnifying-glass-plus text-sm"></i> Ver
-                                    </span>
-                                </div>
-                            </a>
-                            <div class="flex-1 space-y-1 text-sm">
-                                <p class="font-bold text-gray-800 flex items-center gap-1.5">
-                                    <i class="ph ph-image text-yellow-600 text-base"></i> Foto de Referencia de este Trabajo
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    Imagen o diseño adjuntado como referencia técnica para este ítem.
-                                </p>
-                                <a [href]="trabajo.archivoReferencia" target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-600 hover:text-yellow-700 underline mt-1">
-                                    <i class="ph ph-arrow-square-out text-sm"></i> Abrir imagen en tamaño completo
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Información de Costos -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border-2 border-yellow-400">
-                            <div class="text-center">
-                                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Área Total</label>
-                                <div class="text-xl font-bold text-gray-900">
-                                    {{ trabajo.areaTotal || 0 }} m²
+                        <div *ngIf="trabajo.archivoReferencia" class="flex items-center gap-3 pt-1">
+                            <img [src]="trabajo.archivoReferencia" [alt]="'Diseño de referencia para trabajo ' + (i + 1)"
+                                (click)="abrirModalImagen(trabajo.archivoReferencia)"
+                                class="w-14 h-14 rounded-lg object-cover border border-gray-300 shadow-sm cursor-pointer hover:opacity-85 transition" />
+                            <div class="text-xs">
+                                <span class="font-medium text-gray-800 block">Foto de referencia adjunta</span>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <button type="button" (click)="abrirModalImagen(trabajo.archivoReferencia)"
+                                        class="text-yellow-700 hover:text-yellow-800 hover:underline font-semibold text-[11px] inline-flex items-center gap-1">
+                                        <i class="ph ph-magnifying-glass-plus"></i> Ampliar imagen
+                                    </button>
+                                    <a [href]="trabajo.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                                        class="text-gray-500 hover:text-gray-700 text-[11px] inline-flex items-center gap-1">
+                                        <i class="ph ph-arrow-square-out"></i> Abrir en pestaña nueva
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -314,22 +231,88 @@
                 </div>
 
                 <!-- Mensaje cuando no hay trabajos -->
-                <div *ngIf="!solicitud?.trabajos || solicitud.trabajos.length === 0"
-                    class="text-center py-10 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                    <i class="ph ph-hammer text-5xl text-gray-400 mb-3"></i>
-                    <p class="text-gray-700 font-semibold text-base">No hay trabajos desglosados en el catálogo</p>
-                    <p class="text-gray-500 text-sm mt-1 max-w-md mx-auto">Revisa la sección de Observaciones arriba para consultar las medidas y especificaciones enviadas por el cliente.</p>
+                <ng-template #sinTrabajos>
+                    <div class="text-center py-8 bg-white text-gray-500 text-xs">
+                        <i class="ph ph-hammer text-3xl text-gray-400 mb-2"></i>
+                        <p class="font-medium">No hay trabajos registrados para esta solicitud</p>
+                    </div>
+                </ng-template>
+
+                <!-- Resumen numérico al pie de los trabajos -->
+                <div class="bg-gray-50 px-5 py-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600"
+                    *ngIf="solicitud?.trabajos && solicitud.trabajos.length > 0">
+                    <span>Trabajos registrados: <strong class="text-gray-900">{{ solicitud.trabajos.length }} ítem(s) ({{ getTotalUnidades() }} unidades en total)</strong></span>
+                    <span>Superficie total estimada: <strong class="text-gray-900 font-mono">{{ getAreaTotal() | number:'1.2-2' }} m²</strong></span>
                 </div>
             </div>
 
-            <!-- Botón de Cerrar -->
-            <div class="flex justify-end gap-3 pt-8">
-                <button (click)="cerrar.emit()"
-                    class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105">
-                    <i class="ph ph-x text-xl"></i>
-                    Cerrar
-                </button>
+            <!-- Ficha 3: Observaciones Generales (si existen) -->
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm" *ngIf="solicitud?.observaciones">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2 pb-2 mb-2 border-b border-gray-100">
+                    <i class="ph ph-notepad text-base text-gray-500"></i>
+                    Observaciones Generales
+                </h3>
+                <p class="text-xs text-gray-700 whitespace-pre-line leading-relaxed">{{ solicitud.observaciones }}</p>
             </div>
+
+            <!-- Ficha 4: Foto / Archivo de Referencia General (si existe) -->
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm" *ngIf="solicitud?.archivoReferencia">
+                <div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-100">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                        <i class="ph ph-image text-base text-gray-500"></i>
+                        Archivo Adjunto a la Solicitud
+                    </h3>
+                    <a [href]="solicitud?.archivoReferencia" target="_blank" rel="noopener noreferrer"
+                        class="text-xs text-yellow-700 hover:text-yellow-800 hover:underline font-semibold inline-flex items-center gap-1">
+                        <i class="ph ph-arrow-square-out"></i> Abrir original
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <img [src]="solicitud.archivoReferencia" alt="Foto adjunta"
+                        (click)="abrirModalImagen(solicitud.archivoReferencia)"
+                        class="h-20 w-20 rounded-lg object-cover border border-gray-300 shadow-sm cursor-pointer hover:opacity-85 transition" />
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <p class="font-medium text-gray-800">Diseño o especificación adjuntada por el cliente</p>
+                        <p class="text-gray-500">Haga clic en la miniatura para ampliar o en el enlace superior para abrirla en resolución completa.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Botón de Cerrar Modal -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-white flex justify-end gap-3 flex-shrink-0">
+            <button type="button" (click)="cerrar.emit()"
+                class="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold text-sm transition">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal para vista previa de imagen en alta resolución -->
+<div *ngIf="imagenModalUrl" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+    (click)="cerrarModalImagen()">
+    <div class="relative max-w-3xl w-full bg-white rounded-xl overflow-hidden shadow-2xl p-4"
+        (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+            <span class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="ph ph-image text-base"></i> Foto de Referencia
+            </span>
+            <button type="button" (click)="cerrarModalImagen()"
+                class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition">
+                <i class="ph ph-x text-base"></i>
+            </button>
+        </div>
+        <div class="flex items-center justify-center bg-gray-100 rounded-lg p-2 max-h-[70vh] overflow-auto">
+            <img [src]="imagenModalUrl" alt="Foto ampliada" class="max-h-[65vh] w-auto max-w-full object-contain rounded" />
+        </div>
+        <div class="pt-3 flex justify-between items-center text-xs text-gray-500">
+            <span>Haga clic fuera para cerrar</span>
+            <a [href]="imagenModalUrl" target="_blank" rel="noopener noreferrer"
+                class="text-yellow-700 hover:underline font-semibold inline-flex items-center gap-1">
+                <i class="ph ph-arrow-square-out"></i> Abrir en tamaño completo
+            </a>
         </div>
     </div>
 </div>

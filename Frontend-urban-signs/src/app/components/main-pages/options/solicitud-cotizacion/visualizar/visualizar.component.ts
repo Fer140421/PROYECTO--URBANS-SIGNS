@@ -64,6 +64,8 @@ export class VisualizarComponent {
     });
   }
 
+  imagenModalUrl: string | null = null;
+
   getNombreTrabajo(idTrabajo: number): string {
     if (!idTrabajo) return '';
     const trabajo = this.listTrabajos.find(t => t.id === idTrabajo || t.idTrabajo === idTrabajo);
@@ -77,11 +79,19 @@ export class VisualizarComponent {
     }, 0);
   }
 
-  getCostoTotal(): number {
+  getTotalUnidades(): number {
     if (!this.solicitud?.trabajos) return 0;
     return this.solicitud.trabajos.reduce((total: number, trabajo: any) => {
-      return total + (trabajo.subtotal || 0);
+      return total + (Number(trabajo.cantidad) || 0);
     }, 0);
+  }
+
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
   }
 
   private cargarTrabajos(): void {

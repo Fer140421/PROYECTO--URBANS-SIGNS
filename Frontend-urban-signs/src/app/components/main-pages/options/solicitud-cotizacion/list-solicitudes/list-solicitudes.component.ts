@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CotizacionService } from '../../../../../core/services/cotizacion/cotizacion.service';
 import { RouterModule } from '@angular/router';
 import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
@@ -43,10 +42,7 @@ export class ListSolicitudesComponent implements OnInit {
   viewMode: 'list' | 'cards' = 'list';
   solicitudesService = inject(SolicitudService);
   notificacionService = inject(NotificationService);
-  cotService = inject(CotizacionService);
   Listsolicitudes: any[] = [];
-  @Input() cotizacion: any | null = null;
-  isModalOpen: boolean = false;
   currentPage = 1;
   pageSize = 5;
   totalPages = 0;
@@ -97,10 +93,6 @@ export class ListSolicitudesComponent implements OnInit {
   }
 
 
-  closeModal() {
-    this.isModalOpen = false;
-    this.cotizacion = null;
-  }
 
   cambiarEstado(estado: string) {
     this.estadoSeleccionado = estado;
@@ -267,11 +259,12 @@ export class ListSolicitudesComponent implements OnInit {
 
       // 6) Filas de trabajos
       const trabajosTable = detalles.trabajos.map((t: any) => {
+        const unidad = t.unidadMedida || 'm';
         return [
           { text: t.cantidad, alignment: "center" },
           { text: t.nombreTrabajo, alignment: "center" },
-          { text: `${t.base} m`, alignment: "center" },
-          { text: `${t.altura} m`, alignment: "center" },
+          { text: `${t.base} ${unidad}`, alignment: "center" },
+          { text: `${t.altura} ${unidad}`, alignment: "center" },
           { text: `${t.areaTotal} m²`, alignment: "center" },
           { text: t.descripcion || "-", alignment: "center" }
         ];
@@ -282,8 +275,8 @@ export class ListSolicitudesComponent implements OnInit {
         [
           { text: "Cant.", bold: true, alignment: "center" },
           { text: "Descripción", bold: true, alignment: "center" },
-          { text: "Base (m)", bold: true, alignment: "center" },
-          { text: "Altura (m)", bold: true, alignment: "center" },
+          { text: "Base", bold: true, alignment: "center" },
+          { text: "Altura", bold: true, alignment: "center" },
           { text: "Área Total (m²)", bold: true, alignment: "center" },
           { text: "Notas", bold: true, alignment: "center" }
         ]

@@ -36,6 +36,10 @@ export class ClientesService {
     return this.http.get<ClienteBusquedaDTO[]>(`${this.apiUrl}/buscar`, { params });
   }
 
+  obtenerClientePorId(id: number): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.apiUrl}/${id}`);
+  }
+
   registrarCliente(cliente: Cliente): Observable<Cliente> {
     const context = new HttpContext().set(TRANSACTION_MESSAGE, 'Registrando cliente...');
     return this.http.post<Cliente>(`${this.apiUrl}/registrar`, cliente, { context });

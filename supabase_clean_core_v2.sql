@@ -201,11 +201,13 @@ CREATE TABLE solicitud_trabajo (
     id_solicitud BIGINT NOT NULL,
     id_trabajo BIGINT NOT NULL,
     cantidad INT DEFAULT 1,
+    unidad_medida VARCHAR(10) NOT NULL DEFAULT 'm',
     base NUMERIC(10,2),
     altura NUMERIC(10,2),
-    area_total NUMERIC(10,2),
-    descripcion VARCHAR(255),
+    area_total NUMERIC(12,4),
+    descripcion TEXT,
     material VARCHAR(255),
+    archivo_referencia VARCHAR(500),
     CONSTRAINT fk_sol_trabajo_solicitud FOREIGN KEY (id_solicitud) REFERENCES solicitud_cotizacion(id_solicitud) ON DELETE CASCADE,
     CONSTRAINT fk_sol_trabajo_trabajo FOREIGN KEY (id_trabajo) REFERENCES trabajos(id_trabajo)
 );
@@ -232,9 +234,10 @@ CREATE TABLE cotizacion_trabajo (
     cantidad INT NOT NULL,
     costo_unitario NUMERIC(12,2),
     subtotal NUMERIC(12,2),
+    unidad_medida VARCHAR(10) NOT NULL DEFAULT 'm',
     base NUMERIC(10,2),
     altura NUMERIC(10,2),
-    area_total NUMERIC(10,2),
+    area_total NUMERIC(12,4),
     material VARCHAR(255),
     CONSTRAINT fk_cot_trabajo_cotizacion FOREIGN KEY (id_cotizacion) REFERENCES cotizaciones(id_cotizacion) ON DELETE CASCADE,
     CONSTRAINT fk_cot_trabajo_sol_trabajo FOREIGN KEY (id_solicitud_trabajo) REFERENCES solicitud_trabajo(id_solicitud_trabajo)

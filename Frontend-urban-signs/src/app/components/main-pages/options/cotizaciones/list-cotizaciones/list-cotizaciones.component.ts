@@ -170,12 +170,13 @@ export class ListCotizacionesComponent {
 
     // 6) Preparar filas de trabajos con Base y Altura
     const trabajosTable = detalles.trabajos.map((t: any) => {
+      const unidad = t.unidadMedida || 'm';
       return [
         { text: t.cantidad, alignment: 'center' },
         { text: t.nombreTrabajo, alignment: 'center' },
-        { text: `${t.base} m`, alignment: 'center' },
-        { text: `${t.altura} m`, alignment: 'center' },
-        { text: `${t.area_total} m²`, alignment: 'center' },
+        { text: `${t.base} ${unidad}`, alignment: 'center' },
+        { text: `${t.altura} ${unidad}`, alignment: 'center' },
+        { text: `${t.area_total || t.areaTotal} m²`, alignment: 'center' },
         { text: `${t.costoUnitario} Bs`, alignment: 'center' },
         { text: `${t.subtotal} Bs`, alignment: 'center' }
       ];
@@ -186,8 +187,8 @@ export class ListCotizacionesComponent {
       [
         { text: "Cant.", bold: true, alignment: "center" },
         { text: "Descripción", bold: true, alignment: "center" },
-        { text: "Base (m)", bold: true, alignment: "center" },
-        { text: "Altura (m)", bold: true, alignment: "center" },
+        { text: "Base", bold: true, alignment: "center" },
+        { text: "Altura", bold: true, alignment: "center" },
         { text: "Área Total (m²)", bold: true, alignment: "center" },
         { text: "Unitario (Bs)", bold: true, alignment: "center" },
         { text: "Subtotal (Bs)", bold: true, alignment: "center" }
