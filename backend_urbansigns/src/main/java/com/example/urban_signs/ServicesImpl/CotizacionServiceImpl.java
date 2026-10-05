@@ -174,13 +174,23 @@ public class CotizacionServiceImpl implements CotizacionService {
                 ClienteModel cliente = solicitud.getCliente();
 
                 String nombreCliente;
+                String docCliente = null;
+                String telCliente = null;
+                String dirCliente = null;
+
                 if ("EMPRESA".equalsIgnoreCase(cliente.getTipoClientePersonaEmpresa())
                                 && cliente.getEmpresa() != null) {
                         nombreCliente = cliente.getEmpresa().getRazonSocial();
+                        docCliente = cliente.getEmpresa().getNit();
+                        telCliente = cliente.getEmpresa().getTelefono();
+                        dirCliente = cliente.getEmpresa().getDireccion();
                 } else if ("PERSONA".equalsIgnoreCase(cliente.getTipoClientePersonaEmpresa())
                                 && cliente.getPersona() != null) {
                         nombreCliente = cliente.getPersona().getName_people() + " " + cliente.getPersona().getAp() + " "
                                         + cliente.getPersona().getAm();
+                        docCliente = cliente.getPersona().getCi();
+                        telCliente = cliente.getPersona().getPhone_number();
+                        dirCliente = cliente.getPersona().getAddres();
                 } else {
                         nombreCliente = "Cliente desconocido";
                 }
@@ -190,6 +200,9 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .tipoCliente(cliente.getTipoCliente())
                                 .tipoClientePersonaEmpresa(cliente.getTipoClientePersonaEmpresa())
                                 .correo(cliente.getCorreo())
+                                .documento(docCliente)
+                                .telefono(telCliente)
+                                .direccion(dirCliente)
                                 .build();
 
                 CotizacionInfoDTO cotizacionDTO = CotizacionInfoDTO.builder()
@@ -201,12 +214,32 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .build();
 
                 List<TrabajoCotizadoDTO> trabajosDTO = cotizacion.getTrabajos().stream()
-                                .map(ct -> TrabajoCotizadoDTO.builder()
-                                                .nombre(ct.getSolicitudTrabajo().getTrabajo().getNombre())
-                                                .cantidad(ct.getCantidad())
-                                                .costoUnitario(ct.getCostoUnitario())
-                                                .subtotal(ct.getSubtotal())
-                                                .build())
+                                .map(ct -> {
+                                        String unidad = ct.getUnidadMedida() != null && !ct.getUnidadMedida().isBlank()
+                                                        ? ct.getUnidadMedida()
+                                                        : (ct.getSolicitudTrabajo() != null && ct.getSolicitudTrabajo().getUnidadMedida() != null
+                                                                        ? ct.getSolicitudTrabajo().getUnidadMedida()
+                                                                        : "m");
+                                        String material = ct.getMaterial() != null && !ct.getMaterial().isBlank()
+                                                        ? ct.getMaterial()
+                                                        : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getMaterial() : null);
+                                        String desc = ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getDescripcion() : null;
+                                        String img = ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getArchivoReferencia() : null;
+
+                                        return TrabajoCotizadoDTO.builder()
+                                                        .nombre(ct.getSolicitudTrabajo().getTrabajo().getNombre())
+                                                        .cantidad(ct.getCantidad())
+                                                        .base(ct.getBase())
+                                                        .altura(ct.getAltura())
+                                                        .areaTotal(ct.getAreaTotal())
+                                                        .unidadMedida(unidad)
+                                                        .costoUnitario(ct.getCostoUnitario())
+                                                        .subtotal(ct.getSubtotal())
+                                                        .material(material)
+                                                        .descripcion(desc)
+                                                        .archivoReferencia(img)
+                                                        .build();
+                                })
                                 .toList();
 
                 return ConfirmacionPedidoDTO.builder()
@@ -234,6 +267,27 @@ public class CotizacionServiceImpl implements CotizacionService {
         }
 
         private CotizacionDetalleDTO convertirADetalleDTO(CotizacionModel cotizacion) {
+                ClienteModel cliente = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getCliente() : null;
+                String doc = null;
+                String tel = null;
+                String dir = null;
+                String tipo = null;
+
+                if (cliente != null) {
+                        tipo = cliente.getTipoClientePersonaEmpresa() != null ? cliente.getTipoClientePersonaEmpresa() : cliente.getTipoCliente();
+                        if (cliente.getEmpresa() != null) {
+                                doc = cliente.getEmpresa().getNit();
+                                tel = cliente.getEmpresa().getTelefono();
+                                dir = cliente.getEmpresa().getDireccion();
+                        } else if (cliente.getPersona() != null) {
+                                doc = cliente.getPersona().getCi();
+                                tel = cliente.getPersona().getPhone_number();
+                                dir = cliente.getPersona().getAddres();
+                        }
+                }
+
+                String obs = cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getObservaciones() : null;
+
                 return CotizacionDetalleDTO.builder()
                                 .idCotizacion(cotizacion.getIdCotizacion())
                                 .codCotizacion(cotizacion.getCodCotizacion())
@@ -241,8 +295,14 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .fechaCaducado(cotizacion.getFechaCaducado())
                                 .costoTotal(cotizacion.getCostoTotal())
                                 .estado(cotizacion.getEstado().name())
-                                .codSolicitud(cotizacion.getSolicitud().getCodSolicitud())
-                                .clienteNombre(obtenerNombreCliente(cotizacion.getSolicitud().getCliente()))
+                                .codSolicitud(cotizacion.getSolicitud() != null ? cotizacion.getSolicitud().getCodSolicitud() : null)
+                                .clienteNombre(cliente != null ? obtenerNombreCliente(cliente) : "Cliente desconocido")
+                                .clienteTipo(tipo)
+                                .clienteDocumento(doc)
+                                .clienteTelefono(tel)
+                                .clienteCorreo(cliente != null ? cliente.getCorreo() : null)
+                                .clienteDireccion(dir)
+                                .observaciones(obs)
                                 .trabajos(cotizacion.getTrabajos().stream().map(this::convertirTrabajoDTO).toList())
                                 .build();
         }
@@ -257,6 +317,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 : (trabajo.getSolicitudTrabajo() != null && trabajo.getSolicitudTrabajo().getUnidadMedida() != null
                                                 ? trabajo.getSolicitudTrabajo().getUnidadMedida()
                                                 : "m");
+                String imgUrl = trabajo.getSolicitudTrabajo() != null ? trabajo.getSolicitudTrabajo().getArchivoReferencia() : null;
 
                 return CotizacionTrabajoDTO.builder()
                                 .idCotizacionTrabajo(trabajo.getIdCotizacionTrabajo())
@@ -272,6 +333,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .subtotal(trabajo.getSubtotal())
                                 .descripcion(descTexto)
                                 .material(materialTexto)
+                                .archivoReferencia(imgUrl)
                                 .materiales(java.util.Collections.emptyList())
                                 .build();
         }

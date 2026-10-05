@@ -233,6 +233,13 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
         @Override
         @Transactional
         public SolicitudCotizacionModel modificarSolicitud(Long idSolicitud, SolicitudCotizacionRequest request) {
+                return modificarSolicitud(idSolicitud, request, null, null);
+        }
+
+        @Override
+        @Transactional
+        public SolicitudCotizacionModel modificarSolicitud(Long idSolicitud, SolicitudCotizacionRequest request,
+                        MultipartFile file, org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest) {
                 SolicitudCotizacionModel solicitudExistente = solicitudCotizacionRepository.findById(idSolicitud)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Solicitud no encontrada con ID: " + idSolicitud));
@@ -244,6 +251,13 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                 solicitudExistente.setCliente(cliente);
                 solicitudExistente.setObservaciones(request.getObservaciones());
 
+                if (file != null && !file.isEmpty()) {
+                        String archivoUrl = cloudinaryService.uploadFile(file, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                        solicitudExistente.setArchivoReferencia(archivoUrl);
+                } else if (request.getArchivoReferencia() != null) {
+                        solicitudExistente.setArchivoReferencia(request.getArchivoReferencia());
+                }
+
                 solicitudExistente = solicitudCotizacionRepository.save(solicitudExistente);
 
                 solicitudTrabajoRepository.deleteBySolicitudId(solicitudExistente.getIdSolicitud());
@@ -251,10 +265,25 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                 if (request.getTrabajos() != null && !request.getTrabajos().isEmpty()) {
                         List<SolicitudTrabajoModel> nuevosTrabajos = new ArrayList<>();
 
-                        for (TrabajoRequest t : request.getTrabajos()) {
+                        for (int i = 0; i < request.getTrabajos().size(); i++) {
+                                TrabajoRequest t = request.getTrabajos().get(i);
                                 TrabajosModel trabajo = trabajoRepository.findById(t.getIdTrabajo())
                                                 .orElseThrow(() -> new RuntimeException(
                                                                 "Trabajo no encontrado con ID: " + t.getIdTrabajo()));
+
+                                String trabajoArchivoUrl = t.getArchivoReferencia();
+                                if (multipartRequest != null) {
+                                        MultipartFile tFile = multipartRequest.getFile("trabajo_file_" + i);
+                                        if (tFile == null || tFile.isEmpty()) {
+                                                tFile = multipartRequest.getFile("file_" + i);
+                                        }
+                                        if (tFile == null || tFile.isEmpty()) {
+                                                tFile = multipartRequest.getFile("trabajos[" + i + "].file");
+                                        }
+                                        if (tFile != null && !tFile.isEmpty()) {
+                                                trabajoArchivoUrl = cloudinaryService.uploadFile(tFile, CloudinaryFolder.REFERENCIAS_SOLICITUD);
+                                        }
+                                }
 
                                 String unidadMedida = (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank())
                                                 ? t.getUnidadMedida().trim().toLowerCase()
@@ -280,7 +309,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .areaTotal(areaTotal)
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
-                                                .archivoReferencia(t.getArchivoReferencia())
+                                                .archivoReferencia(trabajoArchivoUrl)
                                                 .build();
 
                                 nuevosTrabajos.add(nuevoTrabajo);

@@ -17,6 +17,13 @@ import lombok.Setter;
 public class TrabajoCotizadoDTO {
     private String nombre;
     private Integer cantidad;
+    private BigDecimal base;
+    private BigDecimal altura;
+    private BigDecimal areaTotal;
+    private String unidadMedida;
     private BigDecimal costoUnitario;
     private BigDecimal subtotal;
+    private String material;
+    private String descripcion;
+    private String archivoReferencia;
 }

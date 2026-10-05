@@ -28,5 +28,6 @@ public class CotizacionTrabajoDTO {
     private BigDecimal subtotal;
     private String descripcion;
     private String material;
+    private String archivoReferencia;
     private List<DetalleMaterialDTO> materiales;
 }

@@ -24,5 +24,11 @@ public class CotizacionDetalleDTO {
     private String estado;
     private String codSolicitud;
     private String clienteNombre;
+    private String clienteTipo;
+    private String clienteDocumento;
+    private String clienteTelefono;
+    private String clienteCorreo;
+    private String clienteDireccion;
+    private String observaciones;
     private List<CotizacionTrabajoDTO> trabajos;
 }

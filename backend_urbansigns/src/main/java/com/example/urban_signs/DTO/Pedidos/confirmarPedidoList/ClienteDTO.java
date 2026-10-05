@@ -16,4 +16,7 @@ public class ClienteDTO {
     private String tipoCliente;
     private String tipoClientePersonaEmpresa;
     private String correo;
+    private String telefono;
+    private String documento;
+    private String direccion;
 }

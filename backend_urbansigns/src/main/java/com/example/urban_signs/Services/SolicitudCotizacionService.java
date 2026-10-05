@@ -26,6 +26,9 @@ public interface SolicitudCotizacionService {
 
     SolicitudCotizacionModel modificarSolicitud(Long idSolicitud, SolicitudCotizacionRequest request);
 
+    SolicitudCotizacionModel modificarSolicitud(Long idSolicitud, SolicitudCotizacionRequest request,
+            MultipartFile file, org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest);
+
     SolicitudDetalleDTO obtenerDetalle(Long idSolicitud);
 
     void cancelarSolicitud(Long idSolicitud);

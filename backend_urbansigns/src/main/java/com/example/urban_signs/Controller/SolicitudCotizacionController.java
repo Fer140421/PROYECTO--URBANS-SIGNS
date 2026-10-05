@@ -72,7 +72,19 @@ public class SolicitudCotizacionController {
         return ResponseEntity.ok(solicitud);
     }
 
-    @PutMapping("/modificar/{id}")
+    @PutMapping(value = "/modificar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
+    public ResponseEntity<SolicitudCotizacionModel> modificarSolicitudMultipart(
+            @PathVariable Long id,
+            @RequestPart("data") SolicitudCotizacionRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest) {
+
+        SolicitudCotizacionModel solicitudActualizada = solicitudCotizacionService.modificarSolicitud(id, request, file, multipartRequest);
+        return ResponseEntity.ok(solicitudActualizada);
+    }
+
+    @PutMapping(value = "/modificar/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('SOLICITUD_COTIZACION_EDITAR')")
     public ResponseEntity<SolicitudCotizacionModel> modificarSolicitud(
             @PathVariable Long id,
