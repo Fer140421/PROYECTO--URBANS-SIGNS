@@ -1,11 +1,10 @@
-import { Component, EventEmitter, inject, Input, Output, SimpleChanges } from '@angular/core';
-import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
-import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.service';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { CotizacionService } from '../../../../../core/services/cotizacion/cotizacion.service';
-import { MaterialProduccionService } from '../../../../../core/services/material-produccion/material-produccion.service';
+import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { CotizacionService } from '../../../../../core/services/cotizacion/cotizacion.service';
+import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.service';
+import { MaterialProduccionService } from '../../../../../core/services/material-produccion/material-produccion.service';
 
 @Component({
   selector: 'app-modificar-cotizacion',
@@ -14,7 +13,7 @@ import { finalize } from 'rxjs';
   templateUrl: './modificar-cotizacion.component.html',
   styleUrl: './modificar-cotizacion.component.css'
 })
-export class ModificarCotizacionComponent {
+export class ModificarCotizacionComponent implements OnInit, OnChanges {
   private cotizacionService = inject(CotizacionService);
   private trabajosService = inject(TrabajosService);
   private materialesService = inject(MaterialProduccionService);
@@ -31,11 +30,13 @@ export class ModificarCotizacionComponent {
   listTrabajos: any[] = [];
   listMateriales: any[] = [];
   modificacionForm!: FormGroup;
+  imagenModalUrl: string | null = null;
 
-  // Getters para acceder fácilmente a los controles
+  // Getters para controles
   get estado() { return this.modificacionForm.get('estado'); }
   get fechaEmision() { return this.modificacionForm.get('fechaEmision'); }
   get fechaCaducado() { return this.modificacionForm.get('fechaCaducado'); }
+  get trabajos(): FormArray { return this.modificacionForm.get('trabajos') as FormArray; }
 
   ngOnInit(): void {
     this.inicializarFormulario();
@@ -51,68 +52,34 @@ export class ModificarCotizacionComponent {
     if (changes['mostrar'] && this.mostrar) {
       this.mensajeError = '';
       this.guardando = false;
+      this.imagenModalUrl = null;
+      if (this.cotizacion) {
+        this.cargarDatosEnFormulario(this.cotizacion);
+      }
     }
   }
 
   // ========== VALIDACIONES PERSONALIZADAS ==========
 
-  private validarFechas(control: AbstractControl): ValidationErrors | null {
-    const fechaEmision = this.modificacionForm?.get('fechaEmision')?.value;
-    const fechaCaducado = control.value;
-
-    if (!fechaEmision || !fechaCaducado) {
-      return null;
-    }
-
-    const fechaEmisionDate = new Date(fechaEmision);
-    const fechaCaducadoDate = new Date(fechaCaducado);
-
-    if (fechaCaducadoDate <= fechaEmisionDate) {
-      return { fechaAnterior: 'La fecha de caducidad debe ser posterior a la fecha de emisión' };
-    }
-
-    return null;
-  }
-
-  private validarFechaFutura(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
-      return null;
-    }
-
-    const fecha = new Date(control.value);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    if (fecha < hoy) {
-      return { fechaInvalida: 'La fecha no puede ser anterior al día de hoy' };
-    }
-
-    return null;
-  }
-
   private validarNumeroEntero(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
+    if (control.value === null || control.value === undefined || control.value === '') {
       return null;
     }
-
-    const valor = control.value;
-    if (!Number.isInteger(Number(valor))) {
-      return { pattern: 'Solo se permiten números enteros' };
+    const valor = Number(control.value);
+    if (!Number.isInteger(valor) || valor <= 0) {
+      return { pattern: 'Solo se permiten números enteros mayores a 0' };
     }
-
     return null;
   }
 
   private validarDecimal(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
+    if (control.value === null || control.value === undefined || control.value === '') {
       return null;
     }
-
     const valor = control.value.toString();
     if (!/^\d+(\.\d{1,2})?$/.test(valor)) {
       return { pattern: 'Formato de precio inválido (ej: 10.50)' };
     }
-
     return null;
   }
 
@@ -120,23 +87,33 @@ export class ModificarCotizacionComponent {
 
   private inicializarFormulario(): void {
     this.modificacionForm = this.fb.group({
-      estado: ['', Validators.required],
-      fechaEmision: ['', [Validators.required, this.validarFechaFutura.bind(this)]],
-      fechaCaducado: ['', [Validators.required, this.validarFechaFutura.bind(this), this.validarFechas.bind(this)]],
+      estado: ['PENDIENTE'],
+      fechaEmision: [''],
+      fechaCaducado: [''],
       trabajos: this.fb.array([], Validators.required)
     });
   }
 
-  private crearTrabajoFormGroup(): FormGroup {
+  private crearTrabajoFormGroup(trabajo?: any): FormGroup {
+    const cantidad = trabajo?.cantidad ? Number(trabajo.cantidad) : 1;
+    const costoUnitario = trabajo?.costoUnitario != null ? Number(trabajo.costoUnitario) : 0;
+    const subtotal = trabajo?.subtotal != null ? Number(trabajo.subtotal) : (cantidad * costoUnitario);
+
     return this.fb.group({
-      idCotizacionTrabajo: [null],
-      idSolicitudTrabajo: ['', Validators.required],
-      idTrabajo: ['', Validators.required],
-      nombreTrabajo: [''],
-      cantidad: [1, [Validators.required, Validators.min(1), this.validarNumeroEntero.bind(this)]],
-      costoUnitario: [0, [Validators.required, Validators.min(0), this.validarDecimal.bind(this)]],
-      subtotal: [0],
-      material: [''],
+      idCotizacionTrabajo: [trabajo?.idCotizacionTrabajo || null],
+      idSolicitudTrabajo: [trabajo?.idSolicitudTrabajo || ''],
+      idTrabajo: [trabajo?.idTrabajo || '', Validators.required],
+      nombreTrabajo: [trabajo?.nombreTrabajo || ''],
+      cantidad: [cantidad, [Validators.required, Validators.min(1), this.validarNumeroEntero.bind(this)]],
+      costoUnitario: [costoUnitario, [Validators.required, Validators.min(0), this.validarDecimal.bind(this)]],
+      subtotal: [subtotal],
+      material: [trabajo?.material || ''],
+      base: [trabajo?.base || null],
+      altura: [trabajo?.altura || null],
+      area_total: [trabajo?.area_total || trabajo?.areaTotal || null],
+      unidadMedida: [trabajo?.unidadMedida || 'm'],
+      descripcion: [trabajo?.descripcion || ''],
+      archivoReferencia: [trabajo?.archivoReferencia || null],
       materiales: this.fb.array([])
     });
   }
@@ -148,25 +125,15 @@ export class ModificarCotizacionComponent {
     });
   }
 
-  // ========== MÉTODOS DE VALIDACIÓN EN TEMPLATE ==========
+  // ========== MÉTODOS DE VALIDACIÓN ==========
 
   esTrabajoInvalido(index: number): boolean {
     const trabajo = this.trabajos.at(index);
     return trabajo.invalid && (trabajo.dirty || trabajo.touched);
   }
 
-  esMaterialInvalido(trabajoIndex: number, materialIndex: number): boolean {
-    const material = this.getMaterialControl(trabajoIndex, materialIndex, 'idMaterial');
-    return material.invalid && (material.dirty || material.touched);
-  }
-
   getTrabajoControl(index: number, controlName: string): AbstractControl {
     return this.trabajos.at(index).get(controlName) as AbstractControl;
-  }
-
-  getMaterialControl(trabajoIndex: number, materialIndex: number, controlName: string): AbstractControl {
-    const materiales = this.getMateriales(trabajoIndex);
-    return materiales.at(materialIndex).get(controlName) as AbstractControl;
   }
 
   // ========== CARGA DE DATOS ==========
@@ -175,7 +142,6 @@ export class ModificarCotizacionComponent {
     this.trabajosService.listarSimple().subscribe({
       next: (trabajos) => {
         this.listTrabajos = trabajos;
-        console.log('Trabajos cargados:', this.listTrabajos);
       },
       error: (err) => {
         console.error('Error al cargar trabajos:', err);
@@ -191,39 +157,24 @@ export class ModificarCotizacionComponent {
       },
       error: (err) => {
         console.error('Error al cargar materiales:', err);
-        this.error.emit('Error al cargar la lista de materiales');
       }
     });
   }
 
   private cargarDatosEnFormulario(cotizacion: any): void {
-    console.log('Cargando cotización:', cotizacion);
-
-    // Limpiar trabajos existentes
     while (this.trabajos.length !== 0) {
       this.trabajos.removeAt(0);
     }
 
     this.modificacionForm.patchValue({
-      estado: cotizacion.estado || '',
-      fechaEmision: cotizacion.fechaEmision,
-      fechaCaducado: cotizacion.fechaCaducado
+      estado: cotizacion.estado || 'PENDIENTE',
+      fechaEmision: cotizacion.fechaEmision ? this.formatearFecha(cotizacion.fechaEmision) : '',
+      fechaCaducado: cotizacion.fechaCaducado ? this.formatearFecha(cotizacion.fechaCaducado) : ''
     });
 
     if (cotizacion.trabajos && cotizacion.trabajos.length > 0) {
       cotizacion.trabajos.forEach((trabajo: any) => {
-        const trabajoForm = this.crearTrabajoFormGroup();
-
-        trabajoForm.patchValue({
-          idCotizacionTrabajo: trabajo.idCotizacionTrabajo,
-          idSolicitudTrabajo: trabajo.idSolicitudTrabajo,
-          idTrabajo: trabajo.idTrabajo,
-          nombreTrabajo: trabajo.nombreTrabajo,
-          cantidad: trabajo.cantidad,
-          costoUnitario: trabajo.costoUnitario,
-          subtotal: trabajo.subtotal,
-          material: trabajo.material || ''
-        });
+        const trabajoForm = this.crearTrabajoFormGroup(trabajo);
 
         const materialesArray = trabajoForm.get('materiales') as FormArray;
         if (trabajo.materiales && trabajo.materiales.length > 0) {
@@ -243,19 +194,10 @@ export class ModificarCotizacionComponent {
       this.agregarTrabajo();
     }
 
-    // Marcar como pristine después de cargar
     this.modificacionForm.markAsPristine();
   }
 
-  // ========== MÉTODOS DEL FORMULARIO ==========
-
-  get trabajos(): FormArray {
-    return this.modificacionForm.get('trabajos') as FormArray;
-  }
-
-  getMateriales(trabajoIndex: number): FormArray {
-    return this.trabajos.at(trabajoIndex).get('materiales') as FormArray;
-  }
+  // ========== ACCIONES DE FORMULARIO ==========
 
   agregarTrabajo(): void {
     this.trabajos.push(this.crearTrabajoFormGroup());
@@ -268,41 +210,16 @@ export class ModificarCotizacionComponent {
     }
   }
 
-  agregarMaterial(trabajoIndex: number): void {
-    const materiales = this.getMateriales(trabajoIndex);
-    materiales.push(this.crearMaterialFormGroup());
-  }
-
-  removerMaterial(trabajoIndex: number, materialIndex: number): void {
-    const materiales = this.getMateriales(trabajoIndex);
-    materiales.removeAt(materialIndex);
-  }
-
-  onMaterialChange(trabajoIndex: number, materialIndex: number): void {
-    const materiales = this.getMateriales(trabajoIndex);
-    const material = materiales.at(materialIndex);
-    const idMaterial = material.get('idMaterial')?.value;
-
-    if (idMaterial) {
-      const materialSeleccionado = this.listMateriales.find(m => m.id === idMaterial);
-      if (materialSeleccionado) {
-        material.patchValue({
-          nombreMaterial: materialSeleccionado.nombre
-        });
-      }
-    }
-  }
-
   onTrabajoChange(index: number): void {
     const trabajo = this.trabajos.at(index);
     const idTrabajo = trabajo.get('idTrabajo')?.value;
 
     if (idTrabajo) {
-      const trabajoSeleccionado = this.listTrabajos.find(t => t.id === idTrabajo);
+      const trabajoSeleccionado = this.listTrabajos.find(t => t.id === Number(idTrabajo) || t.id === idTrabajo);
       if (trabajoSeleccionado) {
         trabajo.patchValue({
           nombreTrabajo: trabajoSeleccionado.nombre,
-          costoUnitario: trabajoSeleccionado.costo_unitario || 0
+          costoUnitario: trabajo.get('costoUnitario')?.value || trabajoSeleccionado.costo_unitario || 0
         });
       }
     }
@@ -316,11 +233,9 @@ export class ModificarCotizacionComponent {
 
   private calcularSubtotalTrabajo(index: number): void {
     const trabajo = this.trabajos.at(index);
-    const cantidad = trabajo.get('cantidad')?.value || 0;
-    const costoUnitario = trabajo.get('costoUnitario')?.value || 0;
-    const subtotal = cantidad * costoUnitario;
-
-    console.log(`Cálculo subtotal trabajo ${index}:`, { cantidad, costoUnitario, subtotal });
+    const cantidad = Number(trabajo.get('cantidad')?.value) || 0;
+    const costoUnitario = Number(trabajo.get('costoUnitario')?.value) || 0;
+    const subtotal = Math.round(cantidad * costoUnitario * 100) / 100;
 
     trabajo.patchValue({ subtotal }, { emitEvent: false });
     this.recalcularCostoTotal();
@@ -328,45 +243,102 @@ export class ModificarCotizacionComponent {
 
   getCostoTotal(): number {
     return this.trabajos.controls.reduce((total, trabajo) => {
-      return total + (trabajo.get('subtotal')?.value || 0);
+      return total + (Number(trabajo.get('subtotal')?.value) || 0);
     }, 0);
   }
 
   private recalcularCostoTotal(): void {
-    const total = this.getCostoTotal();
-    console.log('Costo total actualizado:', total);
+    // Para disparo reactivo si se requiere
   }
 
-  // ========== VALIDACIÓN FINAL DEL FORMULARIO ==========
+  // ========== METADATOS Y HELPERS DEL CLIENTE ==========
+
+  getClienteNombre(): string {
+    return this.cotizacion?.clienteNombre || this.cotizacion?.cliente?.nombre || 'Cliente sin registrar';
+  }
+
+  getClienteTipo(): string {
+    return this.cotizacion?.clienteTipo || this.cotizacion?.cliente?.tipoCliente || 'Persona Natural';
+  }
+
+  getClienteDocumento(): string {
+    return this.cotizacion?.clienteDocumento || this.cotizacion?.cliente?.documento || '—';
+  }
+
+  getClienteTelefono(): string {
+    return this.cotizacion?.clienteTelefono || this.cotizacion?.cliente?.telefono || '—';
+  }
+
+  getClienteCorreo(): string {
+    return this.cotizacion?.clienteCorreo || this.cotizacion?.cliente?.correo || '—';
+  }
+
+  getClienteDireccion(): string {
+    return this.cotizacion?.clienteDireccion || this.cotizacion?.cliente?.direccion || '—';
+  }
+
+  getTotalUnidades(): number {
+    if (!this.trabajos || this.trabajos.length === 0) {
+      if (!this.cotizacion?.trabajos) return 0;
+      return this.cotizacion.trabajos.reduce((total: number, trabajo: any) => {
+        return total + (Number(trabajo.cantidad) || 1);
+      }, 0);
+    }
+    return this.trabajos.controls.reduce((sum, ctrl) => sum + (Number(ctrl.get('cantidad')?.value) || 0), 0);
+  }
+
+  getAreaTotal(): number {
+    if (this.trabajos && this.trabajos.length > 0) {
+      return this.trabajos.controls.reduce((sum, ctrl) => {
+        const area = Number(ctrl.get('area_total')?.value) || 0;
+        const cant = Number(ctrl.get('cantidad')?.value) || 1;
+        return sum + (area * cant);
+      }, 0);
+    }
+    if (!this.cotizacion?.trabajos) return 0;
+    return this.cotizacion.trabajos.reduce((total: number, trabajo: any) => {
+      const area = Number(trabajo.area_total || trabajo.areaTotal) || 0;
+      const cant = Number(trabajo.cantidad) || 1;
+      return total + (area * cant);
+    }, 0);
+  }
+
+  estaVencida(): boolean {
+    if (!this.cotizacion?.fechaCaducado) return false;
+    const hoy = new Date();
+    const fechaCaducidad = new Date(this.cotizacion.fechaCaducado);
+    return hoy > fechaCaducidad;
+  }
+
+  diasRestantes(): number {
+    if (!this.cotizacion?.fechaCaducado) return 0;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaCaducidad = new Date(this.cotizacion.fechaCaducado);
+    fechaCaducidad.setHours(0, 0, 0, 0);
+    const diferencia = fechaCaducidad.getTime() - hoy.getTime();
+    return Math.ceil(diferencia / (1000 * 3600 * 24));
+  }
+
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
+  }
+
+  // ========== VALIDACIÓN Y GUARDADO ==========
 
   esFormularioValido(): boolean {
     if (!this.modificacionForm.valid) {
-      console.log('Formulario principal inválido');
       return false;
     }
-
     if (this.trabajos.length === 0) {
-      console.log('No hay trabajos');
       return false;
     }
-
-    // Validar cada trabajo
-    const trabajosValidos = this.trabajos.controls.every((trabajo, index) => {
-      const trabajoGroup = trabajo as FormGroup;
-      const esValido = trabajoGroup.valid;
-
-      if (!esValido) {
-        console.log(`Trabajo ${index} inválido:`, trabajoGroup.errors);
-      }
-
-      return esValido;
-    });
-
-    console.log('Formulario válido:', trabajosValidos && this.modificacionForm.valid);
-    return trabajosValidos && this.modificacionForm.valid;
+    return this.trabajos.controls.every(t => t.valid);
   }
-
-  // ========== GUARDADO ==========
 
   onGuardar(): void {
     if (this.guardando) return;
@@ -380,17 +352,16 @@ export class ModificarCotizacionComponent {
     const request = {
       trabajos: this.trabajos.value.map((t: any) => ({
         idCotizacionTrabajo: t.idCotizacionTrabajo,
-        cantidad: t.cantidad,
-        costoUnitario: t.costoUnitario,
-        subtotal: t.cantidad * t.costoUnitario,
+        cantidad: Number(t.cantidad),
+        costoUnitario: Number(t.costoUnitario),
+        subtotal: Number(t.cantidad) * Number(t.costoUnitario),
         material: t.material ? t.material.trim() : '',
+        unidadMedida: t.unidadMedida ? t.unidadMedida.trim().toLowerCase() : 'm',
         materiales: (t.materiales || []).map((m: any) => ({
           idMaterial: Number(m.idMaterial)
         }))
       }))
     };
-
-    console.log('Request enviado al backend:', JSON.stringify(request, null, 2));
 
     this.guardando = true;
     this.mensajeError = '';
@@ -399,13 +370,11 @@ export class ModificarCotizacionComponent {
       finalize(() => this.guardando = false)
     ).subscribe({
       next: () => {
-        console.log('✅ Cotización modificada correctamente');
         this.guardando = false;
         this.guardado.emit();
         this.cerrar.emit();
       },
       error: (err) => {
-        console.error('❌ Error al modificar la cotización:', err);
         this.guardando = false;
         this.mensajeError = err.error?.message || 'No se pudo modificar la cotización';
         this.error.emit(this.mensajeError);
@@ -414,37 +383,25 @@ export class ModificarCotizacionComponent {
   }
 
   private marcarControlesComoSucios(): void {
-    // Marcar controles del formulario principal
     Object.keys(this.modificacionForm.controls).forEach(key => {
-      const control = this.modificacionForm.get(key);
-      control?.markAsTouched();
+      this.modificacionForm.get(key)?.markAsTouched();
     });
 
-    // Marcar controles de trabajos
     this.trabajos.controls.forEach(trabajo => {
       const grupo = trabajo as FormGroup;
       Object.keys(grupo.controls).forEach(key => {
-        const control = grupo.get(key);
-        control?.markAsTouched();
-      });
-
-      // Marcar controles de materiales
-      const materiales = grupo.get('materiales') as FormArray;
-      materiales?.controls.forEach((material) => {
-        const materialGrupo = material as FormGroup;
-        Object.keys(materialGrupo.controls).forEach(key => {
-          const control = materialGrupo.get(key);
-          control?.markAsTouched();
-        });
+        grupo.get(key)?.markAsTouched();
       });
     });
   }
 
-  // ========== UTILIDADES ==========
-
-  formatearFecha(fecha: string): string {
+  formatearFecha(fecha: any): string {
     if (!fecha) return '';
+    if (typeof fecha === 'string' && fecha.includes('T')) {
+      return fecha.split('T')[0];
+    }
     const date = new Date(fecha);
+    if (isNaN(date.getTime())) return '';
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');

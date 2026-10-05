@@ -5,6 +5,7 @@ import { EmployeeService } from '../../../../../core/services/employee/employee.
 import { Empleado } from '../../../../../core/models/employee/ListEmpleadosActivos.model';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
 import { ConfirmModalService } from '../../../../../core/services/confirm-modal/confirm-modal.service';
+import { FormatoEstadoPipe, formatearEstado, obtenerClaseEstadoPedido, obtenerClaseEstadoPago } from '../../../../../shared/pipes/formato-estado.pipe';
 
 interface PagoRegistro {
   monto: number;
@@ -15,7 +16,7 @@ interface PagoRegistro {
 @Component({
   selector: 'app-completar-pedido',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormatoEstadoPipe],
   templateUrl: './completar-pedido.component.html',
   styleUrl: './completar-pedido.component.css'
 })
@@ -23,6 +24,10 @@ export class CompletarPedidoComponent {
   private employeeService = inject(EmployeeService);
   private notificationService = inject(NotificationService);
   private confirmService = inject(ConfirmModalService);
+
+  formatearEstado = formatearEstado;
+  obtenerClaseEstadoPedido = obtenerClaseEstadoPedido;
+  obtenerClaseEstadoPago = obtenerClaseEstadoPago;
 
   @Input() mostrar: boolean = false;
   @Input() pedido: any | null = null;

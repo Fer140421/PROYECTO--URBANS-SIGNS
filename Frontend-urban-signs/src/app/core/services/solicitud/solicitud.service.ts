@@ -74,8 +74,24 @@ export class SolicitudService {
     return this.http.get<any>(`${this.apiUrl}/det-mod/${id}`);
   }
 
-  modificarSolicitud(id: number, request: any): Observable<any> {
+  modificarSolicitud(id: number, request: any, file?: File | null, trabajoFiles?: (File | null)[]): Observable<any> {
     const context = new HttpContext().set(TRANSACTION_MESSAGE, 'Guardando cambios de la solicitud...');
+    const hasTrabajoFiles = trabajoFiles && trabajoFiles.some(f => !!f);
+    if (file || hasTrabajoFiles) {
+      const formData = new FormData();
+      formData.append('data', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+      if (file) {
+        formData.append('file', file);
+      }
+      if (trabajoFiles) {
+        trabajoFiles.forEach((tf, index) => {
+          if (tf) {
+            formData.append(`trabajo_file_${index}`, tf);
+          }
+        });
+      }
+      return this.http.put<any>(`${this.apiUrl}/modificar/${id}`, formData, { context });
+    }
     return this.http.put<any>(`${this.apiUrl}/modificar/${id}`, request, { context });
   }
 

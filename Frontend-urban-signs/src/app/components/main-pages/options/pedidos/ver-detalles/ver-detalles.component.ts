@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, SimpleChanges, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FormatoEstadoPipe, formatearEstado, obtenerClaseEstadoPedido, obtenerClaseEstadoPago } from '../../../../../shared/pipes/formato-estado.pipe';
 
 @Component({
   selector: 'app-ver-detalles',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormatoEstadoPipe],
   templateUrl: './ver-detalles.component.html',
   styleUrl: './ver-detalles.component.css'
 })
@@ -15,6 +16,10 @@ export class VerDetallesComponent {
   @Input() mostrar: boolean = false;
   @Input() pedido: any | null = null;
   @Output() cerrar = new EventEmitter<void>();
+
+  formatearEstado = formatearEstado;
+  obtenerClaseEstadoPedido = obtenerClaseEstadoPedido;
+  obtenerClaseEstadoPago = obtenerClaseEstadoPago;
 
   ngOnInit(): void {
     // Inicialización si es necesaria

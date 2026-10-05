@@ -1,39 +1,59 @@
-<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
+<!-- Modal de Detalles de Pedido -->
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out"
     *ngIf="mostrar">
-    <div
-        class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal border border-yellow-400/30">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-gray-200 animate-fade-in-modal">
 
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-5 relative overflow-hidden">
-            <div class="absolute inset-0 bg-black/5"></div>
-            <div class="flex justify-between items-center relative z-10">
+        <!-- Header del Modal -->
+        <div class="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                    <i class="ph ph-receipt text-xl"></i>
+                </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Detalles de Pedido #{{pedido?.idPedido}}</h2>
-                    <p class="text-gray-800 text-sm mt-1 font-medium">
-                        Código Cotización: {{pedido?.cotizacion?.codCotizacion}}
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-lg font-bold text-gray-900">Detalles de Pedido</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200 font-mono">
+                            #{{ pedido?.idPedido }}
+                        </span>
+                    </div>
+                    <p class="text-gray-500 text-xs mt-0.5">
+                        Cotización Base: <span class="font-mono font-medium text-gray-700">{{ pedido?.cotizacion?.codCotizacion || 'N/A' }}</span>
                     </p>
                 </div>
-                <button (click)="cerrarModal()"
-                    class="text-gray-900 hover:text-gray-700 transition-colors p-2 hover:bg-black/10 rounded-lg">
-                    <i class="ph ph-x text-2xl"></i>
-                </button>
             </div>
+            <button type="button" (click)="cerrarModal()" class="text-gray-400 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <i class="ph ph-x text-xl"></i>
+            </button>
         </div>
 
-        <div class="p-8 overflow-y-auto max-h-[calc(90vh-100px)] bg-gray-50">
+        <!-- Contenido Scrollable del Modal -->
+        <div class="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1">
 
             <!-- Stepper de Trazabilidad Operativa -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-8">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-5 flex items-center gap-2">
-                    <i class="ph ph-git-fork text-yellow-500 text-base"></i> Trazabilidad del Flujo Operativo
-                </h3>
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                        <i class="ph ph-git-fork text-amber-600 text-base"></i> Trazabilidad del Flujo Operativo
+                    </h3>
+                    <span class="text-xs text-gray-500">
+                        Etapa actual: <span class="font-bold text-gray-800">{{ pedido?.estadoPedido | formatoEstado }}</span>
+                    </span>
+                </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <!-- Paso 1: Anticipo -->
                     <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
-                         [ngClass]="getEtapaActual() >= 1 ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
-                             [ngClass]="getEtapaActual() >= 1 ? 'bg-amber-500 text-white' : 'bg-gray-300 text-gray-600'">
+                         [ngClass]="{
+                             'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm': getEtapaActual() > 1,
+                             'bg-amber-50 border-amber-300 text-amber-900 ring-2 ring-amber-400/40 shadow-sm': getEtapaActual() === 1,
+                             'bg-gray-50 border-gray-200 text-gray-400': getEtapaActual() < 1
+                         }">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-colors"
+                             [ngClass]="{
+                                 'bg-emerald-600 text-white': getEtapaActual() > 1,
+                                 'bg-amber-500 text-gray-950 font-bold': getEtapaActual() === 1,
+                                 'bg-gray-200 text-gray-500': getEtapaActual() < 1
+                             }">
                             <i *ngIf="getEtapaActual() > 1" class="ph ph-check font-bold"></i>
                             <span *ngIf="getEtapaActual() <= 1">1</span>
                         </div>
@@ -43,9 +63,17 @@
 
                     <!-- Paso 2: Impresión -->
                     <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
-                         [ngClass]="getEtapaActual() >= 2 ? 'bg-blue-50 border-blue-300 text-blue-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
-                             [ngClass]="getEtapaActual() >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
+                         [ngClass]="{
+                             'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm': getEtapaActual() > 2,
+                             'bg-amber-50 border-amber-300 text-amber-900 ring-2 ring-amber-400/40 shadow-sm': getEtapaActual() === 2,
+                             'bg-gray-50 border-gray-200 text-gray-400': getEtapaActual() < 2
+                         }">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-colors"
+                             [ngClass]="{
+                                 'bg-emerald-600 text-white': getEtapaActual() > 2,
+                                 'bg-amber-500 text-gray-950 font-bold': getEtapaActual() === 2,
+                                 'bg-gray-200 text-gray-500': getEtapaActual() < 2
+                             }">
                             <i *ngIf="getEtapaActual() > 2" class="ph ph-check font-bold"></i>
                             <span *ngIf="getEtapaActual() <= 2">2</span>
                         </div>
@@ -55,9 +83,17 @@
 
                     <!-- Paso 3: Taller & Armado -->
                     <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
-                         [ngClass]="getEtapaActual() >= 3 ? 'bg-purple-50 border-purple-300 text-purple-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
-                             [ngClass]="getEtapaActual() >= 3 ? 'bg-purple-600 text-white' : 'bg-gray-300 text-gray-600'">
+                         [ngClass]="{
+                             'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm': getEtapaActual() > 3,
+                             'bg-amber-50 border-amber-300 text-amber-900 ring-2 ring-amber-400/40 shadow-sm': getEtapaActual() === 3,
+                             'bg-gray-50 border-gray-200 text-gray-400': getEtapaActual() < 3
+                         }">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-colors"
+                             [ngClass]="{
+                                 'bg-emerald-600 text-white': getEtapaActual() > 3,
+                                 'bg-amber-500 text-gray-950 font-bold': getEtapaActual() === 3,
+                                 'bg-gray-200 text-gray-500': getEtapaActual() < 3
+                             }">
                             <i *ngIf="getEtapaActual() > 3" class="ph ph-check font-bold"></i>
                             <span *ngIf="getEtapaActual() <= 3">3</span>
                         </div>
@@ -67,9 +103,17 @@
 
                     <!-- Paso 4: Listo p/ Entrega -->
                     <div class="p-3 rounded-xl border flex flex-col items-center text-center transition-all"
-                         [ngClass]="getEtapaActual() >= 4 ? 'bg-green-50 border-green-300 text-green-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
-                             [ngClass]="getEtapaActual() >= 4 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'">
+                         [ngClass]="{
+                             'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm': getEtapaActual() > 4,
+                             'bg-amber-50 border-amber-300 text-amber-900 ring-2 ring-amber-400/40 shadow-sm': getEtapaActual() === 4,
+                             'bg-gray-50 border-gray-200 text-gray-400': getEtapaActual() < 4
+                         }">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-colors"
+                             [ngClass]="{
+                                 'bg-emerald-600 text-white': getEtapaActual() > 4,
+                                 'bg-amber-500 text-gray-950 font-bold': getEtapaActual() === 4,
+                                 'bg-gray-200 text-gray-500': getEtapaActual() < 4
+                             }">
                             <i *ngIf="getEtapaActual() > 4" class="ph ph-check font-bold"></i>
                             <span *ngIf="getEtapaActual() <= 4">4</span>
                         </div>
@@ -79,9 +123,15 @@
 
                     <!-- Paso 5: Entregado -->
                     <div class="col-span-2 md:col-span-1 p-3 rounded-xl border flex flex-col items-center text-center transition-all"
-                         [ngClass]="getEtapaActual() >= 5 ? 'bg-emerald-100 border-emerald-400 text-emerald-950 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-400'">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2"
-                             [ngClass]="getEtapaActual() >= 5 ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'">
+                         [ngClass]="{
+                             'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm': getEtapaActual() >= 5,
+                             'bg-gray-50 border-gray-200 text-gray-400': getEtapaActual() < 5
+                         }">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-colors"
+                             [ngClass]="{
+                                 'bg-emerald-600 text-white': getEtapaActual() >= 5,
+                                 'bg-gray-200 text-gray-500': getEtapaActual() < 5
+                             }">
                             <i *ngIf="getEtapaActual() >= 5" class="ph ph-check font-bold"></i>
                             <span *ngIf="getEtapaActual() < 5">5</span>
                         </div>
@@ -92,160 +142,160 @@
             </div>
 
             <!-- Evidencia de Entrega Física (si existe) -->
-            <div *ngIf="pedido?.fotoEvidencia" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 mb-8 shadow-sm">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl">
-                        <i class="ph ph-camera"></i>
+            <div *ngIf="pedido?.fotoEvidencia" class="bg-white rounded-xl p-5 border border-emerald-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-emerald-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                            <i class="ph ph-camera text-base"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Evidencia Fotográfica de Entrega</h3>
+                            <p class="text-[11px] text-gray-500">
+                                Fecha de entrega: {{ pedido?.fechaEntregaReal ? (pedido?.fechaEntregaReal | date:'dd/MM/yyyy HH:mm') : 'Completado' }}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-emerald-950 text-lg">Evidencia Fotográfica de Entrega / Instalación</h3>
-                        <p class="text-xs text-emerald-800">
-                            Fecha de entrega: {{ pedido?.fechaEntregaReal ? (pedido?.fechaEntregaReal | date:'dd/MM/yyyy HH:mm') : 'Completado' }}
-                        </p>
-                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <i class="ph ph-seal-check text-sm text-emerald-600"></i> Verificada
+                    </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
                     <div>
-                        <a [href]="pedido?.fotoEvidencia" target="_blank" rel="noopener noreferrer">
+                        <a [href]="pedido?.fotoEvidencia" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
                             <img [src]="pedido?.fotoEvidencia" alt="Foto Evidencia de Entrega"
-                                 class="rounded-xl max-h-64 w-full object-cover border-2 border-white shadow-md hover:scale-[1.02] transition-transform" />
+                                 class="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5">
+                                <i class="ph ph-arrows-out text-base"></i> Ver imagen completa
+                            </div>
                         </a>
-                        <p class="text-[11px] text-gray-500 mt-1">Clic en la fotografía para abrir en tamaño completo</p>
+                        <p class="text-[11px] text-gray-400 mt-1.5 text-center">Haz clic para abrir la imagen en tamaño completo</p>
                     </div>
-                    <div class="space-y-3 bg-white p-5 rounded-xl border border-emerald-200">
+                    <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <div *ngIf="pedido?.observacionEntrega">
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Observaciones de Entrega:</p>
-                            <p class="text-sm font-medium text-gray-800 mt-0.5">{{ pedido?.observacionEntrega }}</p>
+                            <span class="text-[11px] font-semibold text-gray-500 uppercase block tracking-wider">Observaciones:</span>
+                            <p class="text-xs font-medium text-gray-800 mt-0.5">{{ pedido?.observacionEntrega }}</p>
                         </div>
                         <div *ngIf="pedido?.entregadoPor">
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Operario / Entregador:</p>
-                            <p class="text-sm font-medium text-gray-800 mt-0.5">ID Empleado #{{ pedido?.entregadoPor }}</p>
+                            <span class="text-[11px] font-semibold text-gray-500 uppercase block tracking-wider">Responsable de Entrega:</span>
+                            <p class="text-xs font-medium text-gray-800 mt-0.5">Operario / Empleado ID #{{ pedido?.entregadoPor }}</p>
                         </div>
-                        <div class="pt-2 border-t border-gray-100 flex items-center gap-2 text-emerald-700 font-bold text-xs">
-                            <i class="ph ph-seal-check text-base"></i>
-                            <span>Entrega verificada físicamente</span>
+                        <div class="pt-2 border-t border-gray-200 flex items-center gap-2 text-emerald-700 font-medium text-xs">
+                            <i class="ph ph-check-circle text-base"></i>
+                            <span>Entrega confirmada y registrada en el sistema</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Información Principal del Pedido -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <!-- Fila de Metadatos Rápidos (4 Tarjetas) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <!-- Estado del Pedido -->
-                <div
-                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-info text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Estado</h3>
-                    </div>
-                    <span [ngClass]="{
-                        'bg-yellow-100 text-yellow-800 border-yellow-400': pedido?.estadoPedido === 'PENDIENTE',
-                        'bg-blue-100 text-blue-800 border-blue-400': pedido?.estadoPedido === 'EN_PROCESO',
-                        'bg-purple-100 text-purple-800 border-purple-400': pedido?.estadoPedido === 'EN_TALLER',
-                        'bg-green-100 text-green-800 border-green-400': pedido?.estadoPedido === 'FINALIZADO',
-                        'bg-emerald-100 text-emerald-800 border-emerald-400': pedido?.estadoPedido === 'ENTREGADO',
-                        'bg-red-100 text-red-800 border-red-400': pedido?.estadoPedido === 'CANCELADO'
-                    }" class="inline-block px-4 py-2 rounded-lg text-sm font-bold border-2">
-                        {{ pedido?.estadoPedido }}
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Estado Pedido</span>
+                    <span [ngClass]="obtenerClaseEstadoPedido(pedido?.estadoPedido)"
+                          class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold border">
+                        {{ pedido?.estadoPedido | formatoEstado }}
                     </span>
                 </div>
 
                 <!-- Fecha de Emisión -->
-                <div
-                    class="bg-white rounded-xl p-5 border-2 border-gray-200 hover:border-yellow-400 transition-all shadow-sm">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                            <i class="ph ph-calendar-check text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Fecha Emisión</h3>
-                    </div>
-                    <p class="text-gray-700 text-lg font-medium">{{ pedido?.cotizacion?.fechaEmision }}</p>
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Fecha Emisión</span>
+                    <p class="text-xs font-semibold text-gray-900 font-mono">
+                        {{ pedido?.cotizacion?.fechaEmision ? (pedido?.cotizacion?.fechaEmision | date:'dd/MM/yyyy') : '—' }}
+                    </p>
                 </div>
 
                 <!-- Fecha de Caducidad -->
-                <div class="bg-white rounded-xl p-5 border-2 hover:border-yellow-400 transition-all shadow-sm"
-                    [ngClass]="{
-                         'border-red-400 bg-red-50': estaVencida(),
-                         'border-gray-200': !estaVencida()
-                     }">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" [ngClass]="{
-                                 'bg-red-400': estaVencida(),
-                                 'bg-yellow-400': !estaVencida()
-                             }">
-                            <i class="ph ph-clock text-gray-900 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Caducidad</h3>
-                    </div>
-                    <p class="text-gray-700 text-lg font-medium">{{pedido?.cotizacion?.fechaCaducado }}</p>
-                    <p class="text-xs mt-2" [ngClass]="{
-                        'text-red-600 font-bold': estaVencida() || diasRestantes() <= 3,
-                        'text-yellow-600': diasRestantes() > 3 && diasRestantes() <= 7,
-                        'text-green-600': diasRestantes() > 7
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Vigencia Cotización</span>
+                    <p class="text-xs font-semibold font-mono" [ngClass]="estaVencida() ? 'text-rose-600' : 'text-gray-900'">
+                        {{ pedido?.cotizacion?.fechaCaducado ? (pedido?.cotizacion?.fechaCaducado | date:'dd/MM/yyyy') : '—' }}
+                    </p>
+                    <p class="text-[10px] mt-0.5 font-medium" [ngClass]="{
+                        'text-rose-600 font-bold': estaVencida() || diasRestantes() <= 3,
+                        'text-amber-600': !estaVencida() && diasRestantes() > 3 && diasRestantes() <= 7,
+                        'text-emerald-600': !estaVencida() && diasRestantes() > 7
                     }">
-                        <span *ngIf="estaVencida()">¡VENCIDA!</span>
+                        <span *ngIf="estaVencida()">Caducada</span>
                         <span *ngIf="!estaVencida()">{{ diasRestantes() }} días restantes</span>
                     </p>
                 </div>
 
                 <!-- Total del Pedido -->
-                <div
-                    class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl p-5 border-2 border-yellow-600 shadow-lg">
-                    <div class="flex items-center mb-3">
-                        <div class="w-10 h-10 rounded-lg bg-gray-900 flex items-center justify-center mr-3">
-                            <i class="ph ph-coins text-yellow-400 text-xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 text-lg">Total Pedido</h3>
-                    </div>
-                    <p class="text-gray-900 text-2xl font-bold">{{ pedido?.totalPedido | number:'1.2-2' }} Bs</p>
+                <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+                    <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Total Pedido</span>
+                    <p class="text-sm font-bold text-gray-900 font-mono">
+                        {{ (pedido?.totalPedido || 0) | number:'1.2-2' }} Bs
+                    </p>
                 </div>
             </div>
 
             <!-- Información Financiera -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 mb-8 shadow-sm">
-                <h3 class="font-bold text-gray-900 mb-5 flex items-center text-xl border-b-2 border-yellow-400 pb-3">
-                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                        <i class="ph ph-wallet text-gray-900 text-xl"></i>
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                            <i class="ph ph-wallet text-base"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Estado Financiero y Pagos</h3>
+                            <p class="text-[11px] text-gray-500">Balance del anticipo y saldo del pedido</p>
+                        </div>
                     </div>
-                    Información de Pagos
-                </h3>
+                    <span *ngIf="pedido?.estadoPago" [ngClass]="obtenerClaseEstadoPago(pedido?.estadoPago)"
+                          class="px-2.5 py-1 rounded text-xs font-semibold border">
+                        {{ pedido?.estadoPago | formatoEstado }}
+                    </span>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                     <!-- Anticipo -->
-                    <div class="bg-green-50 rounded-lg p-4 border-2 border-green-200">
-                        <label class="block text-sm font-semibold text-green-700 mb-2">Anticipo Pagado</label>
-                        <p class="text-green-900 text-2xl font-bold">{{ pedido?.anticipo | number:'1.2-2' }} Bs</p>
-                        <p class="text-xs text-green-600 mt-1">{{ getPorcentajePagado() | number:'1.0-0' }}% del total
-                        </p>
+                    <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Anticipo Pagado</span>
+                            <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                {{ getPorcentajePagado() | number:'1.0-0' }}%
+                            </span>
+                        </div>
+                        <p class="text-lg font-bold text-emerald-700 font-mono">{{ (pedido?.anticipo || 0) | number:'1.2-2' }} <span class="text-xs font-normal text-gray-500">Bs</span></p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Abonado inicialmente</p>
                     </div>
 
                     <!-- Saldo Pendiente -->
-                    <div class="bg-red-50 rounded-lg p-4 border-2 border-red-200">
-                        <label class="block text-sm font-semibold text-red-700 mb-2">Saldo Pendiente</label>
-                        <p class="text-red-900 text-2xl font-bold">{{ pedido?.saldoPendiente | number:'1.2-2' }} Bs</p>
-                        <p class="text-xs text-red-600 mt-1">{{ (100 - getPorcentajePagado()) | number:'1.0-0' }}%
-                            restante</p>
+                    <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Saldo Pendiente</span>
+                            <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded border"
+                                  [ngClass]="pedido?.saldoPendiente > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'">
+                                {{ (100 - getPorcentajePagado()) | number:'1.0-0' }}%
+                            </span>
+                        </div>
+                        <p class="text-lg font-bold font-mono" [ngClass]="pedido?.saldoPendiente > 0 ? 'text-amber-700' : 'text-emerald-700'">
+                            {{ (pedido?.saldoPendiente || 0) | number:'1.2-2' }} <span class="text-xs font-normal text-gray-500">Bs</span>
+                        </p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">
+                            {{ pedido?.saldoPendiente > 0 ? 'Por cobrar al entregar' : 'Completamente saldado' }}
+                        </p>
                     </div>
 
                     <!-- Total -->
-                    <div class="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
-                        <label class="block text-sm font-semibold text-blue-700 mb-2">Total</label>
-                        <p class="text-blue-900 text-2xl font-bold">{{ pedido?.totalPedido | number:'1.2-2' }} Bs</p>
-                        <p class="text-xs text-blue-600 mt-1">Costo total del pedido</p>
+                    <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200">
+                        <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Total Acordado</span>
+                        <p class="text-lg font-bold text-gray-900 font-mono">{{ (pedido?.totalPedido || 0) | number:'1.2-2' }} <span class="text-xs font-normal text-gray-500">Bs</span></p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Monto total de la cotización</p>
                     </div>
                 </div>
 
                 <!-- Barra de progreso de pago -->
-                <div class="mt-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Progreso de Pago</span>
-                        <span class="text-sm font-bold text-gray-900">{{ getPorcentajePagado() | number:'1.1-1'
-                            }}%</span>
+                <div>
+                    <div class="flex justify-between items-center mb-1.5 text-xs">
+                        <span class="text-gray-500 font-medium">Progreso de Pago</span>
+                        <span class="font-bold text-gray-800 font-mono">{{ getPorcentajePagado() | number:'1.1-1' }}%</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                        <div class="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden border border-gray-200">
+                        <div class="h-2 rounded-full transition-all duration-500"
+                            [ngClass]="getPorcentajePagado() >= 100 ? 'bg-emerald-500' : 'bg-amber-500'"
                             [style.width.%]="getPorcentajePagado()">
                         </div>
                     </div>
@@ -253,146 +303,125 @@
             </div>
 
             <!-- Sección de Trabajos -->
-            <div class="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center mb-6 border-b-2 border-yellow-400 pb-3">
-                    <div class="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center mr-3">
-                        <i class="ph ph-hammer text-gray-900 text-xl"></i>
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                            <i class="ph ph-hammer text-base"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Trabajos de la Cotización</h3>
+                            <p class="text-[11px] text-gray-500">Desglose de tareas y materiales asociados</p>
+                        </div>
                     </div>
-                    Trabajos de la Cotización
-                    <span class="ml-auto text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                        {{ pedido?.cotizacion?.trabajos?.length || 0 }} trabajo(s)
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
+                        {{ pedido?.cotizacion?.trabajos?.length || 0 }} {{ (pedido?.cotizacion?.trabajos?.length === 1) ? 'trabajo' : 'trabajos' }}
                     </span>
-                </h3>
+                </div>
 
                 <!-- Lista de Trabajos -->
-                <div class="space-y-5">
+                <div class="space-y-4" *ngIf="pedido?.cotizacion?.trabajos && pedido.cotizacion.trabajos.length > 0">
                     <div *ngFor="let trabajo of pedido?.cotizacion?.trabajos; let i = index"
-                        class="border-2 border-gray-200 rounded-xl p-5 bg-gray-50 hover:border-yellow-400 transition-all">
+                        class="rounded-xl border border-gray-200 bg-gray-50/50 p-4 transition-all">
 
                         <!-- Header del Trabajo -->
-                        <div class="flex justify-between items-center mb-5 pb-4 border-b-2 border-yellow-400">
-                            <h4 class="font-bold text-gray-900 text-lg flex items-center">
-                                <span
-                                    class="bg-yellow-400 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center mr-2 text-sm">{{i
-                                    + 1}}</span>
-                                Trabajo #{{ trabajo.idCotizacionTrabajo }}
-                            </h4>
-                            <span class="text-sm text-white bg-yellow-500 px-4 py-2 rounded-lg font-bold shadow-sm">
-                                Subtotal: {{ trabajo.subtotal | number:'1.2-2' }} Bs
-                            </span>
-                        </div>
-
-                        <!-- Información del Trabajo -->
-                        <div class="grid grid-cols-1 gap-4 mb-4">
-                            <!-- Subtotal destacado -->
-                            <div
-                                class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-5 border-2 border-yellow-400">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <label
-                                            class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Subtotal
-                                            del Trabajo</label>
-                                        <p class="text-gray-900 text-2xl font-bold">{{ trabajo.subtotal | number:'1.2-2'
-                                            }} Bs</p>
-                                    </div>
-                                </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-200 mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold flex items-center justify-center">
+                                    {{ i + 1 }}
+                                </span>
+                                <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                                    Trabajo #{{ trabajo.idCotizacionTrabajo }}
+                                </h4>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500">Subtotal:</span>
+                                <span class="text-xs font-bold text-gray-900 font-mono bg-white px-2.5 py-1 rounded border border-gray-200 shadow-sm">
+                                    {{ (trabajo.subtotal || 0) | number:'1.2-2' }} Bs
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Materiales (Detalles) -->
-                        <div class="mt-5" *ngIf="trabajo.detalles && trabajo.detalles.length > 0">
-                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
-                                <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                                    <i class="ph ph-package text-blue-600 mr-2 text-xl"></i>
-                                    Materiales Utilizados
-                                    <span
-                                        class="ml-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
-                                        {{ trabajo.detalles.length }}
-                                    </span>
-                                </h5>
-                                <div class="space-y-2">
-                                    <div *ngFor="let detalle of trabajo.detalles"
-                                        class="bg-white rounded-lg p-4 flex justify-between items-center border border-blue-200 hover:border-blue-400 transition-all">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                <i class="ph ph-cube text-blue-600 text-xl"></i>
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-gray-900">{{ detalle.nombreMaterial }}</p>
-                                                <p class="text-xs text-gray-500">ID Material: {{ detalle.idMaterial }}
-                                                </p>
-                                            </div>
+                        <!-- Materiales Utilizados -->
+                        <div *ngIf="trabajo.detalles && trabajo.detalles.length > 0">
+                            <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                                <i class="ph ph-package text-gray-500"></i> Materiales Utilizados ({{ trabajo.detalles.length }})
+                            </span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div *ngFor="let detalle of trabajo.detalles"
+                                    class="bg-white rounded-lg p-2.5 border border-gray-200 flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-600">
+                                            <i class="ph ph-cube text-sm"></i>
                                         </div>
-                                        <div class="text-right">
-                                            <span
-                                                class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                                                Detalle #{{ detalle.idDetalleCotizacion }}
-                                            </span>
+                                        <div>
+                                            <p class="font-medium text-gray-800">{{ detalle.nombreMaterial }}</p>
+                                            <p class="text-[10px] text-gray-400 font-mono">ID Mat: #{{ detalle.idMaterial }}</p>
                                         </div>
                                     </div>
+                                    <span class="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                                        Det. #{{ detalle.idDetalleCotizacion }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Sin materiales -->
                         <div *ngIf="!trabajo.detalles || trabajo.detalles.length === 0"
-                            class="mt-5 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                            <i class="ph ph-package text-gray-400 text-3xl mb-2"></i>
-                            <p class="text-gray-500 font-medium">No hay materiales asignados a este trabajo</p>
+                            class="p-3 text-center rounded-lg bg-white border border-dashed border-gray-200 text-xs text-gray-400">
+                            Sin materiales registrados en este trabajo
                         </div>
                     </div>
                 </div>
 
                 <!-- Mensaje cuando no hay trabajos -->
                 <div *ngIf="!pedido?.cotizacion?.trabajos || pedido.cotizacion.trabajos.length === 0"
-                    class="text-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                    <i class="ph ph-hammer text-6xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-500 text-lg font-medium">No hay trabajos registrados en este pedido</p>
+                    class="text-center py-10 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-gray-400">
+                    <i class="ph ph-hammer text-3xl mb-1 text-gray-300"></i>
+                    <p class="text-xs">No hay trabajos registrados en este pedido</p>
                 </div>
             </div>
 
             <!-- Resumen Final -->
-            <div class="mt-8 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg">
-                <h3 class="text-xl font-bold text-gray-900 mb-5 flex items-center">
-                    <i class="ph ph-calculator text-gray-900 text-2xl mr-2"></i>
-                    Resumen del Pedido
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
-                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total de Trabajos</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</p>
+            <div class="bg-gray-900 rounded-xl p-4 text-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-amber-400">
+                        <i class="ph ph-calculator text-xl"></i>
                     </div>
-                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
-                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Total Materiales</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ getTotalMateriales() }}</p>
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium">Resumen Global</p>
+                        <div class="flex items-center gap-3 text-xs text-gray-300 mt-0.5">
+                            <span>Trabajos: <strong class="text-white">{{ pedido?.cotizacion?.trabajos?.length || 0 }}</strong></span>
+                            <span class="text-gray-600">•</span>
+                            <span>Materiales: <strong class="text-white">{{ getTotalMateriales() }}</strong></span>
+                            <span class="text-gray-600">•</span>
+                            <span>Anticipo: <strong class="text-emerald-400 font-mono">{{ (pedido?.anticipo || 0) | number:'1.2-2' }} Bs</strong></span>
+                        </div>
                     </div>
-                    <div class="bg-white/90 rounded-lg p-5 text-center shadow-sm">
-                        <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Anticipo</p>
-                        <p class="text-3xl font-bold text-green-600">{{ pedido?.anticipo | number:'1.2-2' }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Bs</p>
-                    </div>
-                    <div class="bg-gray-900 rounded-lg p-5 text-center shadow-lg">
-                        <p class="text-xs text-yellow-400 font-semibold mb-2 uppercase tracking-wide">Total Pedido</p>
-                        <p class="text-3xl font-bold text-yellow-400">{{ pedido?.totalPedido | number:'1.2-2' }}</p>
-                        <p class="text-xs text-yellow-300 mt-1">Bs</p>
-                    </div>
+                </div>
+                <div class="text-right sm:border-l sm:border-gray-800 sm:pl-6">
+                    <span class="text-[11px] text-gray-400 uppercase tracking-wider block">Total Pedido</span>
+                    <span class="text-xl font-extrabold text-amber-400 font-mono">
+                        {{ (pedido?.totalPedido || 0) | number:'1.2-2' }} Bs
+                    </span>
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
-            <div class="flex justify-end gap-3 pt-8">
-                <button *ngIf="pedido?.idPedido" (click)="irAPrestarHerramientas()"
-                    class="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl">
-                    <i class="ph ph-wrench text-xl text-yellow-400"></i>
-                    Prestar Herramientas para este Pedido
-                </button>
-                <button (click)="cerrarModal()"
-                    class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 font-bold flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105">
-                    <i class="ph ph-x text-xl"></i>
-                    Cerrar
-                </button>
-            </div>
         </div>
+
+        <!-- Botones de Acción / Footer -->
+        <div class="px-6 py-4 bg-white border-t border-gray-200 flex flex-wrap items-center justify-end gap-3 flex-shrink-0">
+            <button *ngIf="pedido?.idPedido" type="button" (click)="irAPrestarHerramientas()"
+                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                <i class="ph ph-wrench text-amber-400 text-sm"></i>
+                Prestar Herramientas
+            </button>
+            <button type="button" (click)="cerrarModal()"
+                class="px-5 py-2 bg-white border border-gray-300 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                <i class="ph ph-x text-sm"></i>
+                Cerrar
+            </button>
+        </div>
+
     </div>
 </div>

@@ -1,274 +1,470 @@
-<!-- Modal de Modificación -->
-<div class="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out"
-    *ngIf="mostrar">
-    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-modal">
+<!-- Modal de Modificación de Solicitud -->
+<div class="fixed inset-0 backdrop-blur-sm bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ease-in-out"
+  *ngIf="mostrar">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-gray-200 animate-fade-in-modal">
 
-        <!-- Header del Modal -->
-        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold text-white">Modificar Solicitud</h2>
-                    <p class="text-yellow-100 text-sm mt-1">Código: {{solicitud?.codSolicitud}}</p>
-                </div>
-                <button (click)="cerrar.emit()" class="text-white hover:text-yellow-200 transition-colors">
-                    <i class="ph ph-x text-xl"></i>
-                </button>
-            </div>
+    <!-- Header del Modal -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+          <i class="ph ph-note-pencil text-xl"></i>
         </div>
-
-        <!-- Contenido del Modal -->
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-            <form [formGroup]="modificacionForm" (ngSubmit)="onGuardar()" class="space-y-6">
-
-                <!-- Información del Cliente (Solo lectura) -->
-                <!-- Información del Cliente -->
-                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
-                    <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
-                        <i class="ph ph-user-circle text-yellow-600 mr-2"></i>
-                        Información del Cliente
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Tipo de cliente -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Cliente</label>
-                            <p class="text-gray-900">{{ solicitud?.cliente?.tipoClientePersonaEmpresa }}</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo</label>
-                            <p class="text-gray-900">{{ solicitud?.cliente?.correo }}</p>
-                        </div>
-                    </div>
-
-                    <hr class="my-3">
-
-                    <!-- Si es Persona -->
-                    <div *ngIf="solicitud?.cliente?.tipoClientePersonaEmpresa === 'Persona'; else empresaInfo">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                <p class="text-gray-900 font-medium">
-                                    {{ solicitud?.cliente?.persona?.name_people }} {{ solicitud?.cliente?.persona?.ap }}
-                                    {{ solicitud?.cliente?.persona?.am }}
-                                </p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">CI</label>
-                                <p class="text-gray-900">{{ solicitud?.cliente?.persona?.ci }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <p class="text-gray-900">{{ solicitud?.cliente?.persona?.phone_number }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Si es Empresa -->
-                    <ng-template #empresaInfo>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
-                                <p class="text-gray-900 font-medium">{{ solicitud?.cliente?.empresa?.razonSocial }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">NIT</label>
-                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.nit }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.telefono }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                                <p class="text-gray-900">{{ solicitud?.cliente?.empresa?.direccion }}</p>
-                            </div>
-                        </div>
-                    </ng-template>
-                </div>
-
-                <!-- Estado de la Solicitud -->
-                <!-- Estado de la Solicitud Mejorado -->
-                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <label class="block text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                        <i class="ph ph-flag text-yellow-600 text-lg"></i>
-                        Estado de la Solicitud *
-                    </label>
-
-                    <div class="px-4 py-3 rounded-lg text-center font-bold text-sm tracking-wide border transition-all duration-200"
-                        [ngClass]="{
-            'bg-yellow-50 text-yellow-800 border-yellow-300': modificacionForm.get('estado')?.value === 'PENDIENTE',
-            'bg-blue-50 text-blue-800 border-blue-300': modificacionForm.get('estado')?.value === 'REVISION',
-            'bg-green-50 text-green-800 border-green-300': modificacionForm.get('estado')?.value === 'COTIZADA',
-            'bg-red-50 text-red-800 border-red-300': modificacionForm.get('estado')?.value === 'CANCELADA'
-        }">
-
-                        <span class="text-base font-semibold">
-                            {{ modificacionForm.get('estado')?.value }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Observaciones -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Observaciones y Notas
-                    </label>
-                    <textarea formControlName="observaciones" rows="4"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                        placeholder="Agregue observaciones, instrucciones especiales o cambios requeridos..."></textarea>
-                </div>
-
-                <!-- Sección de Trabajos -->
-                <div class="border-t pt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <i class="ph ph-hammer text-yellow-600 mr-2"></i>
-                            Trabajos Solicitados
-                        </h3>
-                        <button type="button" (click)="agregarTrabajo()"
-                            class="bg-yellow-500 text-black font-medium py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 flex items-center gap-2 text-sm">
-                            <i class="ph ph-plus"></i>
-                            Agregar Trabajo
-                        </button>
-                    </div>
-
-                    <!-- Lista de Trabajos -->
-                    <div formArrayName="trabajos" class="space-y-4">
-                        <div *ngFor="let trabajo of trabajos.controls; let i = index" [formGroupName]="i"
-                            class="border border-gray-200 rounded-lg p-4 bg-white">
-
-                            <!-- Header del Trabajo -->
-                            <div class="flex justify-between items-center mb-4">
-                                <h4 class="font-medium text-gray-900">Trabajo {{i + 1}}</h4>
-                                <button type="button" (click)="removerTrabajo(i)" *ngIf="trabajos.length > 1"
-                                    class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors">
-                                    <i class="ph ph-trash"></i>
-                                </button>
-                            </div>
-
-                            <!-- Campos del Trabajo -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                <!-- Tipo de Trabajo -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
-                                    <select formControlName="id_trabajo"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
-                                        <option value="">Seleccione trabajo</option>
-                                        <option *ngFor="let trabajo of listTrabajos" [value]="trabajo.id">
-                                            {{ trabajo.nombre }}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Cantidad -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad *</label>
-                                    <input type="number" formControlName="cantidad" min="1"
-                                        (input)="calcularAreaTrabajo(i)"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm">
-                                </div>
-
-                                <!-- Selector de Unidad de Medida -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Unidad de Medida *</label>
-                                    <div class="flex rounded-lg shadow-sm border border-gray-300 overflow-hidden bg-white">
-                                        <button type="button" (click)="cambiarUnidadMedida(i, 'm')"
-                                            [ngClass]="trabajo.get('unidad_medida')?.value === 'm' ? 'bg-yellow-500 text-black font-bold shadow-inner' : 'text-gray-600 hover:bg-gray-100'"
-                                            class="flex-1 py-2 text-xs font-medium text-center transition-colors">
-                                            Metros (m)
-                                        </button>
-                                        <button type="button" (click)="cambiarUnidadMedida(i, 'cm')"
-                                            [ngClass]="trabajo.get('unidad_medida')?.value === 'cm' ? 'bg-yellow-500 text-black font-bold shadow-inner' : 'text-gray-600 hover:bg-gray-100'"
-                                            class="flex-1 py-2 text-xs font-medium text-center border-l border-gray-300 transition-colors">
-                                            Centímetros (cm)
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <!-- Base -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Base ({{ trabajo.get('unidad_medida')?.value || 'm' }}) *
-                                    </label>
-                                    <input type="number" [step]="trabajo.get('unidad_medida')?.value === 'cm' ? '1' : '0.01'" 
-                                        formControlName="base" min="0.01"
-                                        (input)="calcularAreaTrabajo(i)"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
-                                        [placeholder]="trabajo.get('unidad_medida')?.value === 'cm' ? 'Ej: 30' : 'Ej: 1.50'">
-                                </div>
-
-                                <!-- Altura -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Altura ({{ trabajo.get('unidad_medida')?.value || 'm' }}) *
-                                    </label>
-                                    <input type="number" [step]="trabajo.get('unidad_medida')?.value === 'cm' ? '1' : '0.01'" 
-                                        formControlName="altura" min="0.01"
-                                        (input)="calcularAreaTrabajo(i)"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
-                                        [placeholder]="trabajo.get('unidad_medida')?.value === 'cm' ? 'Ej: 20' : 'Ej: 0.80'">
-                                </div>
-
-                                <!-- Área Total del Trabajo -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-600 mb-2">Área Total del Trabajo</label>
-                                    <div class="flex items-center justify-center bg-yellow-50 border border-yellow-200 rounded-lg py-2.5 px-3">
-                                        <span class="text-xl font-bold text-gray-900">
-                                            {{ trabajo.get('area_total')?.value || 0 }}
-                                        </span>
-                                        <span class="ml-1 text-sm text-gray-700 font-medium">m²</span>
-                                        <span *ngIf="trabajo.get('unidad_medida')?.value === 'cm' && (trabajo.get('base')?.value * trabajo.get('altura')?.value) > 0"
-                                              class="text-xs text-gray-500 ml-2">
-                                            ({{ ((trabajo.get('base')?.value * trabajo.get('altura')?.value) * (trabajo.get('cantidad')?.value || 1)) | number:'1.0-2' }} cm²)
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Descripción Adicional -->
-                            <div class="mt-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                                <textarea formControlName="descripcion" rows="2"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
-                                    placeholder="Descripción detallada del trabajo..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mensaje cuando no hay trabajos -->
-                    <div *ngIf="trabajos.length === 0"
-                        class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                        <i class="ph ph-hammer text-4xl text-gray-400 mb-3"></i>
-                        <p class="text-gray-500">No hay trabajos agregados</p>
-                        <p class="text-sm text-gray-400 mt-1">Agregue al menos un trabajo a la solicitud</p>
-                    </div>
-                </div>
-
-                <!-- Mensajes de Error/Éxito -->
-                <div *ngIf="mensajeError" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="ph ph-warning-circle text-red-400 mr-3"></i>
-                        <p class="text-sm text-red-700">{{mensajeError}}</p>
-                    </div>
-                </div>
-
-                <!-- Botones de Acción -->
-                <div class="flex justify-end gap-3 pt-6 border-t">
-                    <button type="button" (click)="cerrar.emit()" [disabled]="guardando"
-                        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
-                        Cancelar
-                    </button>
-
-                    <button type="submit" [disabled]="guardando || modificacionForm.invalid"
-                        class="px-6 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2">
-                        <i class="ph ph-floppy-disk" [class.animate-pulse]="guardando"></i>
-                        {{guardando ? 'Guardando...' : 'Guardar Cambios'}}
-                    </button>
-                </div>
-            </form>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-gray-900">Modificar Solicitud</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200 font-mono">
+              {{ solicitud?.codSolicitud }}
+            </span>
+          </div>
+          <p class="text-gray-500 text-xs mt-0.5">Edite las medidas, requerimientos y especificaciones de la solicitud</p>
         </div>
+      </div>
+      <button type="button" (click)="cerrar.emit()" [disabled]="guardando"
+        class="text-gray-400 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <i class="ph ph-x text-xl"></i>
+      </button>
     </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="modificacionForm" (ngSubmit)="onGuardar()" class="flex flex-col flex-1 overflow-hidden">
+      <!-- Contenido Scrolleable -->
+      <div class="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1">
+
+        <!-- Fila de Metadatos Rápidos -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <!-- Estado -->
+          <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+            <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Estado</span>
+            <span [ngClass]="{
+              'bg-amber-50 text-amber-800 border-amber-200': modificacionForm.get('estado')?.value === 'PENDIENTE' || modificacionForm.get('estado')?.value === 'Pendiente',
+              'bg-blue-50 text-blue-800 border-blue-200': modificacionForm.get('estado')?.value === 'EN_PROCESO' || modificacionForm.get('estado')?.value === 'REVISION',
+              'bg-emerald-50 text-emerald-800 border-emerald-200': modificacionForm.get('estado')?.value === 'COTIZADA' || modificacionForm.get('estado')?.value === 'APROBADO',
+              'bg-rose-50 text-rose-800 border-rose-200': modificacionForm.get('estado')?.value === 'CANCELADA' || modificacionForm.get('estado')?.value === 'RECHAZADO',
+              'bg-gray-50 text-gray-800 border-gray-200': !modificacionForm.get('estado')?.value
+            }" class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold border">
+              {{ modificacionForm.get('estado')?.value || 'PENDIENTE' }}
+            </span>
+          </div>
+
+          <!-- Origen -->
+          <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+            <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Origen</span>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-800">
+              <i class="ph text-sm text-gray-600" [ngClass]="solicitud?.origen === 'LANDING' ? 'ph-globe' : 'ph-desktop'"></i>
+              {{ solicitud?.origen === 'LANDING' ? 'Web / Portal' : 'Sistema Interno' }}
+            </span>
+          </div>
+
+          <!-- Fecha de Registro -->
+          <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+            <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Fecha Registro</span>
+            <p class="text-xs font-semibold text-gray-900 font-mono">
+              {{ solicitud?.fechaSolicitud ? (solicitud.fechaSolicitud | date:'dd/MM/yyyy') : '—' }}
+            </p>
+          </div>
+
+          <!-- Cantidad Trabajos -->
+          <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+            <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Trabajos</span>
+            <p class="text-xs font-bold text-gray-900">
+              {{ trabajos.length }} ítem(s) ({{ calcularTotalUnidades() }} unid.)
+            </p>
+          </div>
+        </div>
+
+        <!-- Ficha 1: Información del Cliente -->
+        <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                <i class="ph ph-user-circle text-base text-gray-500"></i>
+                Información del Cliente
+              </h3>
+              <span class="text-xs font-medium text-gray-500">
+                ({{ getTipoClienteTexto() }})
+              </span>
+              <span *ngIf="esClienteDestacado()" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
+                Destacado
+              </span>
+            </div>
+
+            <!-- Botón Cambiar Cliente -->
+            <button type="button" (click)="toggleCambiarCliente()"
+              class="text-xs text-yellow-700 hover:text-yellow-800 hover:underline font-semibold flex items-center gap-1 transition">
+              <i class="ph" [ngClass]="modoCambiarCliente ? 'ph-x' : 'ph-user-switch'"></i>
+              {{ modoCambiarCliente ? 'Cerrar buscador' : 'Cambiar cliente' }}
+            </button>
+          </div>
+
+          <!-- Buscador de Clientes (Desplegable) -->
+          <div *ngIf="modoCambiarCliente" class="mb-5 p-4 bg-yellow-50/50 border border-yellow-200 rounded-xl space-y-3">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Buscar otro cliente registrado
+            </label>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="queryCliente" [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="buscarClientes()"
+                placeholder="Buscar por nombre, CI, NIT o teléfono..."
+                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white" />
+              <button type="button" (click)="buscarClientes()" [disabled]="buscandoCliente"
+                class="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="ph ph-magnifying-glass" *ngIf="!buscandoCliente"></i>
+                <svg *ngIf="buscandoCliente" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>{{ buscandoCliente ? 'Buscando...' : 'Buscar' }}</span>
+              </button>
+            </div>
+
+            <!-- Resultados -->
+            <div *ngIf="clientesFiltrados.length > 0" class="max-h-48 overflow-y-auto border border-gray-200 bg-white rounded-lg divide-y divide-gray-100 shadow-sm">
+              <div *ngFor="let cl of clientesFiltrados" (click)="seleccionarNuevoCliente(cl)"
+                class="p-3 hover:bg-yellow-50/80 cursor-pointer flex justify-between items-center transition">
+                <div>
+                  <p class="font-medium text-xs text-gray-900">{{ cl.displayName }}</p>
+                  <p class="text-[11px] text-gray-500">{{ cl.tipo }}</p>
+                </div>
+                <span class="text-xs text-yellow-700 font-semibold flex items-center gap-1">
+                  Seleccionar <i class="ph ph-arrow-right"></i>
+                </span>
+              </div>
+            </div>
+
+            <!-- Sin resultados -->
+            <p *ngIf="busquedaRealizada && !buscandoCliente && clientesFiltrados.length === 0" class="text-xs text-gray-500 text-center py-2">
+              No se encontraron clientes con el criterio "{{ queryCliente }}"
+            </p>
+          </div>
+
+          <!-- Grilla de Información del Cliente Actual -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 text-xs">
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">Cliente</span>
+              <p class="font-bold text-gray-900 text-sm">{{ getNombreCliente() }}</p>
+            </div>
+
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">Tipo de Cliente</span>
+              <p class="text-gray-800 font-medium">
+                {{ getTipoClienteTexto() }}
+                <span *ngIf="esClienteDestacado()" class="ml-1 text-[11px] text-amber-700 font-semibold">(Destacado)</span>
+              </p>
+            </div>
+
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">
+                {{ getTipoClienteTexto() === 'Empresa' ? 'NIT' : 'Carnet de Identidad (CI)' }}
+              </span>
+              <p class="text-gray-900 font-medium font-mono">{{ getDocumentoCliente() }}</p>
+            </div>
+
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">Teléfono / Celular</span>
+              <p class="text-gray-900 font-medium font-mono">{{ getTelefonoCliente() }}</p>
+            </div>
+
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">Correo Electrónico</span>
+              <p class="text-gray-900 font-medium">{{ getCorreoCliente() }}</p>
+            </div>
+
+            <div>
+              <span class="text-gray-500 block mb-0.5 font-medium">Dirección</span>
+              <p class="text-gray-900 font-medium">{{ getDireccionCliente() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ficha 2: Trabajos Solicitados -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+                <i class="ph ph-hammer text-base text-gray-500"></i>
+                Trabajos Solicitados ({{ trabajos.length }})
+              </h3>
+              <p class="text-[11px] text-gray-500">Ajuste tipos de letrero, medidas, unidades y fotos de referencia</p>
+            </div>
+
+            <button type="button" (click)="agregarTrabajo()"
+              class="bg-black hover:bg-gray-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+              <i class="ph ph-plus-circle text-base"></i>
+              Agregar Trabajo
+            </button>
+          </div>
+
+          <!-- Lista de Trabajos -->
+          <div formArrayName="trabajos" class="p-5 space-y-5">
+            <div *ngFor="let trabajo of trabajos.controls; let i = index" [formGroupName]="i"
+              class="border border-gray-200 rounded-xl p-5 bg-white shadow-sm transition hover:border-gray-300">
+
+              <!-- Cabecera del Trabajo -->
+              <div class="flex justify-between items-center pb-3 mb-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-xs flex items-center justify-center border border-yellow-300">
+                    {{ i + 1 }}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-900 text-sm">
+                      {{ getNombreTrabajo(trabajo.get('id_trabajo')?.value) }}
+                    </h4>
+                  </div>
+                </div>
+
+                <button type="button" (click)="removerTrabajo(i)" *ngIf="trabajos.length > 1"
+                  title="Eliminar este trabajo"
+                  class="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                  <i class="ph ph-trash text-base"></i>
+                </button>
+              </div>
+
+              <!-- Configuración del Trabajo: Tipo, Cantidad y Unidad -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <!-- Tipo de Trabajo -->
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5">Trabajo / Tipo de Letrero *</label>
+                  <select formControlName="id_trabajo" (change)="onTrabajoChange(i)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs">
+                    <option value="">Seleccione trabajo</option>
+                    <option *ngFor="let t of getTrabajosDisponiblesParaTrabajo(i)" [value]="t.id">
+                      {{ t.nombre }}
+                    </option>
+                  </select>
+                  <div *ngIf="getTrabajosDisponiblesParaTrabajo(i).length === 0 && trabajos.length > 1"
+                    class="text-[11px] text-red-500 mt-1">
+                    ❌ No hay más trabajos disponibles.
+                  </div>
+                </div>
+
+                <!-- Cantidad -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5">Cantidad *</label>
+                  <input type="number" formControlName="cantidad" min="1" (input)="onDimensionesChange(i)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs font-mono">
+                </div>
+
+                <!-- Unidad de Medida (Segmented Toggle m / cm) -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5">Unidad de Medida *</label>
+                  <div class="flex rounded-lg shadow-sm border border-gray-300 overflow-hidden bg-white">
+                    <button type="button" (click)="cambiarUnidadMedida(i, 'm')"
+                      [ngClass]="trabajo.get('unidad_medida')?.value === 'm' ? 'bg-yellow-500 text-black font-bold shadow-inner' : 'text-gray-600 hover:bg-gray-100'"
+                      class="flex-1 py-2 text-xs font-medium text-center transition-colors">
+                      Metros (m)
+                    </button>
+                    <button type="button" (click)="cambiarUnidadMedida(i, 'cm')"
+                      [ngClass]="trabajo.get('unidad_medida')?.value === 'cm' ? 'bg-yellow-500 text-black font-bold shadow-inner' : 'text-gray-600 hover:bg-gray-100'"
+                      class="flex-1 py-2 text-xs font-medium text-center border-l border-gray-300 transition-colors">
+                      Centímetros (cm)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fila de Dimensiones y Área -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <!-- Base -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Base ({{ trabajo.get('unidad_medida')?.value || 'm' }}) *
+                  </label>
+                  <input type="number" [step]="trabajo.get('unidad_medida')?.value === 'cm' ? '1' : '0.01'"
+                    formControlName="base" (input)="onDimensionesChange(i)" min="0.01"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs font-mono"
+                    [placeholder]="trabajo.get('unidad_medida')?.value === 'cm' ? 'Ej: 30' : 'Ej: 1.50'">
+                </div>
+
+                <!-- Altura -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Altura ({{ trabajo.get('unidad_medida')?.value || 'm' }}) *
+                  </label>
+                  <input type="number" [step]="trabajo.get('unidad_medida')?.value === 'cm' ? '1' : '0.01'"
+                    formControlName="altura" (input)="onDimensionesChange(i)" min="0.01"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs font-mono"
+                    [placeholder]="trabajo.get('unidad_medida')?.value === 'cm' ? 'Ej: 20' : 'Ej: 0.80'">
+                </div>
+
+                <!-- Área Unitaria y Total Calculada -->
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-600 mb-1.5">Área Unitaria y Total</label>
+                  <div class="w-full px-3 py-2 bg-gray-100 rounded-lg text-center flex items-center justify-between text-xs">
+                    <div>
+                      <span class="text-gray-500 mr-1">Unitario:</span>
+                      <strong class="text-gray-900 font-mono">{{ trabajo.get('area_total')?.value || 0 }} m²</strong>
+                      <span *ngIf="trabajo.get('unidad_medida')?.value === 'cm' && (trabajo.get('base')?.value * trabajo.get('altura')?.value) > 0"
+                        class="text-[11px] text-gray-500 ml-1">
+                        ({{ (trabajo.get('base')?.value * trabajo.get('altura')?.value) | number:'1.0-2' }} cm²)
+                      </span>
+                    </div>
+                    <div class="border-l border-gray-300 pl-3">
+                      <span class="text-gray-500 mr-1">Línea:</span>
+                      <strong class="text-yellow-800 font-bold font-mono">
+                        {{ ((trabajo.get('area_total')?.value || 0) * (trabajo.get('cantidad')?.value || 1)) | number:'1.2-4' }} m²
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Descripción / Especificaciones específicas -->
+              <div class="mb-4">
+                <label class="block text-xs font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <i class="ph ph-chat-text text-yellow-600"></i>
+                  Descripción o especificaciones del trabajo <span class="text-[11px] text-gray-400 font-normal">(Opcional)</span>
+                </label>
+                <textarea formControlName="descripcion" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs"
+                  placeholder="Detalles sobre diseño, materiales sugeridos, tipo de iluminación, etc..."></textarea>
+              </div>
+
+              <!-- Foto o Diseño de Referencia -->
+              <div class="pt-3 border-t border-gray-100">
+                <label class="block text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <i class="ph ph-image text-yellow-600 text-sm"></i>
+                  Foto o diseño de referencia <span class="text-[11px] text-gray-400 font-normal">(Opcional)</span>
+                </label>
+
+                <!-- Si NO hay imagen -->
+                <div *ngIf="!trabajoPreviews[i]" class="flex items-center gap-3">
+                  <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 bg-yellow-50 hover:bg-yellow-100 text-yellow-900 border border-yellow-300 font-semibold text-xs rounded-lg shadow-sm transition">
+                    <i class="ph ph-upload-simple text-sm"></i>
+                    <span>Subir imagen</span>
+                    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onTrabajoFileSelected($event, i)" class="hidden" />
+                  </label>
+                  <span class="text-[11px] text-gray-500">JPG, PNG, WEBP o GIF (Máx. 5 MB)</span>
+                </div>
+
+                <!-- Si SÍ hay imagen (existente de Cloudinary o preview local) -->
+                <div *ngIf="trabajoPreviews[i]" class="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-200 rounded-lg max-w-md">
+                  <div class="flex items-center gap-3">
+                    <img [src]="trabajoPreviews[i]" alt="Foto de referencia"
+                      (click)="abrirModalImagen(trabajoPreviews[i]!)"
+                      class="w-12 h-12 rounded object-cover border border-gray-300 cursor-pointer hover:opacity-80 transition" />
+                    <div class="text-xs">
+                      <p class="font-medium text-gray-900 truncate max-w-[12rem]">
+                        {{ trabajoFiles[i]?.name || 'Imagen guardada' }}
+                      </p>
+                      <button type="button" (click)="abrirModalImagen(trabajoPreviews[i]!)"
+                        class="text-yellow-700 hover:underline text-[11px] font-semibold inline-flex items-center gap-1 mt-0.5">
+                        <i class="ph ph-magnifying-glass-plus"></i> Ampliar
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="cursor-pointer text-xs text-gray-600 hover:text-gray-900 px-2 py-1 bg-white border border-gray-300 rounded font-medium transition">
+                      Cambiar
+                      <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onTrabajoFileSelected($event, i)" class="hidden" />
+                    </label>
+                    <button type="button" (click)="removeTrabajoFile(i)" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs font-semibold">
+                      Quitar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Resumen numérico al pie de los trabajos -->
+          <div class="bg-gray-50 px-5 py-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600">
+            <span>Trabajos configurados: <strong class="text-gray-900">{{ trabajos.length }} ítem(s) ({{ calcularTotalUnidades() }} unidades en total)</strong></span>
+            <span>Superficie total estimada: <strong class="text-gray-900 font-mono">{{ calcularAreaTotalGeneral() | number:'1.2-2' }} m²</strong></span>
+            <span *ngIf="getTotalImagenesAdjuntas() > 0">Fotos adjuntas: <strong class="text-gray-900">{{ getTotalImagenesAdjuntas() }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Ficha 3: Observaciones Generales -->
+        <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2 flex items-center gap-1.5">
+            <i class="ph ph-notepad text-base text-gray-500"></i>
+            Observaciones Generales de la Solicitud
+          </label>
+          <textarea formControlName="observaciones" rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs"
+            placeholder="Lugar de instalación, accesibilidad, fecha límite requerida u otros requerimientos generales..."></textarea>
+        </div>
+
+        <!-- Ficha 4: Archivo Adjunto General de la Solicitud (si existe) -->
+        <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm" *ngIf="solicitud?.archivoReferencia">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-100">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+              <i class="ph ph-image text-base text-gray-500"></i>
+              Archivo Principal de la Solicitud
+            </h3>
+            <a [href]="solicitud.archivoReferencia" target="_blank" rel="noopener noreferrer"
+              class="text-xs text-yellow-700 hover:text-yellow-800 hover:underline font-semibold inline-flex items-center gap-1">
+              <i class="ph ph-arrow-square-out"></i> Abrir original
+            </a>
+          </div>
+          <div class="flex items-center gap-4">
+            <img [src]="solicitud.archivoReferencia" alt="Foto adjunta"
+              (click)="abrirModalImagen(solicitud.archivoReferencia)"
+              class="h-16 w-16 rounded-lg object-cover border border-gray-300 shadow-sm cursor-pointer hover:opacity-85 transition" />
+            <div class="text-xs text-gray-600 space-y-1">
+              <p class="font-medium text-gray-800">Diseño o especificación adjuntada originalmente por el cliente</p>
+              <button type="button" (click)="abrirModalImagen(solicitud.archivoReferencia)"
+                class="text-yellow-700 hover:underline font-semibold text-[11px] inline-flex items-center gap-1">
+                <i class="ph ph-magnifying-glass-plus"></i> Ampliar imagen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensajes de Error si ocurren -->
+        <div *ngIf="mensajeError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <i class="ph ph-warning-circle text-red-500 text-lg"></i>
+          <p class="text-xs text-red-700 font-medium">{{ mensajeError }}</p>
+        </div>
+
+      </div>
+
+      <!-- Footer del Modal -->
+      <div class="px-6 py-4 border-t border-gray-200 bg-white flex justify-end gap-3 flex-shrink-0">
+        <button type="button" (click)="cerrar.emit()" [disabled]="guardando"
+          class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold text-sm transition">
+          Cancelar
+        </button>
+
+        <button type="submit" [disabled]="guardando || modificacionForm.invalid"
+          class="px-7 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-black rounded-xl font-bold text-sm tracking-wide transition shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <svg *ngIf="guardando" class="animate-spin h-4 w-4 text-black" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <i *ngIf="!guardando" class="ph ph-floppy-disk text-lg"></i>
+          <span>{{ guardando ? 'Guardando cambios...' : 'Guardar Cambios' }}</span>
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- Lightbox Modal para vista previa de imagen en alta resolución -->
+<div *ngIf="imagenModalUrl" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  (click)="cerrarModalImagen()">
+  <div class="relative max-w-3xl w-full bg-white rounded-xl overflow-hidden shadow-2xl p-4"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+      <span class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+        <i class="ph ph-image text-base"></i> Foto de Referencia
+      </span>
+      <button type="button" (click)="cerrarModalImagen()"
+        class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition">
+        <i class="ph ph-x text-base"></i>
+      </button>
+    </div>
+    <div class="flex items-center justify-center bg-gray-100 rounded-lg p-2 max-h-[70vh] overflow-auto">
+      <img [src]="imagenModalUrl" alt="Foto ampliada" class="max-h-[65vh] w-auto max-w-full object-contain rounded" />
+    </div>
+    <div class="pt-3 flex justify-between items-center text-xs text-gray-500">
+      <span>Haga clic fuera para cerrar</span>
+      <a [href]="imagenModalUrl" target="_blank" rel="noopener noreferrer"
+        class="text-yellow-700 hover:underline font-semibold inline-flex items-center gap-1">
+        <i class="ph ph-arrow-square-out"></i> Abrir en tamaño completo
+      </a>
+    </div>
+  </div>
 </div>

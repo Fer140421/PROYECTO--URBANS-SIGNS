@@ -18,6 +18,9 @@ interface ClienteInfo {
   tipoCliente: string;
   tipoClientePersonaEmpresa: string;
   correo: string;
+  telefono?: string;
+  documento?: string;
+  direccion?: string;
 }
 
 interface CotizacionInfo {
@@ -26,6 +29,8 @@ interface CotizacionInfo {
   fechaEmision: string;
   fechaCaducidad: string;
   costoTotal: number;
+  codSolicitud?: string;
+  observaciones?: string;
 }
 
 interface TrabajoCotizado {
@@ -33,6 +38,13 @@ interface TrabajoCotizado {
   cantidad: number;
   costoUnitario: number;
   subtotal: number;
+  base?: number;
+  altura?: number;
+  areaTotal?: number;
+  unidadMedida?: string;
+  material?: string;
+  descripcion?: string;
+  archivoReferencia?: string;
 }
 
 @Component({
@@ -54,6 +66,7 @@ export class AprobarCotizacionComponent implements OnInit {
   isLoading = false;
   mensajeError: string = '';
   mensajeExito: string = '';
+  imagenModalUrl: string | null = null;
 
   pagoForm!: FormGroup;
 
@@ -181,6 +194,45 @@ export class AprobarCotizacionComponent implements OnInit {
     const total = this.confirmacionPedido?.cotizacion?.costoTotal || 0;
     const adelanto = Number(this.pagoForm.get('monto_adelanto')?.value) || 0;
     return Math.max(0, Math.round((total - adelanto) * 100) / 100);
+  }
+
+  getTotalUnidades(): number {
+    if (!this.confirmacionPedido?.trabajos) return 0;
+    return this.confirmacionPedido.trabajos.reduce((total, t) => total + (Number(t.cantidad) || 1), 0);
+  }
+
+  getAreaTotal(): number {
+    if (!this.confirmacionPedido?.trabajos) return 0;
+    return this.confirmacionPedido.trabajos.reduce((total, t) => {
+      const area = Number(t.areaTotal) || 0;
+      const cant = Number(t.cantidad) || 1;
+      return total + (area * cant);
+    }, 0);
+  }
+
+  estaVencida(): boolean {
+    if (!this.confirmacionPedido?.cotizacion?.fechaCaducidad) return false;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fin = new Date(this.confirmacionPedido.cotizacion.fechaCaducidad);
+    return fin < hoy;
+  }
+
+  diasRestantes(): number {
+    if (!this.confirmacionPedido?.cotizacion?.fechaCaducidad) return 0;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fin = new Date(this.confirmacionPedido.cotizacion.fechaCaducidad);
+    const diff = fin.getTime() - hoy.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
   }
 
   obtenerErrorCampo(campo: string): string {

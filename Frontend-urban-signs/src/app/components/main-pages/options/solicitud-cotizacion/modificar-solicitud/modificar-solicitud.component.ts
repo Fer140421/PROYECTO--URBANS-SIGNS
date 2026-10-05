@@ -1,10 +1,12 @@
 import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
 import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.service';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs';
-
+import { ClientesService } from '../../../../../core/services/clientes/clientes.service';
+import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { ClienteBusquedaDTO } from '../../../../../core/models/Clientes/busqueda.model';
 
 @Component({
   selector: 'app-modificar-solicitud',
@@ -16,13 +18,15 @@ import { finalize } from 'rxjs';
 export class ModificarSolicitudComponent implements OnInit, OnChanges {
   private solicitudService = inject(SolicitudService);
   private trabajosService = inject(TrabajosService);
+  private clienteService = inject(ClientesService);
+  private notificationService = inject(NotificationService);
   private fb = inject(FormBuilder);
 
-  // Inputs: Datos que recibe el componente
+  // Inputs
   @Input() mostrar: boolean = false;
   @Input() solicitud: any | null = null;
 
-  // Outputs: Eventos que emite el componente
+  // Outputs
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardado = new EventEmitter<any>();
   @Output() error = new EventEmitter<string>();
@@ -31,9 +35,23 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
   guardando = false;
   mensajeError = '';
   listTrabajos: any[] = [];
+  trabajosDisponibles: any[] = [];
+
+  // Archivos e imágenes
+  trabajoFiles: (File | null)[] = [];
+  trabajoPreviews: (string | null)[] = [];
+  imagenModalUrl: string | null = null;
+
+  // Cliente
+  clienteSeleccionado: any | null = null;
+  clienteDetalle: any | null = null;
+  modoCambiarCliente = false;
+  queryCliente = '';
+  clientesFiltrados: ClienteBusquedaDTO[] = [];
+  buscandoCliente = false;
+  busquedaRealizada = false;
 
   // Formulario
-  idSolicitud!: number;
   modificacionForm!: FormGroup;
 
   ngOnInit(): void {
@@ -42,15 +60,21 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Cuando cambia la solicitud, cargar los datos en el formulario
     if (changes['solicitud'] && this.solicitud) {
       this.cargarDatosEnFormulario(this.solicitud);
     }
 
-    // Cuando se muestra el modal, resetear el estado
     if (changes['mostrar'] && this.mostrar) {
       this.mensajeError = '';
       this.guardando = false;
+      this.modoCambiarCliente = false;
+      this.queryCliente = '';
+      this.clientesFiltrados = [];
+      this.busquedaRealizada = false;
+      this.imagenModalUrl = null;
+      if (this.solicitud) {
+        this.cargarDatosEnFormulario(this.solicitud);
+      }
     }
   }
 
@@ -58,38 +82,15 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
     this.modificacionForm = this.fb.group({
       estado: ['PENDIENTE', Validators.required],
       observaciones: [''],
-      trabajos: this.fb.array([this.crearTrabajoFormGroup()])
+      trabajos: this.fb.array([])
     });
-  }
-
-  private crearTrabajoFormGroup(): FormGroup {
-    return this.fb.group({
-      id_trabajo: ['', Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(1)]],
-      unidad_medida: ['m', Validators.required],
-      base: [0, [Validators.required, Validators.min(0.01)]],
-      altura: [0, [Validators.required, Validators.min(0.01)]],
-      descripcion: [''],
-      area_total: [0],
-      costo_unitario: [0],
-      subtotal: [0]
-    });
-  }
-
-  cambiarUnidadMedida(index: number, nuevaUnidad: 'm' | 'cm'): void {
-    const trabajo = this.trabajos.at(index);
-    if (!trabajo) return;
-    const unidadActual = trabajo.get('unidad_medida')?.value || 'm';
-    if (unidadActual === nuevaUnidad) return;
-
-    trabajo.patchValue({ unidad_medida: nuevaUnidad });
-    this.calcularAreaTrabajo(index);
   }
 
   private cargarTrabajos(): void {
     this.trabajosService.listarSimple().subscribe({
       next: (trabajos) => {
         this.listTrabajos = trabajos;
+        this.actualizarTrabajosDisponibles();
       },
       error: (err) => {
         console.error('Error al cargar trabajos:', err);
@@ -102,141 +103,379 @@ export class ModificarSolicitudComponent implements OnInit, OnChanges {
     return this.modificacionForm.get('trabajos') as FormArray;
   }
 
-  agregarTrabajo(): void {
-    this.trabajos.push(this.crearTrabajoFormGroup());
-  }
-
-  removerTrabajo(index: number): void {
-    if (this.trabajos.length > 1) {
-      this.trabajos.removeAt(index);
+  crearTrabajoFormGroup(data?: any): FormGroup {
+    const unidad = (data?.unidadMedida || data?.unidad_medida || 'm').toLowerCase();
+    const base = Number(data?.base) || 0;
+    const altura = Number(data?.altura) || 0;
+    let areaTotal = Number(data?.areaTotal ?? data?.area_total);
+    if (!areaTotal || isNaN(areaTotal)) {
+      areaTotal = unidad === 'cm' ? (base * altura) / 10000 : base * altura;
+      areaTotal = Number(areaTotal.toFixed(4));
     }
+
+    return this.fb.group({
+      id_trabajo: [data?.idTrabajo || data?.id_trabajo || '', Validators.required],
+      cantidad: [data?.cantidad || 1, [Validators.required, Validators.min(1)]],
+      unidad_medida: [unidad, Validators.required],
+      base: [base, [Validators.required, Validators.min(0.01)]],
+      altura: [altura, [Validators.required, Validators.min(0.01)]],
+      area_total: [{ value: areaTotal, disabled: true }],
+      descripcion: [data?.descripcion || ''],
+      archivoReferencia: [data?.archivoReferencia || null]
+    });
   }
 
-  calcularAreaTrabajo(index: number): void {
+  // ========== GESTIÓN DE CLIENTE ==========
+
+  toggleCambiarCliente(): void {
+    this.modoCambiarCliente = !this.modoCambiarCliente;
+    this.queryCliente = '';
+    this.clientesFiltrados = [];
+    this.busquedaRealizada = false;
+  }
+
+  buscarClientes(): void {
+    const q = this.queryCliente.trim();
+    if (!q) {
+      this.clientesFiltrados = [];
+      this.busquedaRealizada = false;
+      return;
+    }
+    this.buscandoCliente = true;
+    this.busquedaRealizada = true;
+    this.clienteService.buscarClientes(q).subscribe({
+      next: (data) => {
+        this.clientesFiltrados = data || [];
+        this.buscandoCliente = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar clientes:', err);
+        this.buscandoCliente = false;
+      }
+    });
+  }
+
+  seleccionarNuevoCliente(cliente: any): void {
+    this.clienteSeleccionado = {
+      idCliente: cliente.idCliente,
+      displayName: cliente.displayName,
+      tipo: cliente.tipo,
+      tipoClientePersonaEmpresa: cliente.tipo,
+      tipoCliente: cliente.tipo_cliente,
+      nit: cliente.nit,
+      ci: cliente.ci,
+      telefono: cliente.telefono,
+      email: cliente.email,
+      correo: cliente.email,
+      direccion: cliente.direccion
+    };
+    this.modoCambiarCliente = false;
+    this.cargarDetalleCliente(cliente.idCliente);
+  }
+
+  private cargarDetalleCliente(idCliente: number): void {
+    if (!idCliente) return;
+    this.clienteService.obtenerClientePorId(idCliente).subscribe({
+      next: (detalle) => {
+        this.clienteDetalle = detalle;
+      },
+      error: (err) => {
+        console.warn('No se pudo cargar el detalle completo del cliente:', err);
+      }
+    });
+  }
+
+  getNombreCliente(): string {
+    if (this.clienteSeleccionado) {
+      if (this.clienteSeleccionado.displayName) return this.clienteSeleccionado.displayName;
+      if (this.clienteSeleccionado.tipoClientePersonaEmpresa === 'Empresa' || this.clienteSeleccionado.tipo === 'Empresa') {
+        return this.clienteSeleccionado.empresa?.razonSocial || this.clienteSeleccionado.razonSocial || 'Empresa';
+      }
+      const p = this.clienteSeleccionado.persona;
+      if (p) {
+        return `${p.name_people || p.nombre || ''} ${p.ap || ''} ${p.am || ''}`.trim();
+      }
+    }
+    return 'Cliente sin registrar';
+  }
+
+  getDocumentoCliente(): string {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return '—';
+    return c.empresa?.nit || c.persona?.ci || c.nit || c.ci || '—';
+  }
+
+  getTelefonoCliente(): string {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return '—';
+    return c.empresa?.telefono || c.persona?.phone_number || c.persona?.celular || c.telefono || '—';
+  }
+
+  getCorreoCliente(): string {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return '—';
+    return c.correo || c.email || '—';
+  }
+
+  getDireccionCliente(): string {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return '—';
+    return c.empresa?.direccion || c.persona?.address || c.persona?.direccion || c.direccion || '—';
+  }
+
+  getTipoClienteTexto(): string {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return 'Persona Natural';
+    return c.tipoClientePersonaEmpresa || c.tipo || 'Persona Natural';
+  }
+
+  esClienteDestacado(): boolean {
+    const c = this.clienteDetalle || this.clienteSeleccionado;
+    if (!c) return false;
+    return c.tipoCliente === 'destacado' || c.tipo_cliente === 'destacado';
+  }
+
+  // ========== MEDIDAS Y TRABAJOS ==========
+
+  cambiarUnidadMedida(index: number, nuevaUnidad: 'm' | 'cm'): void {
+    const trabajo = this.trabajos.at(index);
+    if (!trabajo) return;
+    const unidadActual = trabajo.get('unidad_medida')?.value || 'm';
+    if (unidadActual === nuevaUnidad) return;
+
+    trabajo.patchValue({ unidad_medida: nuevaUnidad });
+    this.onDimensionesChange(index);
+  }
+
+  onDimensionesChange(index: number): void {
     const trabajo = this.trabajos.at(index);
     if (!trabajo) return;
     const base = Number(trabajo.get('base')?.value) || 0;
     const altura = Number(trabajo.get('altura')?.value) || 0;
-    const cantidad = Number(trabajo.get('cantidad')?.value) || 1;
     const unidad = trabajo.get('unidad_medida')?.value || 'm';
 
     let areaTotal = 0;
     if (unidad === 'cm') {
-      areaTotal = ((base * altura) / 10000) * cantidad;
+      areaTotal = (base * altura) / 10000;
     } else {
-      areaTotal = base * altura * cantidad;
+      areaTotal = base * altura;
     }
 
     areaTotal = Number(areaTotal.toFixed(4));
     trabajo.patchValue({ area_total: areaTotal });
   }
 
-  // ========== CÁLCULOS ==========
-
-  getAreaTotal(): number {
-    return this.trabajos.controls.reduce((total, trabajo) => {
-      return total + (trabajo.get('area_total')?.value || 0);
-    }, 0);
+  onTrabajoChange(index: number): void {
+    this.actualizarTrabajosDisponibles();
   }
 
-  getCostoTotal(): number {
-    return this.trabajos.controls.reduce((total, trabajo) => {
-      return total + (trabajo.get('subtotal')?.value || 0);
-    }, 0);
-  }
-
-  // ========== MÉTODOS PRINCIPALES ==========
-
-  private cargarDatosEnFormulario(solicitud: any): void {
-    console.log('Cargando solicitud:', solicitud);
-
-    // Limpiar trabajos existentes
-    while (this.trabajos.length !== 0) {
-      this.trabajos.removeAt(0);
-    }
-
-    // Cargar datos principales
-    this.modificacionForm.patchValue({
-      estado: solicitud.estado,
-      prioridad: solicitud.prioridad,
-      observaciones: solicitud.observaciones
+  private actualizarTrabajosDisponibles(): void {
+    const seleccionados = new Set<number>();
+    this.trabajos.controls.forEach(ctrl => {
+      const id = ctrl.get('id_trabajo')?.value;
+      if (id) seleccionados.add(Number(id));
     });
 
-    // Guardar la solicitud actual para el template
-    this.solicitud = solicitud;
+    this.trabajosDisponibles = this.listTrabajos.filter(t => !seleccionados.has(t.id));
+  }
 
-    // Cargar trabajos
-    if (solicitud.trabajos && solicitud.trabajos.length > 0) {
-      solicitud.trabajos.forEach((trabajo: any) => {
-        const trabajoForm = this.crearTrabajoFormGroup();
-        trabajoForm.patchValue({
-          id_trabajo: trabajo.idTrabajo,
-          cantidad: trabajo.cantidad,
-          unidad_medida: trabajo.unidadMedida || 'm',
-          base: trabajo.base,
-          altura: trabajo.altura,
-          descripcion: trabajo.descripcion,
-          area_total: trabajo.areaTotal
-        });
-        this.trabajos.push(trabajoForm);
-      });
+  getTrabajosDisponiblesParaTrabajo(index: number): any[] {
+    const seleccionadosEnOtros = new Set<number>();
+    this.trabajos.controls.forEach((ctrl, i) => {
+      if (i !== index) {
+        const id = ctrl.get('id_trabajo')?.value;
+        if (id) seleccionadosEnOtros.add(Number(id));
+      }
+    });
 
-    } else {
-      this.trabajos.push(this.crearTrabajoFormGroup());
+    return this.listTrabajos.filter(t => !seleccionadosEnOtros.has(t.id));
+  }
+
+  getNombreTrabajo(idTrabajo: any): string {
+    if (!idTrabajo) return 'Seleccione un trabajo';
+    const numId = Number(idTrabajo);
+    const trabajo = this.listTrabajos.find(t => t.id === numId || t.idTrabajo === numId);
+    return trabajo ? (trabajo.nombre || trabajo.nombreTrabajo) : `Trabajo #${idTrabajo}`;
+  }
+
+  agregarTrabajo(): void {
+    this.trabajos.push(this.crearTrabajoFormGroup());
+    this.trabajoFiles.push(null);
+    this.trabajoPreviews.push(null);
+    this.actualizarTrabajosDisponibles();
+  }
+
+  removerTrabajo(index: number): void {
+    if (this.trabajos.length > 1) {
+      this.trabajos.removeAt(index);
+      this.trabajoFiles.splice(index, 1);
+      this.trabajoPreviews.splice(index, 1);
+      this.actualizarTrabajosDisponibles();
     }
   }
 
+  // ========== FOTOS / IMÁGENES ==========
+
+  onTrabajoFileSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        this.notificationService.error('Formato no permitido. Use JPG, PNG, WEBP o GIF.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.notificationService.error('La imagen no debe superar los 5 MB.');
+        return;
+      }
+      this.trabajoFiles[index] = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.trabajoPreviews[index] = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeTrabajoFile(index: number): void {
+    this.trabajoFiles[index] = null;
+    this.trabajoPreviews[index] = null;
+    const trabajo = this.trabajos.at(index);
+    if (trabajo) {
+      trabajo.patchValue({ archivoReferencia: null });
+    }
+  }
+
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
+  }
+
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
+  }
+
+  // ========== TOTALES Y RESÚMENES ==========
+
+  calcularTotalUnidades(): number {
+    return this.trabajos.controls.reduce((sum, ctrl) => sum + (Number(ctrl.get('cantidad')?.value) || 0), 0);
+  }
+
+  calcularAreaTotalGeneral(): number {
+    return this.trabajos.controls.reduce((sum, ctrl) => {
+      const area = Number(ctrl.get('area_total')?.value) || 0;
+      const cant = Number(ctrl.get('cantidad')?.value) || 1;
+      return sum + (area * cant);
+    }, 0);
+  }
+
+  getTotalImagenesAdjuntas(): number {
+    return this.trabajoPreviews.filter(p => !!p).length;
+  }
+
+  // ========== CARGA Y GUARDADO ==========
+
+  private cargarDatosEnFormulario(solicitud: any): void {
+    this.solicitud = solicitud;
+    this.clienteSeleccionado = solicitud.cliente;
+    this.clienteDetalle = null;
+
+    if (solicitud.cliente?.idCliente) {
+      this.cargarDetalleCliente(solicitud.cliente.idCliente);
+    }
+
+    this.modificacionForm.patchValue({
+      estado: solicitud.estado || 'PENDIENTE',
+      observaciones: solicitud.observaciones || ''
+    });
+
+    this.trabajos.clear();
+    this.trabajoFiles = [];
+    this.trabajoPreviews = [];
+
+    if (solicitud.trabajos && solicitud.trabajos.length > 0) {
+      solicitud.trabajos.forEach((trabajo: any) => {
+        this.trabajos.push(this.crearTrabajoFormGroup(trabajo));
+        this.trabajoFiles.push(null);
+        this.trabajoPreviews.push(trabajo.archivoReferencia || null);
+      });
+    } else {
+      this.trabajos.push(this.crearTrabajoFormGroup());
+      this.trabajoFiles.push(null);
+      this.trabajoPreviews.push(null);
+    }
+
+    this.actualizarTrabajosDisponibles();
+  }
 
   onGuardar(): void {
     if (this.guardando) return;
 
+    if (this.modificacionForm.invalid) {
+      this.marcarControlesComoSucios();
+      this.notificationService.error('Por favor complete todos los campos requeridos correctamente.');
+      return;
+    }
+
+    const idClienteFinal = this.clienteSeleccionado?.idCliente ||
+                           this.clienteSeleccionado?.id_cliente ||
+                           this.solicitud?.cliente?.idCliente ||
+                           this.solicitud?.cliente?.id_cliente;
+
+    if (!idClienteFinal) {
+      this.notificationService.error('Debe haber un cliente seleccionado');
+      return;
+    }
+
+    const formVal = this.modificacionForm.getRawValue();
+
     const request = {
-      idCliente: this.solicitud.cliente.idCliente,
-      observaciones: this.modificacionForm.get('observaciones')?.value,
-      trabajos: this.trabajos.value.map((t: any) => ({
-        idTrabajo: t.id_trabajo,
-        cantidad: t.cantidad,
-        base: t.base,
-        altura: t.altura,
+      codSolicitud: this.solicitud.codSolicitud,
+      idCliente: idClienteFinal,
+      observaciones: formVal.observaciones || '',
+      archivoReferencia: this.solicitud.archivoReferencia || null,
+      trabajos: formVal.trabajos.map((t: any, index: number) => ({
+        idTrabajo: Number(t.id_trabajo),
+        cantidad: Number(t.cantidad),
+        base: Number(t.base),
+        altura: Number(t.altura),
         unidadMedida: t.unidad_medida || 'm',
-        descripcion: t.descripcion
+        descripcion: t.descripcion ? t.descripcion.trim() : '',
+        archivoReferencia: this.trabajoFiles[index] ? null : (t.archivoReferencia || this.trabajoPreviews[index] || null)
       }))
     };
 
-    console.log('Request enviado al backend:', request);
-
     this.guardando = true;
+    this.mensajeError = '';
 
-    this.solicitudService.modificarSolicitud(this.solicitud.idSolicitud, request).pipe(
+    this.solicitudService.modificarSolicitud(this.solicitud.idSolicitud, request, null, this.trabajoFiles).pipe(
       finalize(() => this.guardando = false)
     ).subscribe({
       next: (response) => {
-        console.log('Solicitud modificada correctamente:', response);
-        this.guardando = false;
+        this.notificationService.success('Solicitud modificada exitosamente');
         this.guardado.emit(response);
         this.cerrar.emit();
       },
       error: (err) => {
         console.error('Error al modificar la solicitud:', err);
-        this.guardando = false;
-        this.error.emit('No se pudo modificar la solicitud');
+        const msg = err?.error?.message || err?.message || 'No se pudo modificar la solicitud';
+        this.mensajeError = msg;
+        this.notificationService.error(msg);
+        this.error.emit(msg);
       }
     });
   }
 
   private marcarControlesComoSucios(): void {
     Object.keys(this.modificacionForm.controls).forEach(key => {
-      const control = this.modificacionForm.get(key);
-      control?.markAsTouched();
+      this.modificacionForm.get(key)?.markAsTouched();
     });
 
     this.trabajos.controls.forEach(trabajo => {
       const grupo = trabajo as FormGroup;
       Object.keys(grupo.controls).forEach(key => {
-        const control = grupo.get(key);
-        control?.markAsTouched();
+        grupo.get(key)?.markAsTouched();
       });
     });
   }
-
 }

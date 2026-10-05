@@ -1,7 +1,6 @@
-import { Component, EventEmitter, inject, Input, Output, SimpleChanges } from '@angular/core';
-import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.service';
-import { FormArray, FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-detalles-cotizacion',
@@ -15,67 +14,60 @@ export class DetallesCotizacionComponent {
   @Input() cotizacion: any | null = null;
   @Output() cerrar = new EventEmitter<void>();
 
-  ngOnInit(): void {
-    // Inicialización si es necesaria
+  imagenModalUrl: string | null = null;
+
+  cerrarModal(): void {
+    this.cerrar.emit();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['cotizacion'] && this.cotizacion) {
-      console.log('Cotización cargada:', this.cotizacion);
-    }
+  abrirModalImagen(url: string): void {
+    this.imagenModalUrl = url;
   }
 
-  /**
-   * Obtiene el costo total de todos los trabajos
-   */
-  getCostoTotal(): number {
+  cerrarModalImagen(): void {
+    this.imagenModalUrl = null;
+  }
+
+  getClienteNombre(): string {
+    return this.cotizacion?.clienteNombre || this.cotizacion?.cliente?.nombre || 'Cliente sin registrar';
+  }
+
+  getClienteTipo(): string {
+    return this.cotizacion?.clienteTipo || this.cotizacion?.cliente?.tipoCliente || 'Persona Natural';
+  }
+
+  getClienteDocumento(): string {
+    return this.cotizacion?.clienteDocumento || this.cotizacion?.cliente?.documento || '—';
+  }
+
+  getClienteTelefono(): string {
+    return this.cotizacion?.clienteTelefono || this.cotizacion?.cliente?.telefono || '—';
+  }
+
+  getClienteCorreo(): string {
+    return this.cotizacion?.clienteCorreo || this.cotizacion?.cliente?.correo || '—';
+  }
+
+  getClienteDireccion(): string {
+    return this.cotizacion?.clienteDireccion || this.cotizacion?.cliente?.direccion || '—';
+  }
+
+  getTotalUnidades(): number {
     if (!this.cotizacion?.trabajos) return 0;
     return this.cotizacion.trabajos.reduce((total: number, trabajo: any) => {
-      return total + (trabajo.subtotal || 0);
+      return total + (Number(trabajo.cantidad) || 1);
     }, 0);
   }
-  /**
-   * Obtiene el total de materiales usados en todos los trabajos
-   */
-  getTotalMateriales(): number {
+
+  getAreaTotal(): number {
     if (!this.cotizacion?.trabajos) return 0;
     return this.cotizacion.trabajos.reduce((total: number, trabajo: any) => {
-      if (!trabajo.materiales) return total;
-      return total + trabajo.materiales.length;
+      const area = Number(trabajo.area_total || trabajo.areaTotal) || 0;
+      const cant = Number(trabajo.cantidad) || 1;
+      return total + (area * cant);
     }, 0);
   }
 
-  /**
-   * Calcula el costo total de materiales
-   */
-  getCostoTotalMateriales(): number {
-    if (!this.cotizacion?.trabajos) return 0;
-    let total = 0;
-    this.cotizacion.trabajos.forEach((trabajo: any) => {
-      if (trabajo.materiales && trabajo.materiales.length > 0) {
-        trabajo.materiales.forEach((material: any) => {
-          total += (material.cantidad || 0) * (material.precioUnitario || 0);
-        });
-      }
-    });
-    return total;
-  }
-
-  /**
-   * Formatea una fecha al formato dd/MM/yyyy
-   */
-  formatearFecha(fecha: string): string {
-    if (!fecha) return 'N/A';
-    const date = new Date(fecha);
-    const dia = date.getDate().toString().padStart(2, '0');
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-    const anio = date.getFullYear();
-    return `${dia}/${mes}/${anio}`;
-  }
-
-  /**
-   * Verifica si la cotización está vencida
-   */
   estaVencida(): boolean {
     if (!this.cotizacion?.fechaCaducado) return false;
     const hoy = new Date();
@@ -83,21 +75,13 @@ export class DetallesCotizacionComponent {
     return hoy > fechaCaducidad;
   }
 
-  /**
-   * Calcula los días restantes hasta la caducidad
-   */
   diasRestantes(): number {
     if (!this.cotizacion?.fechaCaducado) return 0;
     const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
     const fechaCaducidad = new Date(this.cotizacion.fechaCaducado);
+    fechaCaducidad.setHours(0, 0, 0, 0);
     const diferencia = fechaCaducidad.getTime() - hoy.getTime();
     return Math.ceil(diferencia / (1000 * 3600 * 24));
   }
-
-  /**
-   * Cierra el modal
-   */
-  cerrarModal(): void {
-    this.cerrar.emit();
-  }  
 }

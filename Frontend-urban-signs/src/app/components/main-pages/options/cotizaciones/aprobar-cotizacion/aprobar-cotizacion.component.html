@@ -1,54 +1,33 @@
-<div class="min-h-screen bg-slate-50/75 py-8 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-7xl mx-auto space-y-6">
+<div class="min-h-screen bg-gray-50/75 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto space-y-6">
 
-    <!-- Barra Superior: Navegación y Acciones -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
+    <!-- Header y Navegación Superior -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-gray-200">
       <div class="flex items-center gap-3">
-        <button (click)="cancelar()"
-          class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition shadow-sm">
-          <i class="ph ph-arrow-left text-lg font-bold"></i>
-        </button>
         <div>
-          <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-            <span class="hover:text-slate-800 cursor-pointer" (click)="cancelar()">Cotizaciones</span>
-            <i class="ph ph-caret-right text-[10px]"></i>
-            <span class="text-amber-600 font-semibold">Aprobar y Generar Pedido</span>
-          </nav>
           <div class="flex items-center gap-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
               Aprobar Cotización
             </h1>
             <span *ngIf="confirmacionPedido?.cotizacion?.codigo"
-              class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm">
+              class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 font-mono shadow-sm">
               {{ confirmacionPedido?.cotizacion?.codigo }}
             </span>
           </div>
         </div>
       </div>
-
-      <div class="flex items-center gap-2 w-full sm:w-auto">
-        <button type="button" (click)="imprimirCotizacion()"
-          class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
-          <i class="ph ph-printer text-lg"></i>
-          <span>Imprimir</span>
-        </button>
-        <button type="button" (click)="cancelar()"
-          class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold shadow-sm transition">
-          Volver
-        </button>
-      </div>
     </div>
 
-    <!-- Alertas y Mensajes -->
-    <div *ngIf="mensajeExito" class="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 flex items-center gap-3 shadow-sm animate-fade-in">
+    <!-- Alertas y Mensajes de Retroalimentación -->
+    <div *ngIf="mensajeExito" class="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 flex items-center gap-3 shadow-sm">
       <i class="ph ph-check-circle text-2xl text-emerald-600 shrink-0"></i>
       <div>
-        <p class="font-bold text-sm">Operación exitosa</p>
+        <p class="font-bold text-sm">Operación Exitosa</p>
         <p class="text-xs text-emerald-800">{{ mensajeExito }}</p>
       </div>
     </div>
 
-    <div *ngIf="mensajeError" class="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-900 flex items-center gap-3 shadow-sm animate-fade-in">
+    <div *ngIf="mensajeError" class="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 flex items-center gap-3 shadow-sm">
       <i class="ph ph-warning-circle text-2xl text-rose-600 shrink-0"></i>
       <div>
         <p class="font-bold text-sm">Atención requerida</p>
@@ -56,378 +35,478 @@
       </div>
     </div>
 
-    <!-- Loading Skeleton / Spinner -->
-    <div *ngIf="isLoading && !confirmacionPedido" class="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
-      <i class="ph ph-spinner text-4xl text-amber-500 animate-spin mx-auto mb-3"></i>
-      <p class="text-slate-600 font-medium">Cargando datos de la cotización...</p>
+    <!-- Skeleton de Carga -->
+    <div *ngIf="isLoading && !confirmacionPedido" class="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-200">
+      <i class="ph ph-spinner text-4xl text-yellow-500 animate-spin mx-auto mb-3"></i>
+      <p class="text-gray-700 font-semibold text-base">Cargando información completa de la cotización...</p>
+      <p class="text-gray-400 text-xs mt-1">Por favor espere un momento</p>
     </div>
 
-    <!-- Contenido Principal (2 Columnas) -->
-    <div *ngIf="confirmacionPedido" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Flujo Vertical Principal (Arriba hacia Abajo) -->
+    <div *ngIf="confirmacionPedido" class="space-y-6">
 
-      <!-- Columna Izquierda: Información, Trabajos y Configuración de Pago (8 columnas) -->
-      <div class="lg:col-span-8 space-y-6">
+      <!-- Fila de Metadatos Rápidos (4 Tarjetas) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Estado de la Cotización -->
+        <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+          <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Estado Cotización</span>
+          <span [ngClass]="estaVencida() ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'"
+            class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold border">
+            {{ estaVencida() ? 'CADUCADA' : 'VIGENTE' }}
+          </span>
+        </div>
 
-        <!-- Card 1: Ficha del Cliente y Datos de Cotización -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <i class="ph ph-user-circle text-xl text-amber-400"></i>
-              <h2 class="font-bold text-sm uppercase tracking-wide">Cliente y Vigencia</h2>
-            </div>
-            <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-700/80 text-slate-200">
-              ID: #{{ confirmacionPedido.cotizacion.idCotizacion }}
+        <!-- Solicitud Base -->
+        <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+          <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Solicitud Base</span>
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-800 font-mono">
+            <i class="ph ph-file-text text-sm text-gray-500"></i>
+            {{ confirmacionPedido.cotizacion.codSolicitud || 'Directa' }}
+          </span>
+        </div>
+
+        <!-- Fecha Emisión -->
+        <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+          <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Fecha Emisión</span>
+          <p class="text-xs font-semibold text-gray-900 font-mono">
+            {{ confirmacionPedido.cotizacion.fechaEmision ? (confirmacionPedido.cotizacion.fechaEmision | date:'dd/MM/yyyy') : '—' }}
+          </p>
+        </div>
+
+        <!-- Vigencia / Vencimiento -->
+        <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm">
+          <span class="text-[11px] font-medium text-gray-500 block mb-1 uppercase tracking-wider">Vigencia</span>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold font-mono" [ngClass]="estaVencida() ? 'text-rose-700' : 'text-gray-900'">
+              {{ confirmacionPedido.cotizacion.fechaCaducidad ? (confirmacionPedido.cotizacion.fechaCaducidad | date:'dd/MM/yyyy') : '—' }}
+            </p>
+            <span *ngIf="estaVencida()" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">
+              Vencida
+            </span>
+            <span *ngIf="!estaVencida() && diasRestantes() >= 0" class="text-[10px] font-medium text-gray-500">
+              ({{ diasRestantes() }}d restantes)
             </span>
           </div>
-
-          <div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="sm:col-span-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase">Cliente</span>
-              <p class="text-base font-bold text-slate-900 mt-0.5 truncate">
-                {{ confirmacionPedido.cliente.nombre }}
-              </p>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                  {{ confirmacionPedido.cliente.tipoCliente || 'Persona' }}
-                </span>
-                <span class="text-xs text-slate-500 truncate" *ngIf="confirmacionPedido.cliente.correo">
-                  {{ confirmacionPedido.cliente.correo }}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <span class="text-xs font-semibold text-slate-400 uppercase">Fecha Emisión</span>
-              <p class="text-sm font-bold text-slate-800 mt-0.5">
-                {{ confirmacionPedido.cotizacion.fechaEmision | date:'dd/MM/yyyy' }}
-              </p>
-              <span class="text-[11px] text-slate-500">Documento base</span>
-            </div>
-
-            <div>
-              <span class="text-xs font-semibold text-slate-400 uppercase">Vencimiento</span>
-              <p class="text-sm font-bold text-amber-700 mt-0.5">
-                {{ confirmacionPedido.cotizacion.fechaCaducidad | date:'dd/MM/yyyy' }}
-              </p>
-              <span class="text-[11px] text-amber-600 font-medium">Cotización vigente</span>
-            </div>
-          </div>
         </div>
-
-        <!-- Card 2: Desglose de Trabajos Cotizados -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <i class="ph ph-hammer text-xl text-amber-600"></i>
-              <h2 class="font-bold text-slate-800 text-sm uppercase tracking-wide">
-                Trabajos Incluidos en Producción ({{ confirmacionPedido.trabajos.length }})
-              </h2>
-            </div>
-            <span class="text-xs font-semibold text-slate-500">
-              Total cotizado: <strong class="text-slate-900 font-bold">Bs. {{ confirmacionPedido.cotizacion.costoTotal | number:'1.2-2' }}</strong>
-            </span>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-600">
-              <thead class="bg-slate-50/50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th scope="col" class="py-3 px-6">#</th>
-                  <th scope="col" class="py-3 px-6">Descripción del Trabajo</th>
-                  <th scope="col" class="py-3 px-6 text-center">Cantidad</th>
-                  <th scope="col" class="py-3 px-6 text-right">Precio Unitario</th>
-                  <th scope="col" class="py-3 px-6 text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr *ngFor="let item of confirmacionPedido.trabajos; let idx = index" class="hover:bg-slate-50/75 transition">
-                  <td class="py-4 px-6 font-semibold text-slate-400 text-xs">{{ idx + 1 }}</td>
-                  <td class="py-4 px-6">
-                    <p class="font-bold text-slate-900">{{ item.nombre }}</p>
-                    <span class="text-xs text-slate-400">Trabajo para orden de producción</span>
-                  </td>
-                  <td class="py-4 px-6 text-center">
-                    <span class="inline-block px-2.5 py-1 rounded-lg bg-slate-100 font-bold text-slate-800 text-xs">
-                      {{ item.cantidad }}
-                    </span>
-                  </td>
-                  <td class="py-4 px-6 text-right font-medium text-slate-700">
-                    Bs. {{ item.costoUnitario | number:'1.2-2' }}
-                  </td>
-                  <td class="py-4 px-6 text-right font-bold text-slate-900">
-                    Bs. {{ item.subtotal | number:'1.2-2' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Card 3: Formulario de Pago y Condiciones de Inicio -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
-          <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
-              <i class="ph ph-credit-card text-2xl"></i>
-            </div>
-            <div>
-              <h2 class="text-lg font-bold text-slate-900">Condiciones de Pago y Anticipo</h2>
-              <p class="text-xs text-slate-500">Seleccione el método de pago e ingrese el anticipo para iniciar en taller</p>
-            </div>
-          </div>
-
-          <form [formGroup]="pagoForm" class="space-y-6">
-
-            <!-- Selector Visual de Método de Pago -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-3">
-                1. Método de Pago del Anticipo *
-              </label>
-
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <!-- Efectivo -->
-                <button type="button" (click)="seleccionarMetodoPago('EFECTIVO')"
-                  [ngClass]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO' ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-400' : 'border-slate-200 hover:border-slate-300 bg-white'"
-                  class="p-4 rounded-xl border-2 text-left transition relative group">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                      <i class="ph ph-money text-2xl font-bold"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-slate-900 text-sm">Efectivo</h4>
-                      <p class="text-xs text-slate-500">Cobro en caja</p>
-                    </div>
-                  </div>
-                  <i *ngIf="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
-                    class="ph ph-check-circle text-xl text-emerald-600 absolute top-3 right-3 font-bold"></i>
-                </button>
-
-                <!-- QR Simple -->
-                <button type="button" (click)="seleccionarMetodoPago('QR')"
-                  [ngClass]="pagoForm.get('metodo_pago')?.value === 'QR' ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-400' : 'border-slate-200 hover:border-slate-300 bg-white'"
-                  class="p-4 rounded-xl border-2 text-left transition relative group">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                      <i class="ph ph-qr-code text-2xl font-bold"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-slate-900 text-sm">QR Simple</h4>
-                      <p class="text-xs text-slate-500">Transferencia QR</p>
-                    </div>
-                  </div>
-                  <i *ngIf="pagoForm.get('metodo_pago')?.value === 'QR'"
-                    class="ph ph-check-circle text-xl text-purple-600 absolute top-3 right-3 font-bold"></i>
-                </button>
-
-                <!-- Transferencia Bancaria -->
-                <button type="button" (click)="seleccionarMetodoPago('TRANSFERENCIA')"
-                  [ngClass]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-400' : 'border-slate-200 hover:border-slate-300 bg-white'"
-                  class="p-4 rounded-xl border-2 text-left transition relative group">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                      <i class="ph ph-bank text-2xl font-bold"></i>
-                    </div>
-                    <div>
-                      <h4 class="font-bold text-slate-900 text-sm">Transferencia</h4>
-                      <p class="text-xs text-slate-500">Depósito / Banco</p>
-                    </div>
-                  </div>
-                  <i *ngIf="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
-                    class="ph ph-check-circle text-xl text-blue-600 absolute top-3 right-3 font-bold"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Entrada de Anticipo con Botones Rápidos -->
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">
-                  2. Monto de Anticipo / Adelanto *
-                </label>
-                <span class="text-xs text-slate-500 font-medium">
-                  Mínimo obligatorio: <strong class="text-slate-800">30% (Bs. {{ calcularMinimoAdelanto() | number:'1.2-2' }})</strong>
-                </span>
-              </div>
-
-              <!-- Atajos de selección rápida -->
-              <div class="grid grid-cols-3 gap-2 mb-3">
-                <button type="button" (click)="seleccionarPorcentajeAdelanto(30)"
-                  class="py-2 px-3 rounded-lg border text-xs font-bold transition flex items-center justify-center gap-1.5"
-                  [ngClass]="calcularPorcentajeAdelanto() === 30 ? 'bg-amber-100 border-amber-400 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'">
-                  <span>30% Mínimo</span>
-                  <span class="text-[10px] opacity-75 font-normal">(Bs. {{ calcularMontoPorcentaje(30) | number:'1.0-0' }})</span>
-                </button>
-
-                <button type="button" (click)="seleccionarPorcentajeAdelanto(50)"
-                  class="py-2 px-3 rounded-lg border text-xs font-bold transition flex items-center justify-center gap-1.5"
-                  [ngClass]="calcularPorcentajeAdelanto() === 50 ? 'bg-emerald-100 border-emerald-400 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'">
-                  <span>50% Recomendado</span>
-                  <span class="text-[10px] opacity-75 font-normal">(Bs. {{ calcularMontoPorcentaje(50) | number:'1.0-0' }})</span>
-                </button>
-
-                <button type="button" (click)="seleccionarPorcentajeAdelanto(100)"
-                  class="py-2 px-3 rounded-lg border text-xs font-bold transition flex items-center justify-center gap-1.5"
-                  [ngClass]="calcularPorcentajeAdelanto() === 100 ? 'bg-blue-100 border-blue-400 text-blue-900' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'">
-                  <span>100% Total</span>
-                  <span class="text-[10px] opacity-75 font-normal">(Bs. {{ calcularMontoPorcentaje(100) | number:'1.0-0' }})</span>
-                </button>
-              </div>
-
-              <!-- Input numérico principal -->
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg select-none">
-                  Bs.
-                </span>
-                <input type="number" formControlName="monto_adelanto" step="0.01" min="0"
-                  [max]="confirmacionPedido.cotizacion.costoTotal"
-                  class="w-full pl-14 pr-24 py-3.5 text-2xl font-extrabold text-slate-900 rounded-xl border-2 bg-slate-50 focus:bg-white focus:outline-none transition"
-                  [ngClass]="campoEsInvalido('monto_adelanto') ? 'border-rose-400 focus:border-rose-500' : 'border-slate-300 focus:border-amber-500'" />
-
-                <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                  <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold"
-                    [ngClass]="calcularPorcentajeAdelanto() >= 50 ? 'bg-emerald-100 text-emerald-800' : (calcularPorcentajeAdelanto() >= 30 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')">
-                    {{ calcularPorcentajeAdelanto() }}%
-                  </span>
-                </div>
-              </div>
-
-              <!-- Barra de progreso interactiva -->
-              <div class="mt-3">
-                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div class="h-2 rounded-full transition-all duration-300"
-                    [style.width.%]="calcularPorcentajeAdelanto()"
-                    [ngClass]="calcularPorcentajeAdelanto() >= 50 ? 'bg-emerald-500' : (calcularPorcentajeAdelanto() >= 30 ? 'bg-amber-500' : 'bg-rose-500')">
-                  </div>
-                </div>
-                <div class="flex items-center justify-between text-xs text-slate-500 mt-1.5 font-medium">
-                  <span>0%</span>
-                  <span class="text-amber-700 font-semibold">Min 30%</span>
-                  <span class="text-emerald-700 font-semibold">50%</span>
-                  <span>100%</span>
-                </div>
-              </div>
-
-              <!-- Mensaje de error de validación -->
-              <p *ngIf="campoEsInvalido('monto_adelanto')" class="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1.5">
-                <i class="ph ph-warning-circle text-base"></i>
-                {{ obtenerErrorCampo('monto_adelanto') }}
-              </p>
-            </div>
-
-            <!-- Observaciones para el Taller -->
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">
-                  3. Observaciones / Instrucciones de Producción (Opcional)
-                </label>
-                <span class="text-[11px] text-slate-400">
-                  {{ pagoForm.get('observaciones')?.value?.length || 0 }}/500
-                </span>
-              </div>
-              <textarea formControlName="observaciones" rows="3" maxlength="500"
-                placeholder="Instrucciones para el taller o requerimientos de entrega (ej: prioridad alta, embalaje reforzado, retiro en tienda...)"
-                class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition"></textarea>
-            </div>
-
-          </form>
-        </div>
-
       </div>
 
-      <!-- Columna Derecha: Tarjeta Ejecutiva de Resumen Financiero y Confirmación (4 columnas, Sticky) -->
-      <div class="lg:col-span-4 sticky top-6 space-y-4">
+      <!-- Ficha 1: Información del Cliente -->
+      <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+            <i class="ph ph-user-circle text-base text-gray-500"></i>
+            Información del Cliente
+          </h2>
+          <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
+            {{ confirmacionPedido.cliente.tipoClientePersonaEmpresa || confirmacionPedido.cliente.tipoCliente || 'Cliente Registrado' }}
+          </span>
+        </div>
 
-        <div class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 text-white rounded-2xl shadow-xl p-6 border border-slate-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-xs">
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Cliente / Razón Social</span>
+            <p class="font-bold text-gray-900 text-sm truncate">{{ confirmacionPedido.cliente.nombre }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Tipo de Cliente</span>
+            <p class="text-gray-800 font-medium">{{ confirmacionPedido.cliente.tipoClientePersonaEmpresa || confirmacionPedido.cliente.tipoCliente || 'Persona' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Documento (CI / NIT)</span>
+            <p class="text-gray-900 font-medium font-mono">{{ confirmacionPedido.cliente.documento || 'No registrado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Teléfono / Celular</span>
+            <p class="text-gray-900 font-medium font-mono">{{ confirmacionPedido.cliente.telefono || 'No registrado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Correo Electrónico</span>
+            <p class="text-gray-900 font-medium truncate">{{ confirmacionPedido.cliente.correo || 'No registrado' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 block mb-0.5 font-medium uppercase tracking-wider text-[11px]">Dirección</span>
+            <p class="text-gray-900 font-medium truncate">{{ confirmacionPedido.cliente.direccion || 'No registrada' }}</p>
+          </div>
+        </div>
+      </div>
 
-          <div class="flex items-center justify-between pb-4 border-b border-slate-700">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-bold">
-                <i class="ph ph-receipt text-lg"></i>
+      <!-- Ficha 2: Trabajos a Producir en Taller -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
+            <i class="ph ph-hammer text-base text-gray-500"></i>
+            Trabajos a Producir en Taller ({{ confirmacionPedido.trabajos.length }} ítems)
+          </h2>
+          <span class="text-xs text-gray-500 font-medium">
+            Total unidades: <strong class="text-gray-900 font-bold">{{ getTotalUnidades() }}</strong>
+          </span>
+        </div>
+
+        <!-- Lista de Trabajos -->
+        <div class="divide-y divide-gray-100" *ngIf="confirmacionPedido.trabajos && confirmacionPedido.trabajos.length > 0">
+          <div *ngFor="let item of confirmacionPedido.trabajos; let i = index" class="p-5 space-y-3 hover:bg-gray-50/50 transition">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-800 font-bold text-xs flex items-center justify-center border border-gray-300 shrink-0">
+                  {{ i + 1 }}
+                </span>
+                <div>
+                  <h3 class="font-bold text-gray-900 text-sm sm:text-base">
+                    {{ item.nombre }}
+                  </h3>
+                  <p *ngIf="item.descripcion" class="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                    {{ item.descripcion }}
+                  </p>
+                </div>
               </div>
-              <h3 class="font-bold text-base text-white">Resumen del Pedido</h3>
+
+              <!-- Indicadores de Precio y Cantidad -->
+              <div class="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                <span class="inline-flex items-center px-2.5 py-1 rounded bg-gray-100 text-gray-800 text-xs font-semibold">
+                  Cantidad: <strong class="ml-1 text-gray-900">{{ item.cantidad }} unid.</strong>
+                </span>
+                <span class="inline-flex items-center px-2.5 py-1 rounded bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold font-mono">
+                  Subtotal: Bs. {{ item.subtotal | number:'1.2-2' }}
+                </span>
+              </div>
             </div>
-            <span class="text-xs font-medium text-slate-400">Moneda: BOB</span>
+
+            <!-- Fila de Detalles Técnicos -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-lg text-xs">
+              <!-- Dimensiones -->
+              <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Medidas</span>
+                <p class="font-semibold text-gray-800">
+                  <ng-container *ngIf="item.base && item.altura">
+                    {{ item.base }} x {{ item.altura }} {{ item.unidadMedida || 'm' }}
+                  </ng-container>
+                  <ng-container *ngIf="!item.base || !item.altura">
+                    Estándar
+                  </ng-container>
+                </p>
+              </div>
+
+              <!-- Área Total -->
+              <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Área Calculada</span>
+                <p class="font-semibold text-gray-800">
+                  {{ item.areaTotal ? (item.areaTotal | number:'1.2-2') + ' m²' : '—' }}
+                </p>
+              </div>
+
+              <!-- Material -->
+              <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Material</span>
+                <p class="font-semibold text-gray-800 truncate">
+                  {{ item.material || 'Material estándar' }}
+                </p>
+              </div>
+
+              <!-- Costo Unitario -->
+              <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Precio Unitario</span>
+                <p class="font-semibold text-gray-800 font-mono">
+                  Bs. {{ item.costoUnitario | number:'1.2-2' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Foto de Referencia (si existe) -->
+            <div *ngIf="item.archivoReferencia" class="flex items-center gap-3 pt-1">
+              <span class="text-xs text-gray-500 font-medium">Foto o diseño de referencia:</span>
+              <button type="button" (click)="abrirModalImagen(item.archivoReferencia)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-semibold transition">
+                <i class="ph ph-image text-sm"></i>
+                <span>Ver imagen de referencia</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Footer de la Ficha de Trabajos -->
+        <div class="bg-gray-50 px-5 py-3.5 border-t border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-4 text-xs text-gray-500">
+            <span>Ítems: <strong class="text-gray-800">{{ confirmacionPedido.trabajos.length }}</strong></span>
+            <span>Total unidades: <strong class="text-gray-800">{{ getTotalUnidades() }} unid.</strong></span>
+            <span *ngIf="getAreaTotal() > 0">Área total: <strong class="text-gray-800">{{ getAreaTotal() | number:'1.2-2' }} m²</strong></span>
+          </div>
+          <div class="flex items-center gap-2 self-end sm:self-auto">
+            <span class="text-xs text-gray-600 font-bold uppercase tracking-wider">Total de Cotización:</span>
+            <span class="text-base sm:text-lg font-black text-gray-900 font-mono">
+              Bs. {{ confirmacionPedido.cotizacion.costoTotal | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ficha 3: Condiciones de Pago y Anticipo (CAMPOS LEGIBLES Y ESPACIOSOS) -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-7 space-y-6">
+
+        <div class="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+            <i class="ph ph-credit-card text-2xl font-bold"></i>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-gray-900">Condiciones de Pago y Anticipo para Fabricación</h2>
+            <p class="text-xs text-gray-500">Configure el método y el monto de anticipo recaudado para autorizar la orden de producción</p>
+          </div>
+        </div>
+
+        <form [formGroup]="pagoForm" class="space-y-6">
+
+          <!-- 1. Método de Pago -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2.5">
+              1. Seleccione el Método de Pago del Anticipo *
+            </label>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <!-- Efectivo -->
+              <button type="button" (click)="seleccionarMetodoPago('EFECTIVO')"
+                [ngClass]="pagoForm.get('metodo_pago')?.value === 'EFECTIVO' ? 'border-yellow-500 bg-yellow-50/50 ring-2 ring-yellow-400 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'"
+                class="p-4 rounded-xl border-2 text-left transition relative group flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <i class="ph ph-money text-2xl font-bold"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-900 text-sm">Efectivo</h4>
+                  <p class="text-xs text-gray-500">Cobro directo en caja</p>
+                </div>
+                <i *ngIf="pagoForm.get('metodo_pago')?.value === 'EFECTIVO'"
+                  class="ph ph-check-circle text-xl text-yellow-600 font-bold shrink-0"></i>
+              </button>
+
+              <!-- QR Simple -->
+              <button type="button" (click)="seleccionarMetodoPago('QR')"
+                [ngClass]="pagoForm.get('metodo_pago')?.value === 'QR' ? 'border-yellow-500 bg-yellow-50/50 ring-2 ring-yellow-400 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'"
+                class="p-4 rounded-xl border-2 text-left transition relative group flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <i class="ph ph-qr-code text-2xl font-bold"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-900 text-sm">QR Simple</h4>
+                  <p class="text-xs text-gray-500">Transferencia móvil QR</p>
+                </div>
+                <i *ngIf="pagoForm.get('metodo_pago')?.value === 'QR'"
+                  class="ph ph-check-circle text-xl text-yellow-600 font-bold shrink-0"></i>
+              </button>
+
+              <!-- Transferencia Bancaria -->
+              <button type="button" (click)="seleccionarMetodoPago('TRANSFERENCIA')"
+                [ngClass]="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA' ? 'border-yellow-500 bg-yellow-50/50 ring-2 ring-yellow-400 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'"
+                class="p-4 rounded-xl border-2 text-left transition relative group flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <i class="ph ph-bank text-2xl font-bold"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-900 text-sm">Transferencia</h4>
+                  <p class="text-xs text-gray-500">Depósito bancario / cuenta</p>
+                </div>
+                <i *ngIf="pagoForm.get('metodo_pago')?.value === 'TRANSFERENCIA'"
+                  class="ph ph-check-circle text-xl text-yellow-600 font-bold shrink-0"></i>
+              </button>
+            </div>
           </div>
 
-          <!-- Desglose de Montos -->
-          <div class="py-5 space-y-3.5 border-b border-slate-700/80">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-slate-400">Total Cotización</span>
-              <span class="font-bold text-white text-lg">
+          <!-- 2. Monto de Anticipo con Atajos y Entrada Grande -->
+          <div class="space-y-3 pt-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                2. Monto de Anticipo a Cobrar *
+              </label>
+              <span class="text-xs font-medium text-gray-500">
+                Anticipo mínimo requerido: <strong class="text-amber-800 font-bold font-mono">30% (Bs. {{ calcularMinimoAdelanto() | number:'1.2-2' }})</strong>
+              </span>
+            </div>
+
+            <!-- Botones de Porcentaje Rápido -->
+            <div class="grid grid-cols-3 gap-3">
+              <button type="button" (click)="seleccionarPorcentajeAdelanto(30)"
+                class="py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1"
+                [ngClass]="calcularPorcentajeAdelanto() === 30 ? 'bg-amber-50 border-amber-400 text-amber-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'">
+                <span>30% Mínimo</span>
+                <span class="text-[11px] font-mono opacity-80">(Bs. {{ calcularMontoPorcentaje(30) | number:'1.0-0' }})</span>
+              </button>
+
+              <button type="button" (click)="seleccionarPorcentajeAdelanto(50)"
+                class="py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1"
+                [ngClass]="calcularPorcentajeAdelanto() === 50 ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'">
+                <span>50% Recomendado</span>
+                <span class="text-[11px] font-mono opacity-80">(Bs. {{ calcularMontoPorcentaje(50) | number:'1.0-0' }})</span>
+              </button>
+
+              <button type="button" (click)="seleccionarPorcentajeAdelanto(100)"
+                class="py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1"
+                [ngClass]="calcularPorcentajeAdelanto() === 100 ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'">
+                <span>100% Pago Completo</span>
+                <span class="text-[11px] font-mono opacity-80">(Bs. {{ calcularMontoPorcentaje(100) | number:'1.0-0' }})</span>
+              </button>
+            </div>
+
+            <!-- Input Numérico Principal Grande y Legible -->
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xl sm:text-2xl select-none font-mono">
+                Bs.
+              </span>
+              <input type="number" formControlName="monto_adelanto" step="0.01" min="0"
+                [max]="confirmacionPedido.cotizacion.costoTotal"
+                placeholder="0.00"
+                class="w-full pl-16 pr-32 py-3 sm:py-4 text-2xl sm:text-3xl font-black text-gray-900 rounded-xl border-2 bg-white focus:outline-none transition shadow-sm"
+                [ngClass]="campoEsInvalido('monto_adelanto') ? 'border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-100' : 'border-gray-300 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-100'" />
+
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <span class="px-3 py-1 rounded-lg text-xs font-black"
+                  [ngClass]="calcularPorcentajeAdelanto() >= 50 ? 'bg-emerald-100 text-emerald-800' : (calcularPorcentajeAdelanto() >= 30 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')">
+                  {{ calcularPorcentajeAdelanto() }}% del total
+                </span>
+              </div>
+            </div>
+
+            <!-- Barra de Progreso de Anticipo -->
+            <div>
+              <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div class="h-2.5 rounded-full transition-all duration-300"
+                  [style.width.%]="calcularPorcentajeAdelanto()"
+                  [ngClass]="calcularPorcentajeAdelanto() >= 50 ? 'bg-emerald-500' : (calcularPorcentajeAdelanto() >= 30 ? 'bg-amber-500' : 'bg-rose-500')">
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-gray-500 mt-1.5 font-medium">
+                <span>0%</span>
+                <span class="text-amber-700 font-semibold">Min. 30%</span>
+                <span class="text-emerald-700 font-semibold">50%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <!-- Error de Validación -->
+            <p *ngIf="campoEsInvalido('monto_adelanto')" class="text-xs font-semibold text-rose-600 flex items-center gap-1.5">
+              <i class="ph ph-warning-circle text-base"></i>
+              {{ obtenerErrorCampo('monto_adelanto') }}
+            </p>
+          </div>
+
+          <!-- 3. Resumen Financiero Inmediato (3 Tarjetas Legibles) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+            <!-- Total Cotización -->
+            <div class="p-4 rounded-xl border border-gray-200 bg-gray-50">
+              <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Total de la Cotización</span>
+              <p class="text-xl sm:text-2xl font-black text-gray-900 font-mono">
                 Bs. {{ confirmacionPedido.cotizacion.costoTotal | number:'1.2-2' }}
-              </span>
+              </p>
+              <span class="text-[11px] text-gray-500 mt-1 block">Presupuesto acordado</span>
             </div>
 
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-slate-400 flex items-center gap-1.5">
-                <i class="ph ph-arrow-down-right text-emerald-400"></i> Anticipo a cobrar
+            <!-- Anticipo Recaudado -->
+            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60">
+              <span class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block mb-1 flex items-center gap-1">
+                <i class="ph ph-arrow-down-right font-bold"></i> Anticipo a Cobrar
               </span>
-              <span class="font-bold text-emerald-400 text-lg">
+              <p class="text-xl sm:text-2xl font-black text-emerald-700 font-mono">
                 Bs. {{ pagoForm.get('monto_adelanto')?.value || 0 | number:'1.2-2' }}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between text-sm pt-2 border-t border-slate-800">
-              <span class="text-slate-400">Saldo pendiente</span>
-              <span class="font-extrabold text-amber-400 text-xl">
-                Bs. {{ calcularSaldoPendiente() | number:'1.2-2' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Estado y Parámetros -->
-          <div class="py-4 space-y-2.5 text-xs border-b border-slate-700/80">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Método de pago:</span>
-              <span class="font-semibold text-white px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
-                {{ pagoForm.get('metodo_pago')?.value }}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Estado de pago:</span>
-              <span class="font-bold px-2 py-0.5 rounded border text-[11px]" [ngClass]="getEstadoColorClass()">
+              </p>
+              <span class="text-[11px] text-emerald-800 mt-1 block font-medium">
                 {{ getEstadoTexto() }}
               </span>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Fecha de confirmación:</span>
-              <span class="font-medium text-slate-300">
-                {{ pagoForm.get('fecha_pago')?.value | date:'dd/MM/yyyy' }}
-              </span>
+            <!-- Saldo Pendiente -->
+            <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/60">
+              <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider block mb-1">Saldo Contra Entrega</span>
+              <p class="text-xl sm:text-2xl font-black text-amber-800 font-mono">
+                Bs. {{ calcularSaldoPendiente() | number:'1.2-2' }}
+              </p>
+              <span class="text-[11px] text-amber-700 mt-1 block font-medium">Por cobrar al finalizar</span>
             </div>
           </div>
 
-          <!-- Nota Informativa -->
-          <div class="p-3 my-4 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-300 flex items-start gap-2.5">
-            <i class="ph ph-info text-amber-400 text-lg shrink-0 mt-0.5"></i>
-            <p>
-              Al confirmar, la cotización pasará a estado <strong>APROBADA</strong> y se generará automáticamente el pedido para que el taller inicie la fabricación.
-            </p>
+          <!-- 4. Fecha de Pago y Observaciones de Producción -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <!-- Fecha de Pago -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Fecha del Cobro / Anticipo *
+              </label>
+              <input type="date" formControlName="fecha_pago"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 bg-white focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100 transition" />
+            </div>
+
+            <!-- Observaciones / Indicaciones para Taller -->
+            <div class="sm:col-span-2">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Observaciones / Instrucciones para Taller (Opcional)
+                </label>
+                <span class="text-[11px] text-gray-400 font-mono">
+                  {{ pagoForm.get('observaciones')?.value?.length || 0 }}/500
+                </span>
+              </div>
+              <textarea formControlName="observaciones" rows="2" maxlength="500"
+                placeholder="Instrucciones especiales para el equipo de taller (prioridad de producción, acabados, observaciones de entrega...)"
+                class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100 transition"></textarea>
+            </div>
           </div>
 
-          <!-- Botones de Acción -->
-          <div class="space-y-2.5 pt-2">
-            <button type="button" (click)="confirmarYEnviarProduccion()"
-              [disabled]="isLoading || pagoForm.invalid"
-              class="w-full py-4 px-4 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
-              <i *ngIf="isLoading" class="ph ph-spinner text-lg animate-spin"></i>
-              <i *ngIf="!isLoading" class="ph ph-check-circle text-lg"></i>
-              <span>{{ isLoading ? 'Procesando Pedido...' : 'Confirmar Pedido y Enviar a Taller' }}</span>
-            </button>
+        </form>
 
-            <button type="button" (click)="cancelar()" [disabled]="isLoading"
-              class="w-full py-3 px-4 rounded-xl font-semibold text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-center gap-1.5">
-              <i class="ph ph-x text-sm"></i>
-              <span>Cancelar y Volver</span>
-            </button>
-          </div>
+      </div>
 
+      <!-- Banner de Notificación Operativa -->
+      <div class="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 flex items-start gap-3 shadow-sm text-xs">
+        <i class="ph ph-info text-xl text-blue-600 shrink-0 mt-0.5"></i>
+        <div>
+          <p class="font-bold text-sm text-blue-950">Confirmación y Generación de Pedido</p>
+          <p class="mt-0.5 text-blue-800">
+            Al hacer clic en <strong>"Confirmar Pedido y Enviar a Taller"</strong>, la cotización se registrará como <strong>APROBADA</strong>, se creará el pedido formal y se notificará al área de taller para dar inicio inmediato a la producción.
+          </p>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones al Final (Bottom Actions Bar) -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <button type="button" (click)="cancelar()" [disabled]="isLoading"
+            class="w-full sm:w-auto px-5 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 text-sm font-semibold transition flex items-center justify-center gap-2">
+            <i class="ph ph-arrow-left text-base"></i>
+            <span>Volver a Cotizaciones</span>
+          </button>
         </div>
 
+        <button type="button" (click)="confirmarYEnviarProduccion()"
+          [disabled]="isLoading || pagoForm.invalid"
+          class="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-base text-gray-950 bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 transition duration-200 flex items-center justify-center gap-2.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+          <i *ngIf="isLoading" class="ph ph-spinner text-lg animate-spin"></i>
+          <i *ngIf="!isLoading" class="ph ph-check-circle text-lg font-bold"></i>
+          <span>{{ isLoading ? 'Generando Pedido...' : 'Confirmar Pedido y Enviar a Taller' }}</span>
+        </button>
       </div>
 
     </div>
 
+  </div>
+</div>
+
+<!-- Modal Lightbox de Imagen de Referencia -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity"
+  *ngIf="imagenModalUrl">
+  <div class="bg-white rounded-2xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+    <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-bold text-gray-900 text-sm">Diseño / Imagen de Referencia</h3>
+      <button type="button" (click)="cerrarModalImagen()"
+        class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+        <i class="ph ph-x text-lg"></i>
+      </button>
+    </div>
+    <div class="p-6 overflow-auto flex items-center justify-center bg-gray-50 flex-1">
+      <img [src]="imagenModalUrl" alt="Referencia de trabajo"
+        class="max-h-[70vh] max-w-full rounded-lg object-contain shadow-md" />
+    </div>
+    <div class="p-3 bg-gray-100 border-t border-gray-200 flex justify-end">
+      <button type="button" (click)="cerrarModalImagen()"
+        class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold transition">
+        Cerrar Vista Previa
+      </button>
+    </div>
   </div>
 </div>

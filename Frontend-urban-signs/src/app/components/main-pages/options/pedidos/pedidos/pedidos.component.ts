@@ -13,19 +13,24 @@ import { ResponsiveDataViewComponent } from '../../../../../shared/components/re
 import { DataCardDirective, DataHeaderDirective, DataRowDirective } from '../../../../../shared/components/responsive-data-view/data-view-template.directive';
 import { ActionIconButtonComponent } from '../../../../../shared/components/action-icon-button/action-icon-button.component';
 import { finalize } from 'rxjs';
+import { FormatoEstadoPipe, formatearEstado, obtenerClaseEstadoPedido, obtenerClaseEstadoPago } from '../../../../../shared/pipes/formato-estado.pipe';
 
 @Component({
   selector: 'app-pedidos',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, VerDetallesComponent, CompletarPedidoComponent,
     LoadingComponent, ViewToggleComponent, ResponsiveDataViewComponent, DataHeaderDirective, DataRowDirective,
-    DataCardDirective, ActionIconButtonComponent],
+    DataCardDirective, ActionIconButtonComponent, FormatoEstadoPipe],
   templateUrl: './pedidos.component.html',
   styleUrl: './pedidos.component.css'
 })
 export class PedidosComponent {
   viewMode: 'list' | 'cards' = 'list';
   @ViewChild(CompletarPedidoComponent) modalCompletarPedido!: CompletarPedidoComponent;
+
+  formatearEstado = formatearEstado;
+  obtenerClaseEstadoPedido = obtenerClaseEstadoPedido;
+  obtenerClaseEstadoPago = obtenerClaseEstadoPago;
 
   notificationService = inject(NotificationService)
   private pedidoService = inject(PedidosService);
