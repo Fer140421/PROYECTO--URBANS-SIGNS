@@ -12,5 +12,17 @@ public record PortalSolicitudTrabajoRequest(
         BigDecimal altura,
         String descripcion,
         String material,
-        String archivoReferencia) {
+        String archivoReferencia,
+        String unidadMedida) {
+    public PortalSolicitudTrabajoRequest(
+            Long idTrabajo,
+            String servicio,
+            Integer cantidad,
+            BigDecimal base,
+            BigDecimal altura,
+            String descripcion,
+            String material,
+            String archivoReferencia) {
+        this(idTrabajo, servicio, cantidad, base, altura, descripcion, material, archivoReferencia, "m");
+    }
 }

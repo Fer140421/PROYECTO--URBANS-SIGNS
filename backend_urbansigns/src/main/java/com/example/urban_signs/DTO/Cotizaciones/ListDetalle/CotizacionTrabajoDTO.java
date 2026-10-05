@@ -23,6 +23,7 @@ public class CotizacionTrabajoDTO {
     private BigDecimal base;
     private BigDecimal altura;
     private BigDecimal area_total;
+    private String unidadMedida;
     private BigDecimal costoUnitario;
     private BigDecimal subtotal;
     private String descripcion;

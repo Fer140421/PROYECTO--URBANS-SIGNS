@@ -79,6 +79,9 @@ public class CotizacionServiceImpl implements CotizacionService {
                         if (t.getMaterial() != null) {
                                 trabajo.setMaterial(t.getMaterial().trim());
                         }
+                        if (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank()) {
+                                trabajo.setUnidadMedida(t.getUnidadMedida().trim().toLowerCase());
+                        }
                 }
 
                 BigDecimal total = cotizacion.getTrabajos().stream()
@@ -121,10 +124,15 @@ public class CotizacionServiceImpl implements CotizacionService {
                                                         "Trabajo de solicitud no encontrado con ID: "
                                                                         + t.getIdSolicitudTrabajo()));
 
+                        String unidadMedida = (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank())
+                                        ? t.getUnidadMedida().trim().toLowerCase()
+                                        : (solicitudTrabajo.getUnidadMedida() != null ? solicitudTrabajo.getUnidadMedida() : "m");
+
                         CotizacionTrabajoModel cotTrabajo = CotizacionTrabajoModel.builder()
                                         .cotizacion(cotizacion)
                                         .solicitudTrabajo(solicitudTrabajo)
                                         .cantidad(t.getCantidad())
+                                        .unidadMedida(unidadMedida)
                                         .base(solicitudTrabajo.getBase())
                                         .altura(solicitudTrabajo.getAltura())
                                         .areaTotal(solicitudTrabajo.getAreaTotal())
@@ -244,6 +252,11 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 ? trabajo.getMaterial()
                                 : (trabajo.getSolicitudTrabajo() != null ? trabajo.getSolicitudTrabajo().getMaterial() : null);
                 String descTexto = trabajo.getSolicitudTrabajo() != null ? trabajo.getSolicitudTrabajo().getDescripcion() : null;
+                String unidadTexto = (trabajo.getUnidadMedida() != null && !trabajo.getUnidadMedida().isBlank())
+                                ? trabajo.getUnidadMedida()
+                                : (trabajo.getSolicitudTrabajo() != null && trabajo.getSolicitudTrabajo().getUnidadMedida() != null
+                                                ? trabajo.getSolicitudTrabajo().getUnidadMedida()
+                                                : "m");
 
                 return CotizacionTrabajoDTO.builder()
                                 .idCotizacionTrabajo(trabajo.getIdCotizacionTrabajo())
@@ -255,6 +268,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .altura(trabajo.getAltura())
                                 .base(trabajo.getBase())
                                 .area_total(trabajo.getAreaTotal())
+                                .unidadMedida(unidadTexto)
                                 .subtotal(trabajo.getSubtotal())
                                 .descripcion(descTexto)
                                 .material(materialTexto)

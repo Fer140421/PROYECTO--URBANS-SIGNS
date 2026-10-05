@@ -301,7 +301,16 @@ public class PortalClienteController {
                 int cantidad = (item.cantidad() != null && item.cantidad() > 0) ? item.cantidad() : 1;
                 BigDecimal base = item.base() != null ? item.base() : BigDecimal.ZERO;
                 BigDecimal altura = item.altura() != null ? item.altura() : BigDecimal.ZERO;
-                BigDecimal areaTotal = (base != null && altura != null) ? base.multiply(altura) : BigDecimal.ZERO;
+                String unidad = (item.unidadMedida() != null && !item.unidadMedida().isBlank())
+                        ? item.unidadMedida().trim().toLowerCase() : "m";
+                BigDecimal areaTotal = BigDecimal.ZERO;
+                if (base != null && altura != null) {
+                    if ("cm".equalsIgnoreCase(unidad)) {
+                        areaTotal = base.multiply(altura).divide(BigDecimal.valueOf(10000), 4, java.math.RoundingMode.HALF_UP);
+                    } else {
+                        areaTotal = base.multiply(altura);
+                    }
+                }
 
                 String desc = item.descripcion() != null ? item.descripcion().trim() : "";
                 if (desc.isBlank() && !titulo.isBlank()) {
@@ -330,6 +339,7 @@ public class PortalClienteController {
                         .solicitud(solicitud)
                         .trabajo(trabajo)
                         .cantidad(cantidad)
+                        .unidadMedida(unidad)
                         .base(base)
                         .altura(altura)
                         .areaTotal(areaTotal)
@@ -465,7 +475,16 @@ public class PortalClienteController {
                 int cantidad = (item.cantidad() != null && item.cantidad() > 0) ? item.cantidad() : 1;
                 BigDecimal base = item.base() != null ? item.base() : BigDecimal.ZERO;
                 BigDecimal altura = item.altura() != null ? item.altura() : BigDecimal.ZERO;
-                BigDecimal areaTotal = (base != null && altura != null) ? base.multiply(altura) : BigDecimal.ZERO;
+                String unidad = (item.unidadMedida() != null && !item.unidadMedida().isBlank())
+                        ? item.unidadMedida().trim().toLowerCase() : "m";
+                BigDecimal areaTotal = BigDecimal.ZERO;
+                if (base != null && altura != null) {
+                    if ("cm".equalsIgnoreCase(unidad)) {
+                        areaTotal = base.multiply(altura).divide(BigDecimal.valueOf(10000), 4, java.math.RoundingMode.HALF_UP);
+                    } else {
+                        areaTotal = base.multiply(altura);
+                    }
+                }
 
                 String desc = item.descripcion() != null ? item.descripcion().trim() : "";
                 if (desc.isBlank() && !titulo.isBlank()) {
@@ -491,6 +510,7 @@ public class PortalClienteController {
                         .solicitud(solicitud)
                         .trabajo(trabajo)
                         .cantidad(cantidad)
+                        .unidadMedida(unidad)
                         .base(base)
                         .altura(altura)
                         .areaTotal(areaTotal)
@@ -575,6 +595,11 @@ public class PortalClienteController {
                         : (ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getMaterial() : null);
 
                 String fotoRef = ct.getSolicitudTrabajo() != null ? ct.getSolicitudTrabajo().getArchivoReferencia() : null;
+                String unidad = (ct.getUnidadMedida() != null && !ct.getUnidadMedida().isBlank())
+                        ? ct.getUnidadMedida()
+                        : (ct.getSolicitudTrabajo() != null && ct.getSolicitudTrabajo().getUnidadMedida() != null
+                                ? ct.getSolicitudTrabajo().getUnidadMedida()
+                                : "m");
                 items.add(new PortalCotizacionItemResponse(
                         ct.getIdCotizacionTrabajo(),
                         idTrabajo,
@@ -587,12 +612,14 @@ public class PortalClienteController {
                         area,
                         ct.getCostoUnitario(),
                         ct.getSubtotal(),
-                        fotoRef));
+                        fotoRef,
+                        unidad));
             }
         } else if (cotizacion.getSolicitud() != null && cotizacion.getSolicitud().getIdSolicitud() != null) {
             List<SolicitudTrabajoModel> solicitudTrabajos = solicitudTrabajoRepository
                     .findBySolicitudId(cotizacion.getSolicitud().getIdSolicitud());
             for (SolicitudTrabajoModel st : solicitudTrabajos) {
+                String stUnidad = st.getUnidadMedida() != null ? st.getUnidadMedida() : "m";
                 items.add(new PortalCotizacionItemResponse(
                         st.getIdSolicitudTrabajo(),
                         st.getTrabajo() != null ? st.getTrabajo().getIdTrabajo() : null,
@@ -605,7 +632,8 @@ public class PortalClienteController {
                         st.getAreaTotal(),
                         null,
                         null,
-                        st.getArchivoReferencia()));
+                        st.getArchivoReferencia(),
+                        stUnidad));
             }
         }
 
@@ -669,6 +697,7 @@ public class PortalClienteController {
             List<SolicitudTrabajoModel> solicitudTrabajos = solicitudTrabajoRepository
                     .findBySolicitudId(solicitud.getIdSolicitud());
             for (SolicitudTrabajoModel st : solicitudTrabajos) {
+                String stUnidad = st.getUnidadMedida() != null ? st.getUnidadMedida() : "m";
                 items.add(new PortalCotizacionItemResponse(
                         st.getIdSolicitudTrabajo(),
                         st.getTrabajo() != null ? st.getTrabajo().getIdTrabajo() : null,
@@ -681,7 +710,8 @@ public class PortalClienteController {
                         st.getAreaTotal(),
                         null,
                         null,
-                        st.getArchivoReferencia()));
+                        st.getArchivoReferencia(),
+                        stUnidad));
             }
         }
 

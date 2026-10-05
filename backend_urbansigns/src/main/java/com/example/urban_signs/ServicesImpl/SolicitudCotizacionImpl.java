@@ -114,16 +114,28 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                         trabajoArchivoUrl = archivoUrl;
                                 }
 
+                                String unidadMedida = (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank())
+                                                ? t.getUnidadMedida().trim().toLowerCase()
+                                                : "m";
+                                BigDecimal base = t.getBase() != null ? BigDecimal.valueOf(t.getBase()) : null;
+                                BigDecimal altura = t.getAltura() != null ? BigDecimal.valueOf(t.getAltura()) : null;
+                                BigDecimal areaTotal = null;
+                                if (base != null && altura != null) {
+                                        if ("cm".equalsIgnoreCase(unidadMedida)) {
+                                                areaTotal = base.multiply(altura).divide(BigDecimal.valueOf(10000), 4, java.math.RoundingMode.HALF_UP);
+                                        } else {
+                                                areaTotal = base.multiply(altura);
+                                        }
+                                }
+
                                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                                                 .solicitud(solicitud)
                                                 .trabajo(trabajo)
                                                 .cantidad(t.getCantidad())
-                                                .base(t.getBase() != null ? BigDecimal.valueOf(t.getBase()) : null)
-                                                .altura(t.getAltura() != null ? BigDecimal.valueOf(t.getAltura())
-                                                                : null)
-                                                .areaTotal((t.getBase() != null && t.getAltura() != null)
-                                                                ? BigDecimal.valueOf(t.getBase() * t.getAltura())
-                                                                : null)
+                                                .unidadMedida(unidadMedida)
+                                                .base(base)
+                                                .altura(altura)
+                                                .areaTotal(areaTotal)
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
                                                 .archivoReferencia(trabajoArchivoUrl)
@@ -186,6 +198,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .base(trabajo.getBase())
                                                 .altura(trabajo.getAltura())
                                                 .areaTotal(trabajo.getAreaTotal())
+                                                .unidadMedida(trabajo.getUnidadMedida() != null ? trabajo.getUnidadMedida() : "m")
                                                 .descripcion(trabajo.getDescripcion())
                                                 .material(trabajo.getMaterial())
                                                 .archivoReferencia(trabajo.getArchivoReferencia())
@@ -243,16 +256,28 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .orElseThrow(() -> new RuntimeException(
                                                                 "Trabajo no encontrado con ID: " + t.getIdTrabajo()));
 
+                                String unidadMedida = (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank())
+                                                ? t.getUnidadMedida().trim().toLowerCase()
+                                                : "m";
+                                BigDecimal base = t.getBase() != null ? BigDecimal.valueOf(t.getBase()) : null;
+                                BigDecimal altura = t.getAltura() != null ? BigDecimal.valueOf(t.getAltura()) : null;
+                                BigDecimal areaTotal = null;
+                                if (base != null && altura != null) {
+                                        if ("cm".equalsIgnoreCase(unidadMedida)) {
+                                                areaTotal = base.multiply(altura).divide(BigDecimal.valueOf(10000), 4, java.math.RoundingMode.HALF_UP);
+                                        } else {
+                                                areaTotal = base.multiply(altura);
+                                        }
+                                }
+
                                 SolicitudTrabajoModel nuevoTrabajo = SolicitudTrabajoModel.builder()
                                                 .solicitud(solicitudExistente)
                                                 .trabajo(trabajo)
                                                 .cantidad(t.getCantidad())
-                                                .base(t.getBase() != null ? BigDecimal.valueOf(t.getBase()) : null)
-                                                .altura(t.getAltura() != null ? BigDecimal.valueOf(t.getAltura())
-                                                                : null)
-                                                .areaTotal((t.getBase() != null && t.getAltura() != null)
-                                                                ? BigDecimal.valueOf(t.getBase() * t.getAltura())
-                                                                : null)
+                                                .unidadMedida(unidadMedida)
+                                                .base(base)
+                                                .altura(altura)
+                                                .areaTotal(areaTotal)
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
                                                 .archivoReferencia(t.getArchivoReferencia())
@@ -284,6 +309,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                                 .base(t.getBase())
                                                 .altura(t.getAltura())
                                                 .areaTotal(t.getAreaTotal())
+                                                .unidadMedida(t.getUnidadMedida() != null ? t.getUnidadMedida() : "m")
                                                 .descripcion(t.getDescripcion())
                                                 .material(t.getMaterial())
                                                 .archivoReferencia(t.getArchivoReferencia())

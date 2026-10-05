@@ -20,6 +20,7 @@ public class SolicitudTrabajoDTO {
     private BigDecimal base;
     private BigDecimal altura;
     private BigDecimal areaTotal;
+    private String unidadMedida;
     private String descripcion;
     private String material;
     private String archivoReferencia;

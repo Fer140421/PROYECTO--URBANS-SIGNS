@@ -20,5 +20,6 @@ public class CotizacionTrabajoRequest {
     private BigDecimal costoUnitario;
     private BigDecimal subtotal;
     private String material;
+    private String unidadMedida;
     private List<DetalleCotizacionRequest> materiales;
 }

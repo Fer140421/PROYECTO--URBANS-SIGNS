@@ -34,6 +34,12 @@ public class ClientesController {
         return clienteService.buscarClientes(q);
     }
 
+    @GetMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_VER')")
+    public ResponseEntity<ClienteModel> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(clienteService.obtenerClientePorId(id));
+    }
+
     @PostMapping("/registrar")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('OFICINA') or hasAuthority('CLIENTE_CREAR')")
     public ResponseEntity<ClienteModel> registrarCliente(@RequestBody ClienteModel cliente) {

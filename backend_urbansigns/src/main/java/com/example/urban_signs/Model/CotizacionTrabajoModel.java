@@ -41,7 +41,11 @@ public class CotizacionTrabajoModel {
     @Column(name = "altura", precision = 10, scale = 2)
     private BigDecimal altura;
 
-    @Column(name = "area_total", precision = 10, scale = 2)
+    @Column(name = "unidad_medida", length = 10)
+    @Builder.Default
+    private String unidadMedida = "m";
+
+    @Column(name = "area_total", precision = 12, scale = 4)
     private BigDecimal areaTotal;
 
     @Column(name = "subtotal", precision = 12, scale = 2)
