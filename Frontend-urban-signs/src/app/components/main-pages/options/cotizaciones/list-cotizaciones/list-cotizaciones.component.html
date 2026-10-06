@@ -254,9 +254,9 @@
     </div>
 </div>
 
-<app-detalles-cotizacion [mostrar]="mostrarModalVisualizacion" [cotizacion]="cotizacionSeleccionada"
+<app-detalles-cotizacion *ngIf="mostrarModalVisualizacion" [mostrar]="mostrarModalVisualizacion" [cotizacion]="cotizacionSeleccionada"
     (cerrar)="cerrarModalVisualizacion()"> </app-detalles-cotizacion>
 
-<app-modificar-cotizacion [mostrar]="mostrarModalModificacion" [cotizacion]="cotizacionSeleccionada"
+<app-modificar-cotizacion *ngIf="mostrarModalModificacion" [mostrar]="mostrarModalModificacion" [cotizacion]="cotizacionSeleccionada"
     (cerrar)="cerrarModalModificacion()" (guardado)="onCotizacionGuardada($event)" (error)="onErrorModal($event)">
 </app-modificar-cotizacion>

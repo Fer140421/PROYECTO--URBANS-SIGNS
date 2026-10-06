@@ -14,6 +14,7 @@ import { ViewToggleComponent } from '../../../../../shared/components/view-toggl
 import { ResponsiveDataViewComponent } from '../../../../../shared/components/responsive-data-view/responsive-data-view.component';
 import { DataCardDirective, DataHeaderDirective, DataRowDirective } from '../../../../../shared/components/responsive-data-view/data-view-template.directive';
 import { ActionIconButtonComponent } from '../../../../../shared/components/action-icon-button/action-icon-button.component';
+import { StorageService } from '../../../../../core/services/storage/storage.service';
 import { finalize } from 'rxjs';
 // Interfaces
 interface Trabajo {
@@ -58,13 +59,18 @@ interface ColumnaKanban {
   styleUrl: './seguimiento.component.css'
 })
 export class SeguimientoComponent {
-  viewMode: 'list' | 'cards' = 'list';
+  viewMode: 'matriz' | 'cards' = 'matriz';
   private planificacionService = inject(PlanificacionService);
   private pedidosService = inject(PedidosService);
   private employeeService = inject(EmployeeService);
   private notificationService = inject(NotificationService);
   private confirmService = inject(ConfirmModalService);
+  private storageService = inject(StorageService);
   private router = inject(Router);
+
+  // Fecha y Navegación Semanal
+  fechaReferencia: Date = new Date();
+  diasSemana: { nombre: string; fechaStr: string; fechaObj: Date; esHoy: boolean }[] = [];
 
   // Datos principales
   planificacionActual: PlanificacionSemanal | null = null;
@@ -72,7 +78,7 @@ export class SeguimientoComponent {
   trabajosFiltrados: TrabajoProgramado[] = [];
   cargando = false;
 
-  // ✅ NUEVOS DATOS PARA PEDIDOS
+  // ✅ DATOS PARA PEDIDOS
   pedidosPendientes: PedidoResumen[] = [];
   trabajosDisponibles: TrabajoDisponible[] = [];
   pedidoSeleccionado: number | null = null;
@@ -109,15 +115,17 @@ export class SeguimientoComponent {
   mostrarModalEditarTrabajo = false;
   trabajoEditando: TrabajoProgramado | null = null;
 
-  // ✅ ACTUALIZAR Formulario de nuevo trabajo
+  // ✅ Formulario de nuevo trabajo con cotizador y requerimientoMateriales
   nuevoTrabajo = {
     idPedido: null as number | null,
     areaTrabajo: 'ENSAMBLAJE',
     idTrabajador: null as number | null,
     trabajador: '',
+    cotizador: '',
     fechaProgramada: '',
     horaProgramada: '',
-    observaciones: ''
+    observaciones: '',
+    requerimientoMateriales: ''
   };
 
   ngOnInit(): void {
@@ -135,24 +143,65 @@ export class SeguimientoComponent {
     });
   }
 
-  // ========== CARGA DE DATOS ==========
+  // ========== CARGA DE DATOS Y NAVEGACIÓN SEMANAL ==========
+
+  formatearFechaISO(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  generarDiasSemana(fechaInicioStr: string): void {
+    const [year, month, day] = fechaInicioStr.split('-').map(Number);
+    const fechaLunes = new Date(year, month - 1, day);
+    const nombresDias = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+    const hoyStr = this.formatearFechaISO(new Date());
+
+    this.diasSemana = nombresDias.map((nombre, i) => {
+      const d = new Date(fechaLunes);
+      d.setDate(fechaLunes.getDate() + i);
+      const fechaStr = this.formatearFechaISO(d);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      return {
+        nombre: `${nombre} ${dd}/${mm}`,
+        fechaStr,
+        fechaObj: d,
+        esHoy: fechaStr === hoyStr
+      };
+    });
+  }
+
+  cambiarSemana(offsetDias: number): void {
+    const nueva = new Date(this.fechaReferencia);
+    nueva.setDate(nueva.getDate() + offsetDias);
+    this.fechaReferencia = nueva;
+    this.cargarPlanificacionPorFecha(this.formatearFechaISO(this.fechaReferencia));
+  }
+
+  irAHoy(): void {
+    this.fechaReferencia = new Date();
+    this.cargarPlanificacionPorFecha(this.formatearFechaISO(this.fechaReferencia));
+  }
 
   cargarPlanificacionActual(): void {
+    this.cargarPlanificacionPorFecha(this.formatearFechaISO(this.fechaReferencia));
+  }
+
+  cargarPlanificacionPorFecha(fechaStr: string): void {
     this.cargando = true;
-    this.planificacionService.obtenerPlanificacionActual().subscribe({
+    this.planificacionService.obtenerPorFecha(fechaStr).subscribe({
       next: (planificacion) => {
         this.planificacionActual = planificacion;
         this.trabajos = planificacion.trabajos || [];
+        this.generarDiasSemana(planificacion.fechaInicio);
         this.calcularEstadisticas();
         this.aplicarFiltros();
         this.cargando = false;
       },
       error: (err) => {
-        console.log('Error capturado:', err);
-        if (err.status === 404 || err.status === 500) {
-          this.crearNuevaPlanificacion();
-          return;
-        }
+        console.error('Error al cargar planificación:', err);
         this.cargando = false;
       }
     });
@@ -181,7 +230,6 @@ export class SeguimientoComponent {
     }
   }
 
-  // ✅ NUEVO MÉTODO
   cargarTrabajosDisponibles(idPedido: number): void {
     this.pedidosService.obtenerTrabajosDisponibles(idPedido).subscribe({
       next: (trabajos) => {
@@ -195,32 +243,10 @@ export class SeguimientoComponent {
   }
 
   crearNuevaPlanificacion(): void {
-    if (this.isProcessing) return;
-
-    const hoy = new Date().toISOString().split('T')[0];
-    const usuarioId = 1;
-
-    this.isProcessing = true;
-    this.planificacionService.crearPlanificacion(hoy, usuarioId).pipe(
-      finalize(() => this.isProcessing = false)
-    ).subscribe({
-      next: (planificacion) => {
-        this.planificacionActual = planificacion;
-        this.trabajos = [];
-        this.calcularEstadisticas();
-        this.aplicarFiltros();
-        this.cargando = false;
-        this.notificationService.success('Planificación semanal creada');
-      },
-      error: (err) => {
-        console.error('Error al crear planificación:', err);
-        this.notificationService.error('Error al crear la planificación');
-        this.cargando = false;
-      }
-    });
+    this.cargarPlanificacionActual();
   }
 
-  // ========== FILTRADO (sin cambios) ==========
+  // ========== FILTRADO ==========
   aplicarFiltros(): void {
     let resultados = [...this.trabajos];
 
@@ -228,8 +254,11 @@ export class SeguimientoComponent {
       const busqueda = this.filtroBusqueda.toLowerCase();
       resultados = resultados.filter(trabajo =>
         trabajo.cliente?.toLowerCase().includes(busqueda) ||
+        trabajo.cotizador?.toLowerCase().includes(busqueda) ||
         trabajo.descripcionTrabajo?.toLowerCase().includes(busqueda) ||
-        trabajo.trabajador?.toLowerCase().includes(busqueda)
+        trabajo.trabajador?.toLowerCase().includes(busqueda) ||
+        trabajo.observaciones?.toLowerCase().includes(busqueda) ||
+        trabajo.requerimientoMateriales?.toLowerCase().includes(busqueda)
       );
     }
 
@@ -242,16 +271,15 @@ export class SeguimientoComponent {
     }
 
     if (this.filtroFecha) {
-      const hoy = new Date();
+      const hoyStr = this.formatearFechaISO(new Date());
       resultados = resultados.filter(trabajo => {
-        const fechaTrabajo = new Date(trabajo.fechaProgramada);
         switch (this.filtroFecha) {
           case 'HOY':
-            return this.esMismaFecha(fechaTrabajo, hoy);
+            return trabajo.fechaProgramada === hoyStr;
           case 'SEMANA':
-            return this.esMismaSemana(fechaTrabajo, hoy);
+            return this.diasSemana.some(d => d.fechaStr === trabajo.fechaProgramada);
           case 'VENCIDO':
-            return fechaTrabajo < hoy && trabajo.estado !== 'COMPLETADO';
+            return trabajo.fechaProgramada < hoyStr && !trabajo.cumplido;
           default:
             return true;
         }
@@ -259,9 +287,10 @@ export class SeguimientoComponent {
     }
 
     resultados.sort((a, b) => {
-      const fechaA = new Date(a.fechaProgramada).getTime();
-      const fechaB = new Date(b.fechaProgramada).getTime();
-      return fechaA - fechaB;
+      const fechaA = a.fechaProgramada || '';
+      const fechaB = b.fechaProgramada || '';
+      if (fechaA !== fechaB) return fechaA.localeCompare(fechaB);
+      return (a.horaProgramada || '').localeCompare(b.horaProgramada || '');
     });
 
     this.trabajosFiltrados = resultados;
@@ -269,17 +298,45 @@ export class SeguimientoComponent {
 
   calcularEstadisticas(): void {
     this.estadisticas.total = this.trabajos.length;
-    this.estadisticas.pendientes = this.trabajos.filter(t => t.estado === 'PENDIENTE').length;
-    this.estadisticas.enProceso = this.trabajos.filter(t => t.estado === 'EN_PROCESO').length;
-    this.estadisticas.completados = this.trabajos.filter(t => t.estado === 'COMPLETADO').length;
+    this.estadisticas.pendientes = this.trabajos.filter(t => !t.cumplido && t.estado === 'PENDIENTE').length;
+    this.estadisticas.enProceso = this.trabajos.filter(t => !t.cumplido && t.estado === 'EN_PROCESO').length;
+    this.estadisticas.completados = this.trabajos.filter(t => t.cumplido || t.estado === 'COMPLETADO').length;
 
-    const hoy = new Date();
+    const hoyStr = this.formatearFechaISO(new Date());
     this.estadisticas.porEntregar = this.trabajos.filter(t =>
-      new Date(t.fechaProgramada) <= hoy && t.estado !== 'COMPLETADO'
+      !t.cumplido && t.fechaProgramada <= hoyStr
     ).length;
   }
 
   // ========== ACCIONES DE TRABAJOS ==========
+
+  toggleCumplido(trabajo: TrabajoProgramado, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.isProcessing) return;
+
+    this.isProcessing = true;
+    this.planificacionService.toggleCumplido(trabajo.idTrabajoProgramado).pipe(
+      finalize(() => this.isProcessing = false)
+    ).subscribe({
+      next: (actualizado) => {
+        trabajo.cumplido = actualizado.cumplido;
+        trabajo.estado = actualizado.estado;
+        this.calcularEstadisticas();
+        this.cargarPedidosPendientes();
+        if (actualizado.cumplido) {
+          this.notificationService.success(`Trabajo marcado como CUMPLIDO ✓`);
+        } else {
+          this.notificationService.info(`Trabajo marcado como PENDIENTE`);
+        }
+      },
+      error: (err) => {
+        console.error('Error al cambiar cumplimiento:', err);
+        this.notificationService.error('No se pudo actualizar el estado de cumplimiento');
+      }
+    });
+  }
 
   abrirModalNuevoTrabajo(): void {
     if (!this.planificacionActual) {
@@ -287,15 +344,18 @@ export class SeguimientoComponent {
       return;
     }
 
-    // ✅ RESETEAR FORMULARIO
+    const fechaPorDefecto = this.diasSemana.length > 0 ? this.diasSemana[0].fechaStr : this.formatearFechaISO(new Date());
+
     this.nuevoTrabajo = {
       idPedido: null,
       areaTrabajo: 'ENSAMBLAJE',
       idTrabajador: null,
       trabajador: '',
-      fechaProgramada: new Date().toISOString().split('T')[0],
+      cotizador: '',
+      fechaProgramada: fechaPorDefecto,
       horaProgramada: '',
-      observaciones: ''
+      observaciones: '',
+      requerimientoMateriales: ''
     };
 
     this.pedidoSeleccionado = null;
@@ -309,7 +369,6 @@ export class SeguimientoComponent {
     this.trabajosDisponibles = [];
   }
 
-  // ✅ ACTUALIZAR MÉTODO
   guardarNuevoTrabajo(): void {
     if (this.isProcessing) return;
 
@@ -334,9 +393,11 @@ export class SeguimientoComponent {
       areaTrabajo: this.nuevoTrabajo.areaTrabajo,
       idTrabajador: Number(this.nuevoTrabajo.idTrabajador),
       trabajador: nombreTrabajador,
+      cotizador: this.nuevoTrabajo.cotizador,
       fechaProgramada: this.nuevoTrabajo.fechaProgramada,
       horaProgramada: this.nuevoTrabajo.horaProgramada,
-      observaciones: this.nuevoTrabajo.observaciones
+      observaciones: this.nuevoTrabajo.observaciones,
+      requerimientoMateriales: this.nuevoTrabajo.requerimientoMateriales
     };
 
     this.isProcessing = true;
@@ -349,7 +410,7 @@ export class SeguimientoComponent {
         this.aplicarFiltros();
         this.cargarPedidosPendientes();
         this.cerrarModalNuevoTrabajo();
-        this.notificationService.success('Trabajo creado y pedido actualizado');
+        this.notificationService.success('Trabajo programado exitosamente');
       },
       error: (err) => {
         console.error('Error al crear trabajo:', err);
@@ -368,7 +429,6 @@ export class SeguimientoComponent {
     this.trabajoEditando = null;
   }
 
-  // ✅ ACTUALIZAR MÉTODO
   guardarEdicionTrabajo(): void {
     if (this.isProcessing) return;
 
@@ -383,9 +443,11 @@ export class SeguimientoComponent {
       areaTrabajo: this.trabajoEditando.areaTrabajo,
       idTrabajador: this.trabajoEditando.idTrabajador ? Number(this.trabajoEditando.idTrabajador) : undefined,
       trabajador: nombreTrabajador,
+      cotizador: this.trabajoEditando.cotizador,
       fechaProgramada: this.trabajoEditando.fechaProgramada,
       horaProgramada: this.trabajoEditando.horaProgramada,
-      observaciones: this.trabajoEditando.observaciones
+      observaciones: this.trabajoEditando.observaciones,
+      requerimientoMateriales: this.trabajoEditando.requerimientoMateriales
     };
 
     this.isProcessing = true;
@@ -556,6 +618,59 @@ export class SeguimientoComponent {
   }
 
   exportarExcel(): void {
-    this.notificationService.info('Función de exportación en desarrollo');
+    if (!this.trabajosFiltrados || this.trabajosFiltrados.length === 0) {
+      this.notificationService.info('No hay trabajos para exportar en esta vista');
+      return;
+    }
+
+    const headers = [
+      'NRO.',
+      'NOMBRE DEL CLIENTE',
+      'COTIZADOR',
+      'BREVE DESCRIPCIÓN DEL TRABAJO',
+      'ÁREA REQUERIDA',
+      'DIRECCIÓN DE COLOCADOS / CONTACTO',
+      'NOMBRE DEL TRABAJADOR',
+      ...this.diasSemana.map(d => d.nombre.toUpperCase()),
+      'CUMPLIDO',
+      'OBSERVACIONES',
+      'REQUERIMIENTO DE MATERIALES'
+    ];
+
+    const filas = this.trabajosFiltrados.map((t, idx) => {
+      const diasCols = this.diasSemana.map(d => {
+        if (t.fechaProgramada === d.fechaStr) {
+          return t.horaProgramada ? t.horaProgramada.substring(0, 5) : 'PROGRAMADO';
+        }
+        return '-';
+      });
+
+      return [
+        (idx + 1).toString(),
+        `"${(t.cliente || '').replace(/"/g, '""')}"`,
+        `"${(t.cotizador || '').replace(/"/g, '""')}"`,
+        `"${(t.descripcionTrabajo || '').replace(/"/g, '""')}"`,
+        `"${(t.areaTrabajo || '').replace(/"/g, '""')}"`,
+        `"${(t.direccion || '').replace(/"/g, '""')}"`,
+        `"${(t.trabajador || '').replace(/"/g, '""')}"`,
+        ...diasCols.map(c => `"${c}"`),
+        t.cumplido ? 'SI' : 'NO',
+        `"${(t.observaciones || '').replace(/"/g, '""')}"`,
+        `"${(t.requerimientoMateriales || '').replace(/"/g, '""')}"`
+      ].join(';');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(';'), ...filas].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const semanaNom = this.planificacionActual ? `SEMANA_${this.planificacionActual.fechaInicio}` : 'PLANIFICACION';
+    link.setAttribute('download', `PLANNER_${semanaNom}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.notificationService.success('Archivo descargado con éxito para Excel');
   }
 }

@@ -4,7 +4,6 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, Reacti
 import { finalize } from 'rxjs';
 import { CotizacionService } from '../../../../../core/services/cotizacion/cotizacion.service';
 import { TrabajosService } from '../../../../../core/services/trabajos/trabajos.service';
-import { MaterialProduccionService } from '../../../../../core/services/material-produccion/material-produccion.service';
 
 @Component({
   selector: 'app-modificar-cotizacion',
@@ -16,7 +15,6 @@ import { MaterialProduccionService } from '../../../../../core/services/material
 export class ModificarCotizacionComponent implements OnInit, OnChanges {
   private cotizacionService = inject(CotizacionService);
   private trabajosService = inject(TrabajosService);
-  private materialesService = inject(MaterialProduccionService);
   private fb = inject(FormBuilder);
 
   @Input() mostrar: boolean = false;
@@ -28,7 +26,6 @@ export class ModificarCotizacionComponent implements OnInit, OnChanges {
   guardando = false;
   mensajeError = '';
   listTrabajos: any[] = [];
-  listMateriales: any[] = [];
   modificacionForm!: FormGroup;
   imagenModalUrl: string | null = null;
 
@@ -41,7 +38,6 @@ export class ModificarCotizacionComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.inicializarFormulario();
     this.cargarTrabajos();
-    this.cargarMateriales();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -146,17 +142,6 @@ export class ModificarCotizacionComponent implements OnInit, OnChanges {
       error: (err) => {
         console.error('Error al cargar trabajos:', err);
         this.error.emit('Error al cargar la lista de trabajos');
-      }
-    });
-  }
-
-  private cargarMateriales(): void {
-    this.materialesService.getSimpleMateriales().subscribe({
-      next: (materiales) => {
-        this.listMateriales = materiales;
-      },
-      error: (err) => {
-        console.error('Error al cargar materiales:', err);
       }
     });
   }

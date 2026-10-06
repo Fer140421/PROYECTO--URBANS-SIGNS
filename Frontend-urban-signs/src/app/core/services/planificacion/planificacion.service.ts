@@ -20,9 +20,11 @@ export interface CrearTrabajoRequest {
   areaTrabajo: string;
   idTrabajador?: number;
   trabajador: string;
+  cotizador?: string;
   fechaProgramada: string;
   horaProgramada?: string;
   observaciones?: string;
+  requerimientoMateriales?: string;
 }
 
 export interface PlanificacionSemanal {
@@ -56,6 +58,7 @@ export interface TrabajoProgramado {
   estado: 'PENDIENTE' | 'EN_PROCESO' | 'COMPLETADO' | 'REPROGRAMADO';
   cumplido: boolean;
   observaciones: string;
+  requerimientoMateriales?: string;
 }
 
 export interface ReprogramarRequest {
@@ -119,6 +122,11 @@ export class PlanificacionService {
   marcarCompletado(id: number): Observable<TrabajoProgramado> {
     const context = new HttpContext().set(TRANSACTION_MESSAGE, 'Marcando trabajo como completado...');
     return this.http.put<TrabajoProgramado>(`${this.apiUrl}/trabajos/${id}/completar`, {}, { context });
+  }
+
+  toggleCumplido(id: number): Observable<TrabajoProgramado> {
+    const context = new HttpContext().set(TRANSACTION_MESSAGE, 'Actualizando cumplimiento...');
+    return this.http.put<TrabajoProgramado>(`${this.apiUrl}/trabajos/${id}/toggle-cumplido`, {}, { context });
   }
 
   reprogramarTrabajo(id: number, request: ReprogramarRequest, usuarioId: number): Observable<TrabajoProgramado> {
