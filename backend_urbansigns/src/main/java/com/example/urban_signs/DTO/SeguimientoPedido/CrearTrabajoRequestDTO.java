@@ -14,5 +14,7 @@ public class CrearTrabajoRequestDTO {
     private String areaTrabajo;
     private Long idTrabajador;
     private String trabajador;
+    private String cotizador;
     private String observaciones;
+    private String requerimientoMateriales;
 }

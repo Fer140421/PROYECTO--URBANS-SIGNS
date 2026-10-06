@@ -70,20 +70,27 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PlanificacionSemanalDTO obtenerPlanificacionActual() {
         return obtenerPlanificacionPorFecha(LocalDate.now());
     }
 
-    // En PlanificacionServiceImpl.java - Actualizar el método
-    // obtenerPlanificacionPorFecha
-
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PlanificacionSemanalDTO obtenerPlanificacionPorFecha(LocalDate fecha) {
+        LocalDate lunes = fecha.with(DayOfWeek.MONDAY);
+        LocalDate domingo = lunes.plusDays(6);
 
-        PlanificacionSemanalModel planificacion = planificacionRepository.findByFecha(fecha)
-                .orElseThrow(() -> new RuntimeException("No hay planificación para la fecha: " + fecha));
+        PlanificacionSemanalModel planificacion = planificacionRepository.findByFechaInicio(lunes)
+                .or(() -> planificacionRepository.findByFecha(fecha))
+                .orElseGet(() -> {
+                    PlanificacionSemanalModel nueva = PlanificacionSemanalModel.builder()
+                            .fechaInicio(lunes)
+                            .fechaFin(domingo)
+                            .observaciones("Planificación semanal " + lunes + " al " + domingo)
+                            .build();
+                    return planificacionRepository.save(nueva);
+                });
 
         return convertirAPlanificacionDTO(planificacion);
     }
@@ -148,6 +155,7 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
                 .pedido(pedido)
                 // Datos automáticos del pedido
                 .cliente(nombreCliente)
+                .cotizador(request.getCotizador())
                 .descripcionTrabajo(descripcion.toString().trim())
                 .direccion(direccionCliente)
                 // Datos de programación
@@ -157,6 +165,7 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
                 .fechaProgramada(request.getFechaProgramada())
                 .horaProgramada(request.getHoraProgramada())
                 .observaciones(request.getObservaciones())
+                .requerimientoMateriales(request.getRequerimientoMateriales())
                 .estado(EstadoTrabajoProgramado.PENDIENTE)
                 .cumplido(false)
                 .build();
@@ -176,7 +185,9 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         trabajo.setAreaTrabajo(request.getAreaTrabajo());
         trabajo.setFechaProgramada(request.getFechaProgramada());
         trabajo.setHoraProgramada(request.getHoraProgramada());
+        trabajo.setCotizador(request.getCotizador());
         trabajo.setObservaciones(request.getObservaciones());
+        trabajo.setRequerimientoMateriales(request.getRequerimientoMateriales());
 
         if (request.getIdTrabajador() != null) {
             EmployeeModel emp = employeeRepository.findById(request.getIdTrabajador()).orElse(null);
@@ -223,6 +234,45 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
             if (todosCompletos && pedido.getEstadoPedido() != EstadoPedido.ENTREGADO && pedido.getEstadoPedido() != EstadoPedido.CANCELADO) {
                 pedido.setEstadoPedido(EstadoPedido.FINALIZADO);
                 pedidoRepository.save(pedido);
+            }
+        }
+
+        return convertirATrabajoDTO(trabajo);
+    }
+
+    @Override
+    @Transactional
+    public TrabajoProgramadoDTO toggleCumplido(Long id) {
+        TrabajoProgramadoModel trabajo = trabajoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
+
+        boolean nuevoCumplido = trabajo.getCumplido() == null || !trabajo.getCumplido();
+        trabajo.setCumplido(nuevoCumplido);
+        if (nuevoCumplido) {
+            trabajo.setEstado(EstadoTrabajoProgramado.COMPLETADO);
+        } else {
+            trabajo.setEstado(EstadoTrabajoProgramado.EN_PROCESO);
+        }
+        trabajo.setUltimaModificacion(LocalDateTime.now());
+
+        trabajo = trabajoRepository.save(trabajo);
+
+        // Si el trabajo pertenece a un pedido, verificar si todos los trabajos del pedido están completos
+        if (trabajo.getPedido() != null) {
+            PedidoModel pedido = trabajo.getPedido();
+            List<TrabajoProgramadoModel> trabajosDelPedido = trabajoRepository.findByPedido_IdPedido(pedido.getIdPedido());
+            boolean todosCompletos = !trabajosDelPedido.isEmpty() && trabajosDelPedido.stream()
+                    .allMatch(t -> Boolean.TRUE.equals(t.getCumplido()) || t.getEstado() == EstadoTrabajoProgramado.COMPLETADO);
+            if (todosCompletos) {
+                if (pedido.getEstadoPedido() != EstadoPedido.ENTREGADO && pedido.getEstadoPedido() != EstadoPedido.CANCELADO) {
+                    pedido.setEstadoPedido(EstadoPedido.FINALIZADO);
+                    pedidoRepository.save(pedido);
+                }
+            } else {
+                if (pedido.getEstadoPedido() == EstadoPedido.FINALIZADO) {
+                    pedido.setEstadoPedido(EstadoPedido.EN_TALLER);
+                    pedidoRepository.save(pedido);
+                }
             }
         }
 
@@ -309,6 +359,7 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         dto.setIdPlanificacion(model.getPlanificacion().getIdPlanificacion());
         dto.setIdPedido(model.getPedido() != null ? model.getPedido().getIdPedido() : null);
         dto.setCliente(model.getCliente());
+        dto.setCotizador(model.getCotizador());
         dto.setDescripcionTrabajo(model.getDescripcionTrabajo());
         dto.setAreaTrabajo(model.getAreaTrabajo());
         dto.setDireccion(model.getDireccion());
@@ -328,6 +379,7 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         dto.setEstado(model.getEstado().name());
         dto.setCumplido(model.getCumplido());
         dto.setObservaciones(model.getObservaciones());
+        dto.setRequerimientoMateriales(model.getRequerimientoMateriales());
         return dto;
     }
 

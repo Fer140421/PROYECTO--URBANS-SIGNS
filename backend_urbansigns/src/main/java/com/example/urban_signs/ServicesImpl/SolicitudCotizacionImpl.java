@@ -110,10 +110,6 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                         }
                                 }
 
-                                if (trabajoArchivoUrl == null && request.getTrabajos().size() == 1 && archivoUrl != null) {
-                                        trabajoArchivoUrl = archivoUrl;
-                                }
-
                                 String unidadMedida = (t.getUnidadMedida() != null && !t.getUnidadMedida().isBlank())
                                                 ? t.getUnidadMedida().trim().toLowerCase()
                                                 : "m";
@@ -145,11 +141,6 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                         }
 
                         solicitudTrabajoRepository.saveAll(trabajos);
-
-                        if (archivoUrl == null && !trabajos.isEmpty() && trabajos.get(0).getArchivoReferencia() != null) {
-                                solicitud.setArchivoReferencia(trabajos.get(0).getArchivoReferencia());
-                                solicitudCotizacionRepository.save(solicitud);
-                        }
                 }
 
                 return solicitud;

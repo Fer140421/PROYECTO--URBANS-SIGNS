@@ -26,6 +26,8 @@ public interface PlanificacionSemanalService {
 
     TrabajoProgramadoDTO marcarComoCompletado(Long id);
 
+    TrabajoProgramadoDTO toggleCumplido(Long id);
+
     TrabajoProgramadoDTO reprogramarTrabajo(Long id, ReprogramarTrabajoRequestDTO request, Long usuarioId);
 
     List<TrabajoProgramadoDTO> obtenerTrabajosPorSemana(Long idPlanificacion);

@@ -38,6 +38,9 @@ public class TrabajoProgramadoModel {
     @Column(name = "cliente")
     private String cliente;
 
+    @Column(name = "cotizador", length = 255)
+    private String cotizador;
+
     @Column(name = "descripcion_trabajo", columnDefinition = "TEXT", nullable = false)
     private String descripcionTrabajo;
 
@@ -69,6 +72,9 @@ public class TrabajoProgramadoModel {
 
     @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
+
+    @Column(name = "requerimiento_materiales", columnDefinition = "TEXT")
+    private String requerimientoMateriales;
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();

@@ -11,6 +11,7 @@ public class TrabajoProgramadoDTO {
     private Long idPlanificacion;
     private Long idPedido;
     private String cliente;
+    private String cotizador;
     private String descripcionTrabajo;
     private String areaTrabajo;
     private String direccion;
@@ -21,4 +22,5 @@ public class TrabajoProgramadoDTO {
     private String estado;
     private Boolean cumplido;
     private String observaciones;
+    private String requerimientoMateriales;
 }

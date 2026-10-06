@@ -44,20 +44,8 @@ public class PlanificacionController {
     // Obtener planificación actual (semana en curso)
     @GetMapping("/actual")
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_VER')")
-    public ResponseEntity<?> obtenerPlanificacionActual() {
-        try {
-            return ResponseEntity.ok(planificacionService.obtenerPlanificacionActual());
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("No hay planificación")) {
-                // Retornar 404 con mensaje claro
-                return ResponseEntity.status(404)
-                        .body(Map.of(
-                                "error", "NO_PLANIFICACION",
-                                "message", "No existe planificación para la semana actual",
-                                "sugerencia", "Crear una nueva planificación"));
-            }
-            throw e;
-        }
+    public ResponseEntity<PlanificacionSemanalDTO> obtenerPlanificacionActual() {
+        return ResponseEntity.ok(planificacionService.obtenerPlanificacionActual());
     }
 
     // Obtener planificación por fecha
@@ -104,6 +92,13 @@ public class PlanificacionController {
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_EDITAR')")
     public ResponseEntity<TrabajoProgramadoDTO> marcarCompletado(@PathVariable Long id) {
         return ResponseEntity.ok(planificacionService.marcarComoCompletado(id));
+    }
+
+    // Alternar cumplido (SI / NO)
+    @PutMapping("/trabajos/{id}/toggle-cumplido")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('OFICINA', 'TALLER') or hasAuthority('PLANIFICACION_EDITAR')")
+    public ResponseEntity<TrabajoProgramadoDTO> toggleCumplido(@PathVariable Long id) {
+        return ResponseEntity.ok(planificacionService.toggleCumplido(id));
     }
 
     // Reprogramar trabajo

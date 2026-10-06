@@ -14,6 +14,8 @@ public interface PlanificacionSemanalRepository extends JpaRepository<Planificac
     @Query("SELECT p FROM PlanificacionSemanalModel p WHERE :fecha BETWEEN p.fechaInicio AND p.fechaFin")
     Optional<PlanificacionSemanalModel> findByFecha(LocalDate fecha);
 
+    Optional<PlanificacionSemanalModel> findByFechaInicio(LocalDate fechaInicio);
+
     List<PlanificacionSemanalModel> findByFechaInicioBetween(LocalDate inicio, LocalDate fin);
 
     @Query("SELECT p FROM PlanificacionSemanalModel p ORDER BY p.fechaInicio DESC")
