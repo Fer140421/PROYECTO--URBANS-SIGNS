@@ -7,6 +7,7 @@ import { CotizacionService } from '../../../../../core/services/cotizacion/cotiz
 import { CommonModule } from '@angular/common';
 import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { StorageService } from '../../../../../core/services/storage/storage.service';
 import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -23,6 +24,7 @@ export class SolicitudCotizacionComponent {
   solicitud = inject(SolicitudService);
   cotizacionService = inject(CotizacionService);
   notificationService = inject(NotificationService);
+  storageService = inject(StorageService);
   router = inject(Router);
   cotizacionForm!: FormGroup;
   currentStep = 0;
@@ -410,6 +412,7 @@ export class SolicitudCotizacionComponent {
         idCliente: formValue.id_cliente,
         estado: 'Pendiente',
         observaciones: formValue.observaciones,
+        cotizador: this.obtenerNombreUsuarioLogueado(),
         trabajos: formValue.trabajos.map((trabajo: any) => ({
           idTrabajo: Number(trabajo.id_trabajo),
           cantidad: trabajo.cantidad,
@@ -438,6 +441,24 @@ export class SolicitudCotizacionComponent {
     } else {
       this.marcarControlesComoSucios();
     }
+  }
+
+  private obtenerNombreUsuarioLogueado(): string {
+    try {
+      const u = this.storageService.getUser();
+      if (typeof u === 'string') return u;
+      if (u && typeof u === 'object') {
+        return u.fullName || u.nombre || u.name || u.user || u.username || '';
+      }
+      const rawUser = localStorage.getItem('currentUser');
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        return parsed.fullName || parsed.username || parsed.usuario || '';
+      }
+    } catch (e) {
+      // ignore
+    }
+    return '';
   }
 
   calcularSubtotalTrabajo(trabajoIndex: number): void {

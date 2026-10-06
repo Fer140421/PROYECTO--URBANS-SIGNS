@@ -115,7 +115,7 @@ export class SeguimientoComponent {
   mostrarModalEditarTrabajo = false;
   trabajoEditando: TrabajoProgramado | null = null;
 
-  // ✅ Formulario de nuevo trabajo con cotizador y requerimientoMateriales
+  // ✅ Formulario de nuevo trabajo con cotizador
   nuevoTrabajo = {
     idPedido: null as number | null,
     areaTrabajo: 'ENSAMBLAJE',
@@ -124,8 +124,7 @@ export class SeguimientoComponent {
     cotizador: '',
     fechaProgramada: '',
     horaProgramada: '',
-    observaciones: '',
-    requerimientoMateriales: ''
+    observaciones: ''
   };
 
   ngOnInit(): void {
@@ -225,8 +224,13 @@ export class SeguimientoComponent {
     this.pedidoSeleccionado = idPedido;
     if (idPedido) {
       this.cargarTrabajosDisponibles(idPedido);
+      const pedido = this.pedidosPendientes.find(p => p.idPedido === Number(idPedido));
+      if (pedido && pedido.cotizador) {
+        this.nuevoTrabajo.cotizador = pedido.cotizador;
+      }
     } else {
       this.trabajosDisponibles = [];
+      this.nuevoTrabajo.cotizador = '';
     }
   }
 
@@ -257,8 +261,7 @@ export class SeguimientoComponent {
         trabajo.cotizador?.toLowerCase().includes(busqueda) ||
         trabajo.descripcionTrabajo?.toLowerCase().includes(busqueda) ||
         trabajo.trabajador?.toLowerCase().includes(busqueda) ||
-        trabajo.observaciones?.toLowerCase().includes(busqueda) ||
-        trabajo.requerimientoMateriales?.toLowerCase().includes(busqueda)
+        trabajo.observaciones?.toLowerCase().includes(busqueda)
       );
     }
 
@@ -354,8 +357,7 @@ export class SeguimientoComponent {
       cotizador: '',
       fechaProgramada: fechaPorDefecto,
       horaProgramada: '',
-      observaciones: '',
-      requerimientoMateriales: ''
+      observaciones: ''
     };
 
     this.pedidoSeleccionado = null;
@@ -396,8 +398,7 @@ export class SeguimientoComponent {
       cotizador: this.nuevoTrabajo.cotizador,
       fechaProgramada: this.nuevoTrabajo.fechaProgramada,
       horaProgramada: this.nuevoTrabajo.horaProgramada,
-      observaciones: this.nuevoTrabajo.observaciones,
-      requerimientoMateriales: this.nuevoTrabajo.requerimientoMateriales
+      observaciones: this.nuevoTrabajo.observaciones
     };
 
     this.isProcessing = true;
@@ -446,8 +447,7 @@ export class SeguimientoComponent {
       cotizador: this.trabajoEditando.cotizador,
       fechaProgramada: this.trabajoEditando.fechaProgramada,
       horaProgramada: this.trabajoEditando.horaProgramada,
-      observaciones: this.trabajoEditando.observaciones,
-      requerimientoMateriales: this.trabajoEditando.requerimientoMateriales
+      observaciones: this.trabajoEditando.observaciones
     };
 
     this.isProcessing = true;
@@ -633,8 +633,7 @@ export class SeguimientoComponent {
       'NOMBRE DEL TRABAJADOR',
       ...this.diasSemana.map(d => d.nombre.toUpperCase()),
       'CUMPLIDO',
-      'OBSERVACIONES',
-      'REQUERIMIENTO DE MATERIALES'
+      'OBSERVACIONES'
     ];
 
     const filas = this.trabajosFiltrados.map((t, idx) => {
@@ -655,8 +654,7 @@ export class SeguimientoComponent {
         `"${(t.trabajador || '').replace(/"/g, '""')}"`,
         ...diasCols.map(c => `"${c}"`),
         t.cumplido ? 'SI' : 'NO',
-        `"${(t.observaciones || '').replace(/"/g, '""')}"`,
-        `"${(t.requerimientoMateriales || '').replace(/"/g, '""')}"`
+        `"${(t.observaciones || '').replace(/"/g, '""')}"`
       ].join(';');
     });
 

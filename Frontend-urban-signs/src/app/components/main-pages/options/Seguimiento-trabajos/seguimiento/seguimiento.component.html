@@ -212,7 +212,6 @@
 
                                 <th rowspan="2" class="px-3 py-3 font-bold text-center border-r border-slate-700 min-w-[95px]">CUMPLIDO</th>
                                 <th rowspan="2" class="px-4 py-3 font-bold border-r border-slate-700 min-w-[180px]">OBSERVACIONES</th>
-                                <th rowspan="2" class="px-4 py-3 font-bold border-r border-slate-700 min-w-[180px]">REQ. MATERIALES</th>
                                 <th rowspan="2" class="px-3 py-3 font-bold text-center w-24">ACCIONES</th>
                             </tr>
                             <tr class="bg-slate-900 text-slate-200">
@@ -330,19 +329,6 @@
                                     </p>
                                 </td>
 
-                                <!-- REQUERIMIENTO DE MATERIALES -->
-                                <td class="px-4 py-3 border-r border-gray-100">
-                                    <div *ngIf="trabajo.requerimientoMateriales" 
-                                        class="p-1.5 bg-amber-50/80 border border-amber-200/80 rounded text-[11px] text-amber-900 leading-tight line-clamp-3"
-                                        [title]="trabajo.requerimientoMateriales">
-                                        <i class="ph ph-package mr-1 text-amber-600"></i>
-                                        {{ trabajo.requerimientoMateriales }}
-                                    </div>
-                                    <span *ngIf="!trabajo.requerimientoMateriales" class="text-gray-400 italic">
-                                        -
-                                    </span>
-                                </td>
-
                                 <!-- ACCIONES -->
                                 <td class="px-3 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
@@ -437,12 +423,6 @@
                                 <span class="text-gray-400">Dirección:</span>
                                 <span class="text-right truncate max-w-[180px]">{{ trabajo.direccion }}</span>
                             </div>
-                        </div>
-
-                        <!-- Requerimiento Materiales -->
-                        <div *ngIf="trabajo.requerimientoMateriales" class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 mb-3">
-                            <span class="font-bold block text-[11px] uppercase tracking-wider text-amber-800">Req. Materiales:</span>
-                            {{ trabajo.requerimientoMateriales }}
                         </div>
                     </div>
 
@@ -550,8 +530,13 @@
 
                     <!-- Cotizador -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Cotizador / Vendedor</label>
-                        <input type="text" [(ngModel)]="nuevoTrabajo.cotizador" placeholder="Ej: JHONNY, DAYANA..."
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-bold text-gray-700">Cotizador / Vendedor</label>
+                            <span *ngIf="nuevoTrabajo.cotizador" class="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                <i class="ph ph-check-circle"></i> Automático
+                            </span>
+                        </div>
+                        <input type="text" [(ngModel)]="nuevoTrabajo.cotizador" placeholder="Cargado automáticamente desde el pedido..."
                             class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
 
@@ -567,14 +552,6 @@
                         <label class="block text-xs font-bold text-gray-700 mb-1">Hora Estimada</label>
                         <input type="time" [(ngModel)]="nuevoTrabajo.horaProgramada"
                             class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-                    </div>
-
-                    <!-- Requerimiento de Materiales -->
-                    <div class="col-span-full">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Requerimiento de Materiales</label>
-                        <textarea [(ngModel)]="nuevoTrabajo.requerimientoMateriales" rows="2"
-                            placeholder="Detalle de materiales necesarios en taller para este trabajo..."
-                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                     </div>
 
                     <!-- Observaciones -->
@@ -672,12 +649,6 @@
                     <label class="block text-xs font-bold text-gray-700 mb-1">Hora</label>
                     <input type="time" [(ngModel)]="trabajoEditando.horaProgramada"
                         class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none">
-                </div>
-
-                <div class="col-span-full">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Requerimiento de Materiales</label>
-                    <textarea [(ngModel)]="trabajoEditando.requerimientoMateriales" rows="2"
-                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
 
                 <div class="col-span-full">

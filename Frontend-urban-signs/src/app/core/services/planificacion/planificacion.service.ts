@@ -24,7 +24,6 @@ export interface CrearTrabajoRequest {
   fechaProgramada: string;
   horaProgramada?: string;
   observaciones?: string;
-  requerimientoMateriales?: string;
 }
 
 export interface PlanificacionSemanal {
@@ -58,7 +57,6 @@ export interface TrabajoProgramado {
   estado: 'PENDIENTE' | 'EN_PROCESO' | 'COMPLETADO' | 'REPROGRAMADO';
   cumplido: boolean;
   observaciones: string;
-  requerimientoMateriales?: string;
 }
 
 export interface ReprogramarRequest {
@@ -70,6 +68,7 @@ export interface ReprogramarRequest {
 export interface PedidoResumen {
   idPedido: number;
   cliente: string;
+  cotizador?: string;
   fechaPedido: string;
   total: number;
   estadoPedido: string;

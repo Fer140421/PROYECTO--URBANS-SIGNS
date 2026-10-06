@@ -7,6 +7,7 @@ import { ClientesService } from '../../../../../core/services/clientes/clientes.
 import { ActivatedRoute, Router } from '@angular/router';
 import { SolicitudService } from '../../../../../core/services/solicitud/solicitud.service';
 import { NotificationService } from '../../../../../core/services/notification/notification.service';
+import { StorageService } from '../../../../../core/services/storage/storage.service';
 import { finalize } from 'rxjs';
 
 interface TrabajoSolicitud {
@@ -33,6 +34,7 @@ interface Solicitud {
   origen?: string;
   archivoReferencia?: string;
   observaciones: string;
+  cotizador?: string;
   trabajos: TrabajoSolicitud[];
 }
 
@@ -49,6 +51,7 @@ export class RegistrarCotizacionComponent implements OnInit {
   private solicitudService = inject(SolicitudService);
   private cotizacionService = inject(CotizacionService);
   private notificacionService = inject(NotificationService);
+  private storageService = inject(StorageService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
@@ -93,7 +96,8 @@ export class RegistrarCotizacionComponent implements OnInit {
     this.cotizacionForm = this.fb.group({
       id_cliente: ['', Validators.required],
       fecha_emision: ['', Validators.required],
-      fecha_caducado: ['', Validators.required]
+      fecha_caducado: ['', Validators.required],
+      cotizador: ['']
     });
   }
 
@@ -116,8 +120,10 @@ export class RegistrarCotizacionComponent implements OnInit {
             }
           });
         }
+        const cotizadorDefault = data.cotizador || this.obtenerNombreUsuarioLogueado();
         this.cotizacionForm.patchValue({
-          id_cliente: data.idSolicitud
+          id_cliente: data.idSolicitud,
+          cotizador: cotizadorDefault
         });
       },
       error: (err) => {
@@ -189,10 +195,12 @@ export class RegistrarCotizacionComponent implements OnInit {
       this.isLoading = true;
 
       const codCotizacion = 'COT-' + Date.now().toString().slice(-6);
+      const cotizadorFinal = this.cotizacionForm.get('cotizador')?.value?.trim() || this.solicitud?.cotizador || this.obtenerNombreUsuarioLogueado();
 
       const cotizacionData = {
         codCotizacion: codCotizacion,
         idSolicitud: this.solicitud?.idSolicitud,
+        cotizador: cotizadorFinal,
         trabajos: this.solicitud?.trabajos.map((trabajo: any, index: number) => ({
           idSolicitudTrabajo: trabajo.idSolicitudTrabajo,
           cantidad: trabajo.cantidad,
@@ -223,6 +231,24 @@ export class RegistrarCotizacionComponent implements OnInit {
     } else {
       this.marcarControlesComoSucios();
     }
+  }
+
+  private obtenerNombreUsuarioLogueado(): string {
+    try {
+      const u = this.storageService.getUser();
+      if (typeof u === 'string') return u;
+      if (u && typeof u === 'object') {
+        return u.fullName || u.nombre || u.name || u.user || u.username || '';
+      }
+      const rawUser = localStorage.getItem('currentUser');
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        return parsed.fullName || parsed.username || parsed.usuario || '';
+      }
+    } catch (e) {
+      // ignore
+    }
+    return '';
   }
 
   private marcarControlesComoSucios(): void {
