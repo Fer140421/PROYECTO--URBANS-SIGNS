@@ -46,4 +46,7 @@ public class SolicitudCotizacionModel {
     @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
 
+    @Column(name = "cotizador", length = 255)
+    private String cotizador;
+
 }

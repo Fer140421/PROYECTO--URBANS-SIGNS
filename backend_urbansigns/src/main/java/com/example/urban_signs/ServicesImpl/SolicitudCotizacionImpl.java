@@ -31,6 +31,11 @@ import com.example.urban_signs.Utils.Enum.CloudinaryFolder;
 import com.example.urban_signs.Utils.Enum.EstadoCotizacion;
 import com.example.urban_signs.Utils.Enum.OrigenSolicitud;
 import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
+import com.example.urban_signs.Repository.EmployeeRepository;
+import com.example.urban_signs.Model.EmployeeModel;
+import com.example.urban_signs.Model.PeopleModel;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -45,6 +50,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
         private final ClienteRepository clienteRepository;
         private final TrabajosRepository trabajoRepository;
         private final CloudinaryService cloudinaryService;
+        private final EmployeeRepository employeeRepository;
 
         @Override
         @Transactional
@@ -76,6 +82,11 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
 
                 LocalDate fechaActualLaPaz = LocalDate.now(ZoneId.of("America/La_Paz"));
 
+                String cotizadorFinal = request.getCotizador();
+                if (cotizadorFinal == null || cotizadorFinal.isBlank()) {
+                        cotizadorFinal = resolverNombreUsuarioAutenticado();
+                }
+
                 SolicitudCotizacionModel solicitud = SolicitudCotizacionModel.builder()
                                 .codSolicitud(request.getCodSolicitud())
                                 .cliente(cliente)
@@ -84,6 +95,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .origen(OrigenSolicitud.DASHBOARD)
                                 .archivoReferencia(archivoUrl)
                                 .observaciones(request.getObservaciones())
+                                .cotizador(cotizadorFinal)
                                 .build();
 
                 solicitud = solicitudCotizacionRepository.save(solicitud);
@@ -207,6 +219,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .origen(solicitud.getOrigen())
                                 .archivoReferencia(solicitud.getArchivoReferencia())
                                 .observaciones(solicitud.getObservaciones())
+                                .cotizador(solicitud.getCotizador())
                                 .trabajos(trabajos)
                                 .build();
         }
@@ -345,6 +358,7 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 .origen(solicitud.getOrigen())
                                 .archivoReferencia(solicitud.getArchivoReferencia())
                                 .observaciones(solicitud.getObservaciones())
+                                .cotizador(solicitud.getCotizador())
                                 .trabajos(trabajosDTO)
                                 .build();
         }
@@ -376,6 +390,26 @@ public class SolicitudCotizacionImpl implements SolicitudCotizacionService {
                                 }
                         }
                 }
+        }
+
+        private String resolverNombreUsuarioAutenticado() {
+                try {
+                        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+                                String username = auth.getName();
+                                java.util.Optional<EmployeeModel> emp = employeeRepository.findByUsername(username);
+                                if (emp.isPresent() && emp.get().getPeople() != null) {
+                                        PeopleModel p = emp.get().getPeople();
+                                        return String.format("%s %s %s",
+                                                        p.getName_people() != null ? p.getName_people() : "",
+                                                        p.getAp() != null ? p.getAp() : "",
+                                                        p.getAm() != null ? p.getAm() : "").trim();
+                                }
+                                return username;
+                        }
+                } catch (Exception ignored) {
+                }
+                return null;
         }
 
 }

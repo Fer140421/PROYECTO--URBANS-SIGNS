@@ -73,9 +73,6 @@ public class TrabajoProgramadoModel {
     @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
 
-    @Column(name = "requerimiento_materiales", columnDefinition = "TEXT")
-    private String requerimientoMateriales;
-
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 

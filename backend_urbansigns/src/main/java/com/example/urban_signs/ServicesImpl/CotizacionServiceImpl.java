@@ -38,6 +38,11 @@ import com.example.urban_signs.Utils.Enum.SolicitudCotizacion;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.example.urban_signs.Repository.EmployeeRepository;
+import com.example.urban_signs.Model.EmployeeModel;
+import com.example.urban_signs.Model.PeopleModel;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +54,7 @@ public class CotizacionServiceImpl implements CotizacionService {
         private final CotizacionRepository cotizacionRepository;
         private final SolicitudCotizacionRepository solicitudeCotizacionRepo;
         private final SolicitudTrabajoRepository solicitudTrabajoRepository;
+        private final EmployeeRepository employeeRepository;
         private final com.example.urban_signs.Services.PortalNotificacionService portalNotificacionService;
 
         @Override
@@ -106,11 +112,23 @@ public class CotizacionServiceImpl implements CotizacionService {
 
                 LocalDate fechaActualLaPaz = LocalDate.now(ZoneId.of("America/La_Paz"));
 
+                String cotizadorFinal = request.getCotizador();
+                if (cotizadorFinal == null || cotizadorFinal.isBlank()) {
+                        cotizadorFinal = solicitud.getCotizador();
+                }
+                if (cotizadorFinal == null || cotizadorFinal.isBlank()) {
+                        cotizadorFinal = resolverNombreUsuarioAutenticado();
+                }
+                if (cotizadorFinal == null || cotizadorFinal.isBlank()) {
+                        cotizadorFinal = "Oficina";
+                }
+
                 CotizacionModel cotizacion = CotizacionModel.builder()
                                 .codCotizacion(solicitud.getCodSolicitud())
                                 .solicitud(solicitud)
                                 .fechaEmision(fechaActualLaPaz)
                                 .fechaCaducado(fechaActualLaPaz.plusDays(15))
+                                .cotizador(cotizadorFinal)
                                 .estado(EstadoCotizacion.PENDIENTE)
                                 .build();
 
@@ -211,6 +229,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .fechaEmision(cotizacion.getFechaEmision())
                                 .fechaCaducidad(cotizacion.getFechaCaducado())
                                 .costoTotal(cotizacion.getCostoTotal())
+                                .cotizador(cotizacion.getCotizador())
                                 .build();
 
                 List<TrabajoCotizadoDTO> trabajosDTO = cotizacion.getTrabajos().stream()
@@ -303,6 +322,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                                 .clienteCorreo(cliente != null ? cliente.getCorreo() : null)
                                 .clienteDireccion(dir)
                                 .observaciones(obs)
+                                .cotizador(cotizacion.getCotizador())
                                 .trabajos(cotizacion.getTrabajos().stream().map(this::convertirTrabajoDTO).toList())
                                 .build();
         }
@@ -346,6 +366,26 @@ public class CotizacionServiceImpl implements CotizacionService {
                         return cliente.getEmpresa().getRazonSocial();
                 }
                 return "Cliente desconocido";
+        }
+
+        private String resolverNombreUsuarioAutenticado() {
+                try {
+                        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+                                String username = auth.getName();
+                                java.util.Optional<EmployeeModel> emp = employeeRepository.findByUsername(username);
+                                if (emp.isPresent() && emp.get().getPeople() != null) {
+                                        PeopleModel p = emp.get().getPeople();
+                                        return String.format("%s %s %s",
+                                                        p.getName_people() != null ? p.getName_people() : "",
+                                                        p.getAp() != null ? p.getAp() : "",
+                                                        p.getAm() != null ? p.getAm() : "").trim();
+                                }
+                                return username;
+                        }
+                } catch (Exception ignored) {
+                }
+                return null;
         }
 
 }

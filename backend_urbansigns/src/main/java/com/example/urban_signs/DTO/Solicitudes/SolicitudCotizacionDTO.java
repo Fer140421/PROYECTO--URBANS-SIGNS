@@ -28,5 +28,6 @@ public class SolicitudCotizacionDTO {
   private OrigenSolicitud origen;
   private String archivoReferencia;
   private String observaciones;
+  private String cotizador;
   private List<SolicitudTrabajoDTO> trabajos;
 }

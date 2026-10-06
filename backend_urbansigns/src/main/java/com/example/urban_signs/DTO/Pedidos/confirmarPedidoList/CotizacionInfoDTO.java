@@ -20,4 +20,5 @@ public class CotizacionInfoDTO {
     private LocalDate fechaEmision;
     private LocalDate fechaCaducidad;
     private BigDecimal costoTotal;
+    private String cotizador;
 }

@@ -25,5 +25,6 @@ public class SolicitudDetalleDTO {
     private OrigenSolicitud origen;
     private String archivoReferencia;
     private String observaciones;
+    private String cotizador;
     private List<SolicitudTrabajoDetlDTO> trabajos;
 }

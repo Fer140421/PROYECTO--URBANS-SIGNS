@@ -12,6 +12,7 @@ import lombok.Data;
 public class PedidoResumenDTO {
     private Long idPedido;
     private String cliente;
+    private String cotizador;
     private LocalDate fechaPedido;
     private BigDecimal total;
     private EstadoPedido estadoPedido;

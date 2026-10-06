@@ -22,5 +22,4 @@ public class TrabajoProgramadoDTO {
     private String estado;
     private Boolean cumplido;
     private String observaciones;
-    private String requerimientoMateriales;
 }

@@ -310,6 +310,9 @@ public class PedidoiServiceImpl implements PedidosService {
                 dto.setTotal(pedido.getTotal());
                 dto.setEstadoPedido(pedido.getEstadoPedido());
                 dto.setEstadoPago(pedido.getEstadoPago());
+                if (pedido.getCotizacion() != null) {
+                        dto.setCotizador(pedido.getCotizacion().getCotizador());
+                }
 
                 return dto;
         }

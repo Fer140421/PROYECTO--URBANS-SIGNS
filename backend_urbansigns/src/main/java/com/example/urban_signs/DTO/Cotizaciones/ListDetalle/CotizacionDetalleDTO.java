@@ -30,5 +30,6 @@ public class CotizacionDetalleDTO {
     private String clienteCorreo;
     private String clienteDireccion;
     private String observaciones;
+    private String cotizador;
     private List<CotizacionTrabajoDTO> trabajos;
 }

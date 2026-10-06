@@ -45,6 +45,9 @@ public class CotizacionModel {
   @Column(name = "estado", nullable = false, length = 20)
   private EstadoCotizacion estado = EstadoCotizacion.PENDIENTE;
 
+  @Column(name = "cotizador", length = 255)
+  private String cotizador;
+
   @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JsonManagedReference
   private List<CotizacionTrabajoModel> trabajos = new ArrayList<>();

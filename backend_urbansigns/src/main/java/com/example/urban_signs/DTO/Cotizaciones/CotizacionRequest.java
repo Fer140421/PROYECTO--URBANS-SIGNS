@@ -18,5 +18,6 @@ public class CotizacionRequest {
     private String codCotizacion;
     private Long idSolicitud;
     private LocalDate fechaCaducado;
+    private String cotizador;
     private List<CotizacionTrabajoRequest> trabajos;
 }

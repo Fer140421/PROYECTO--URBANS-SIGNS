@@ -149,13 +149,18 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
             pedidoRepository.save(pedido);
         }
 
+        String cotizadorFinal = request.getCotizador();
+        if ((cotizadorFinal == null || cotizadorFinal.isBlank()) && pedido.getCotizacion() != null) {
+            cotizadorFinal = pedido.getCotizacion().getCotizador();
+        }
+
         // 6. Crear el trabajo programado
         TrabajoProgramadoModel trabajo = TrabajoProgramadoModel.builder()
                 .planificacion(planificacion)
                 .pedido(pedido)
                 // Datos automáticos del pedido
                 .cliente(nombreCliente)
-                .cotizador(request.getCotizador())
+                .cotizador(cotizadorFinal)
                 .descripcionTrabajo(descripcion.toString().trim())
                 .direccion(direccionCliente)
                 // Datos de programación
@@ -165,7 +170,6 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
                 .fechaProgramada(request.getFechaProgramada())
                 .horaProgramada(request.getHoraProgramada())
                 .observaciones(request.getObservaciones())
-                .requerimientoMateriales(request.getRequerimientoMateriales())
                 .estado(EstadoTrabajoProgramado.PENDIENTE)
                 .cumplido(false)
                 .build();
@@ -187,7 +191,6 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         trabajo.setHoraProgramada(request.getHoraProgramada());
         trabajo.setCotizador(request.getCotizador());
         trabajo.setObservaciones(request.getObservaciones());
-        trabajo.setRequerimientoMateriales(request.getRequerimientoMateriales());
 
         if (request.getIdTrabajador() != null) {
             EmployeeModel emp = employeeRepository.findById(request.getIdTrabajador()).orElse(null);
@@ -359,7 +362,11 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         dto.setIdPlanificacion(model.getPlanificacion().getIdPlanificacion());
         dto.setIdPedido(model.getPedido() != null ? model.getPedido().getIdPedido() : null);
         dto.setCliente(model.getCliente());
-        dto.setCotizador(model.getCotizador());
+        String cotizadorModel = model.getCotizador();
+        if ((cotizadorModel == null || cotizadorModel.isBlank()) && model.getPedido() != null && model.getPedido().getCotizacion() != null) {
+            cotizadorModel = model.getPedido().getCotizacion().getCotizador();
+        }
+        dto.setCotizador(cotizadorModel);
         dto.setDescripcionTrabajo(model.getDescripcionTrabajo());
         dto.setAreaTrabajo(model.getAreaTrabajo());
         dto.setDireccion(model.getDireccion());
@@ -379,7 +386,6 @@ public class PlanificacionSemanalServiceImpl implements PlanificacionSemanalServ
         dto.setEstado(model.getEstado().name());
         dto.setCumplido(model.getCumplido());
         dto.setObservaciones(model.getObservaciones());
-        dto.setRequerimientoMateriales(model.getRequerimientoMateriales());
         return dto;
     }
 
