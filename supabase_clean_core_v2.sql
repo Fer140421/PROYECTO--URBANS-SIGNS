@@ -193,6 +193,7 @@ CREATE TABLE solicitud_cotizacion (
     observaciones TEXT,
     origen VARCHAR(20) DEFAULT 'DASHBOARD',
     archivo_referencia VARCHAR(500),
+    cotizador VARCHAR(255),
     CONSTRAINT fk_solicitud_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
 );
 
@@ -223,6 +224,7 @@ CREATE TABLE cotizaciones (
     fecha_emision DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_caducado DATE NOT NULL,
     costo_total NUMERIC(12,2) NOT NULL DEFAULT 0,
+    cotizador VARCHAR(255),
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'APROBADA', 'CADUCADA')),
     CONSTRAINT fk_cotizacion_solicitud FOREIGN KEY (id_solicitud) REFERENCES solicitud_cotizacion(id_solicitud)
 );
@@ -337,7 +339,8 @@ CREATE TABLE planificacion_semanal (
     creado_por BIGINT NULL,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
     observaciones VARCHAR(255) NULL,
-    CONSTRAINT fk_plan_creador FOREIGN KEY (creado_por) REFERENCES users(id_user)
+    CONSTRAINT fk_plan_creador FOREIGN KEY (creado_por) REFERENCES users(id_user),
+    CONSTRAINT uq_planificacion_semana UNIQUE (fecha_inicio)
 );
 
 CREATE TABLE trabajo_programado (
@@ -346,6 +349,7 @@ CREATE TABLE trabajo_programado (
     id_pedido BIGINT NULL,
     id_orden_impresion BIGINT NULL,
     cliente VARCHAR(255) NULL,
+    cotizador VARCHAR(255) NULL,
     descripcion_trabajo TEXT NOT NULL,
     area_trabajo VARCHAR(100) NULL,
     direccion TEXT NULL,
@@ -355,7 +359,7 @@ CREATE TABLE trabajo_programado (
     hora_programada TIME NULL,
     estado VARCHAR(20) DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'EN_PROCESO', 'COMPLETADO', 'REPROGRAMADO')),
     cumplido BOOLEAN DEFAULT FALSE,
-    observaciones VARCHAR(255) NULL,
+    observaciones TEXT NULL,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW(),
     ultima_modificacion TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT fk_prog_planificacion FOREIGN KEY (id_planificacion) REFERENCES planificacion_semanal(id_planificacion) ON DELETE CASCADE,

@@ -169,8 +169,8 @@ El método `crearNuevaPlanificacion()` envía un `POST /planificaciones/crear` c
 
 ## 6. Plan de Acción y Próximos Pasos
 
-- [ ] **Paso 1:** Limpiar `modificar-cotizacion.component.ts` removiendo la dependencia y llamadas al servicio de materiales deprecado.
-- [ ] **Paso 2:** Condicionar la carga del modal de modificación con `*ngIf` en `list-cotizaciones.component.html`.
-- [ ] **Paso 3:** Corregir `seguimiento.component.ts` eliminando la creación automática en el `error` de `cargarPlanificacionActual`.
-- [ ] **Paso 4:** Agregar en `seguimiento.component.html` la interfaz para semana sin planificar con botón de creación manual.
-- [ ] **Paso 5:** Validar compilación frontend con `npm run build` y sincronizar commits a los repositorios de GitHub.
+- [x] **Paso 1:** Limpiar `modificar-cotizacion.component.ts` removiendo la dependencia y llamadas al servicio de materiales deprecado.
+- [x] **Paso 2:** Condicionar la carga del modal de modificación con `*ngIf` en `list-cotizaciones.component.html`.
+- [x] **Paso 3:** Corregir `seguimiento.component.ts` eliminando la creación automática en el `error` de `cargarPlanificacionActual`.
+- [x] **Paso 4:** Agregar en `seguimiento.component.html` la interfaz para semana sin planificar con botón de creación manual.
+- [x] **Paso 5:** Validar compilación frontend con `npm run build` y sincronizar commits a los repositorios de GitHub.
