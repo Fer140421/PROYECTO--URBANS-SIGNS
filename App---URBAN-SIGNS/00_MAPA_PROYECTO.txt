@@ -1,0 +1,28 @@
+GEORESCUE 360 · MAPA DEL PROYECTO
+================================
+
+APP
+├── Auth / roles
+├── Dashboard
+├── CRUD incidencias
+├── GPS
+├── Mapa OpenStreetMap
+├── API Open-Meteo
+├── Cámara / galería
+├── Supabase Storage
+├── PostgreSQL + RLS
+├── Preferencias locales
+├── Manejo loading/error
+├── Pruebas
+├── Git / README
+└── APK / AAB
+
+ARQUITECTURA
+UI -> Controller -> Repository/Service -> Supabase / dispositivo / API
+
+MODOS
+DEMO -> memoria + datos semilla
+LIVE -> Supabase Auth + PostgreSQL + Storage + RLS
+
+PLATAFORMA DE REFERENCIA
+Android

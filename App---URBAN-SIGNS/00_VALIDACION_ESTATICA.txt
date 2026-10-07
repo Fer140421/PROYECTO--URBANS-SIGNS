@@ -1,0 +1,18 @@
+GEORESCUE 360 PRO · VALIDACION ESTATICA FINAL
+===============================================
+Archivos totales: 118
+Archivos Dart: 30
+JSON: OK
+YAML: OK
+Imports relativos Dart: OK
+Delimitadores Dart (control estructural): OK
+Identificadores nativos Android/Linux/Windows: OK
+Config LIVE real: NO incluida
+Escaneo simple de JWT/secretos: OK
+
+IMPORTANTE:
+- El entorno de generacion NO dispone del Flutter SDK.
+- Por ello NO se ejecutaron flutter pub get, flutter analyze, flutter test, flutter run ni flutter build.
+- Antes de clase/defensa, ejecutar scripts/preflight_linux.sh o scripts/preflight_windows.bat y luego probar DEMO y LIVE en un telefono Android real.
+
+RESULTADO: SIN INCIDENCIAS EN LA VALIDACION ESTATICA.

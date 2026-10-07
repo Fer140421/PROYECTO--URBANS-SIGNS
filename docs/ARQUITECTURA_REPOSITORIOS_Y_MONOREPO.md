@@ -13,6 +13,7 @@ Originalmente, el sistema estaba dividido en **tres repositorios de Git independ
 | **Backend** | `URBAN_SIGNS/backend_urbansigns` | `https://github.com/Fer140421/backend_urbansigns.git` |
 | **Frontend Sistema** | `URBAN_SIGNS/Frontend-urban-signs` | `https://github.com/Fer140421/Frontend-urban-signs.git` |
 | **Landing Page / Portal** | `URBAN_SIGNS/LANDING_PAGE_URBAN_SIGNS` | `https://github.com/Fer140421/LANDING_PAGE_URBAN_SIGNS.git` |
+| **App Móvil (Flutter)** | `URBAN_SIGNS/App---URBAN-SIGNS` | `https://github.com/Fer140421/App---URBAN-SIGNS.git` |
 
 ### ¿Por qué se respaldaron los repositorios individuales?
 Trabajar con repositorios separados generaba dificultades:
@@ -20,7 +21,7 @@ Trabajar con repositorios separados generaba dificultades:
 - Si las versiones no coincidían, el frontend fallaba con errores 404 o incompatibilidad de datos.
 - No existía una rama única que congelara el estado global del sistema (Backend + Frontend + Base de Datos).
 
-El **19 de septiembre de 2026**, los archivos `.git` originales de cada carpeta se resguardaron de forma segura dentro de cada proyecto en la carpeta oculta:
+Los archivos `.git` originales de cada carpeta se resguardaron de forma segura dentro de cada proyecto en la carpeta oculta:
 ```
 **/.git_standalone_backup/
 ```
@@ -41,6 +42,8 @@ URBAN_SIGNS/                              <-- Repositorio Git General (.git raí
 │   └── .git_standalone_backup/           <-- Respaldo del .git original del frontend
 ├── LANDING_PAGE_URBAN_SIGNS/             <-- Código de Angular (Web pública y portal)
 │   └── .git_standalone_backup/           <-- Respaldo del .git original de la landing
+├── App---URBAN-SIGNS/                    <-- Código de Flutter (App móvil Android)
+│   └── .git_standalone_backup/           <-- Respaldo del .git original de la app
 ├── docs/                                 <-- Documentación y guías del sistema
 └── supabase_clean_core_v2.sql            <-- Script DDL y semillas de la base de datos
 ```

@@ -1,0 +1,45 @@
+URBAN SIGNS - REGISTRO DE GENERACION APK RELEASE
+Fecha: 2026-09-05
+
+Comprobaciones previas ejecutadas:
+flutter pub get: correcto.
+flutter analyze --no-pub: No issues found! (salida 0).
+flutter test --no-pub: 4 pruebas, All tests passed! (salida 0).
+
+Comando de build ejecutado:
+flutter build apk --release --dart-define-from-file=config/live.json
+Resultado: Built build/app/outputs/flutter-apk/app-release.apk (56.1MB).
+Salida: 0. Duracion reportada de Gradle en el intento exitoso: 370,5s.
+
+Archivo de entrega: APK/UrbanSigns_1.0.0_release.apk
+Tamano: 58784000 bytes.
+SHA256: 9790748611CDBF8AA7D762A9D2EC621477F723ADDD432742FD1113040D3D5B7E
+Package: bo.edu.uajms.georescue360
+Nombre visible: Urban Signs
+Version: 1.0.0 (versionCode 1)
+minSdk: 24; targetSdk: 36.
+Arquitecturas: arm64-v8a, armeabi-v7a, x86_64.
+
+Verificacion mediante apksigner verify --verbose --print-certs:
+Verifies; esquema v2 verificado; un firmante; salida 0.
+Certificado: CN=Urban Signs, O=Urban Signs, C=BO.
+SHA256 certificado: a46ce8000a4ec0480109423da27979f2cefab1117bf071513a2f11e01762eda6
+Manifest Release combinado: INTERNET, ACCESS_NETWORK_STATE,
+ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, CAMERA.
+Sin atributo debuggable habilitado. Se agrego consulta VIEW/https para url_launcher.
+
+Configuracion de compilacion comprobada sin exponer valores:
+DEMO_MODE=false; URL HTTPS; tipo de clave: publishable.
+Supabase Auth /health respondio HTTP 200 desde este equipo.
+No se consultaron ni modificaron registros para esta comprobacion.
+
+Preparacion del entorno:
+Primer intento fallo al preparar NDK con el gestor del SDK.
+Antes del reintento se confirmo NDK 28.2.13676358 y clang presentes.
+Se descargaron/prepararon las plataformas Android 35/36 y CMake 3.22.1.
+Flutter agrego sus opciones de compatibilidad Kotlin/DSL a gradle.properties.
+
+Pendiente: instalar ESTE APK, abrir desde el icono y verificar login,
+CRUD, conversion, abonos, persistencia e integraciones en Android.
+adb devices no encontro dispositivos conectados durante esta revision.
+Este registro textual no sustituye las capturas obligatorias del PDF.

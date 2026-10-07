@@ -1,0 +1,6 @@
+# Copiar como android/key.properties SOLO al preparar una release real.
+# NO subir key.properties ni el archivo .jks al repositorio.
+storePassword=CAMBIAR_PASSWORD_STORE
+keyPassword=CAMBIAR_PASSWORD_KEY
+keyAlias=upload
+storeFile=/RUTA/PRIVADA/georescue-upload-key.jks

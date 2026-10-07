@@ -1,0 +1,17 @@
+﻿PROYECTO FINAL - DIPLOMADO EN DESARROLLO DE APLICACIONES MÓVILES
+MÓDULO 3: DESARROLLO DE APLICACIONES MÓVILES CON FLUTTER
+ESTUDIANTE: Daavid Fernando Camata Baspineiro
+
+PROYECTO: URBAN SIGNS
+DESCRIPCIÓN: Sistema móvil para gestión comercial de cartelería y gigantografías (Cotizaciones, Pedidos, Abonos, Geolocalización, Integración WhatsApp).
+
+ENLACE DEL REPOSITORIO GITHUB:
+https://github.com/Fer140421/App---URBAN-SIGNS
+
+RAMA PRINCIPAL: main
+
+NOTAS PARA EL EVALUADOR:
+1. El código fuente completo, estructura por capas y pruebas automatizadas se encuentran disponibles en la rama principal.
+2. El archivo README.md contiene los 11 puntos obligatorios de documentación, incluyendo arquitectura, configuración de variables de entorno y comandos de ejecución.
+3. El historial de commits refleja el desarrollo progresivo y estructurado del proyecto.
+4. El archivo ejecutable compilado para producción se encuentra en la carpeta APK/ (UrbanSigns_1.0.0_release.apk), firmado para release y probado de manera autónoma en dispositivo Android.
