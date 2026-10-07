@@ -44,7 +44,7 @@ class AppConfig {
       resolved = envUrl;
     } else {
       // Detección automática según la plataforma de ejecución
-      resolved = isWebOrDesktop ? defaultLocalWeb : defaultLocalAndroid;
+      resolved = isWebOrDesktop ? defaultLocalWeb : defaultProduction;
     }
 
     return AppConfig(

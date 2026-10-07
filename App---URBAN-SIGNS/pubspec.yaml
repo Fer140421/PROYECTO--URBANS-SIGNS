@@ -1,7 +1,7 @@
 name: urban_signs_app
 publish_to: "none"
 description: Urban Signs - App Móvil de Montajes, Taller y Entregas en Campo con Evidencia Fotográfica y GPS.
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=3.9.0 <4.0.0"
