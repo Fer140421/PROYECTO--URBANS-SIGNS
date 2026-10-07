@@ -40,7 +40,7 @@ import java.util.Map;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:4200,http://localhost:4201}")
+    @Value("${app.cors.allowed-origins:*}")
     private String[] allowedOrigins;
 
     private final JwtUtils jwtUtils;
@@ -86,7 +86,7 @@ public class SecurityConfig {
                 })
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
+                    corsConfig.setAllowedOriginPatterns(Arrays.asList("*"));
                     corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
                     corsConfig.setAllowedHeaders(Arrays.asList("*"));
                     corsConfig.setExposedHeaders(Arrays.asList("Set-Cookie", "Retry-After", "Authorization"));
