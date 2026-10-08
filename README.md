@@ -39,6 +39,7 @@ El desarrollo del proyecto está alojado bajo una estructura monorepo que integr
 | **Base de Datos** | PostgreSQL | `16.1` | Almacenamiento relacional de datos. |
 | **Frontend Dashboard**| Angular | `18.2` | Panel administrativo para roles de Oficina y Taller. |
 | **Website Portal** | Angular | `18.2` | Portal público de consulta por código de seguimiento. |
+| **App movil** | Flutter |  | App para el personal del taller para mostrar evidencias y entregas |
 | **Estilos UI** | TailwindCSS | `3.4` | Diseño responsive adaptado a 360 px y 1366 px. |
 | **Servicios Cloud** | Cloudinary / SMTP | API v1.1 | Subida de fotos de evidencia y notificaciones por correo. |
 
